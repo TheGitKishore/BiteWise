@@ -321,7 +321,6 @@ const ps = StyleSheet.create({
 
 const PLANS_PREVIEW = [
   { name: 'Free',    price: '$0',     note: 'Perfect for getting started', popular: false },
-  { name: 'Basic',   price: '$9.99',  note: 'For serious trackers',        popular: false },
   { name: 'Premium', price: '$19.99', note: 'All features included',       popular: true  },
 ];
 
