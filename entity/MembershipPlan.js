@@ -81,6 +81,25 @@ class MembershipPlan {
     return plans.find((p) => p.planId === planId) ?? null;
   }
 
+    // DATA ACCESS
+  // @return {Promise<MembershipPlan[]>}
+  static async fetchAll() {
+    const res = await fetch('http://localhost:8000/api/plans/');
+    if (!res.ok) throw new Error('Failed to load plans');
+    const raw = await res.json();
+    return raw.map((r) => new MembershipPlan({
+      planId:       r.plan_id,
+      name:         r.plan_name,
+      price:        parseFloat(r.price_sgd),
+      billingCycle: r.billing_cycle,
+      description:  r.description,
+      features:     JSON.parse(r.features),
+      isPopular:    r.plan_name === 'Premium',
+      isActive:     r.is_active === 1,
+    }));
+  }
+}
+
   // DATA ACCESS
   // Sole source of plan seed data. Returns hydrated
   // MembershipPlan instances ready for the controller to use.
@@ -88,6 +107,7 @@ class MembershipPlan {
   // backend is available
   
   // @return {Promise<MembershipPlan[]>}
+  /*
   static async fetchAll() {
     const raw = [
       {
@@ -149,5 +169,6 @@ class MembershipPlan {
     return raw.map((r) => new MembershipPlan(r));
   }
 }
+*/
 
 export default MembershipPlan;

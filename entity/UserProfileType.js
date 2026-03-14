@@ -47,10 +47,27 @@ class UserProfileType {
     return profiles.find((p) => p.type === type) ?? null;
   }
 
+  // DATA ACCESS
+  // @return {Promise<UserProfileType[]>}
+  static async fetchAll() {
+    const res = await fetch('http://localhost:8000/api/profile-types/');
+    if (!res.ok) throw new Error('Failed to load profile types');
+    const raw = await res.json();
+    return raw.map((r) => new UserProfileType({
+      profileTypeId: r.profile_type_id,
+      type:          r.type,           // should match USER_PROFILE_TYPES values
+      displayName:   r.display_name,
+      description:   r.description,
+      features:      r.features ?? [],
+      imageUrl:      r.image_url ?? null,
+    }));
+  }
+}
 
   // DATA ACCESS
   // @return {Promise<UserProfileType[]>}
   // Replace w API calls
+  /*
   static async fetchAll() {
     const raw = [
       {
@@ -100,5 +117,6 @@ class UserProfileType {
     return raw.map((r) => new UserProfileType(r));
   }
 }
+*/
 
 export default UserProfileType;

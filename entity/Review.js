@@ -53,11 +53,34 @@ class Review {
     const total = approved.reduce((sum, r) => sum + r.rating, 0);
     return Math.round((total / approved.length) * 10) / 10;
   }
-
+  // DATA ACCESS
+  // @return {Promise<Review[]>}
+  static async fetchAll() {
+    const res = await fetch('http://localhost:8000/api/reviews/');
+    if (!res.ok) throw new Error('Failed to load reviews');
+    const raw = await res.json();
+    return raw.map((r) => new Review({
+      reviewId:         r.review_id,
+      userId:           r.review_user_id,
+      reviewerName:     r.reviewer_name,
+      reviewerInitials: r.reviewer_initials,
+      profileType:      r.profile_type,
+      rating:           r.rating,
+      title:            r.title    ?? '',
+      content:          r.content,
+      membershipPlanId: r.membership_plan_id ?? null,
+      isApproved:       r.status === 'active',
+      approvedByAdminId: r.approved_by_admin_id ?? null,
+      createdAt:        r.created_at,
+      updatedAt:        r.updated_at ?? null,
+    }));
+  }
+}
 
   // DATA ACCESS
   // @return {Promise<Review[]>}
   // Replace w API/Server Calls
+  /*
   static async fetchAll() {
     const raw = [
       {
@@ -104,5 +127,6 @@ class Review {
     return raw.map((r) => new Review(r));
   }
 }
+  */
 
 export default Review;
