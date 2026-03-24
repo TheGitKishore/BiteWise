@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import mysql from 'mysql2/promise';
 
 // ===================== CONFIGURATION =====================
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/bitewise';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/bitewise'; // testing
 const MYSQL_CONFIG = {
   host: process.env.MYSQL_HOST || 'localhost',
   user: process.env.MYSQL_USER || 'root',
