@@ -121,7 +121,7 @@ class MembershipPlan {
 
     return raw.map((r) => new MembershipPlan(r));
   }
+  */
 }
-*/
 
 export default MembershipPlan;
