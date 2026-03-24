@@ -1,91 +1,15 @@
 import axios from 'axios';
-import {MongoClient} from 'mongodb';
-import mysql from 'mysql2/promise';
+import { connectDB, getDB } from '../db_mongodb/db.js';
+import db from '../db_sql/db.js';
 
 // ===================== CONFIGURATION =====================
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://zm:1234@ac-dbzb1mg-shard-00-00.hjry7gx.mongodb.net:27017,ac-dbzb1mg-shard-00-01.hjry7gx.mongodb.net:27017,ac-dbzb1mg-shard-00-02.hjry7gx.mongodb.net:27017/?ssl=true&replicaSet=atlas-rxz00p-shard-0&authSource=admin&appName=cluster1';
-const MYSQL_CONFIG = {
-  host: process.env.MYSQL_HOST || 'localhost',
-  user: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || '1234',
-  database: process.env.MYSQL_DB || 'fyp',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-};
 const OPENFOODFACTS_BASE_URL = 'https://world.openfoodfacts.org/api/v0';
-
-// ===================== MONGODB CONNECTION =====================
-let mongoClient;
-let mongoDB;
-
-export const connectMongoDB = async () => {
-  try {
-    if (mongoDB) {
-      console.log('MongoDB already connected');
-      return mongoDB;
-    }
-    mongoClient = new MongoClient(MONGODB_URI);
-    await mongoClient.connect();
-    mongoDB = mongoClient.db('bitewise');
-    console.log('MongoDB connected successfully');
-    return mongoDB;
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    throw error;
-  }
-};
-
-export const getMongoDB = () => {
-  if (!mongoDB) throw new Error('MongoDB not connected. Call connectMongoDB() first.');
-  return mongoDB;
-};
-
-export const closeMongoDB = async () => {
-  if (mongoClient) {
-    await mongoClient.close();
-    mongoClient = null;
-    mongoDB = null;
-    console.log('MongoDB connection closed');
-  }
-};
-
-// ===================== MYSQL CONNECTION POOL =====================
-let mysqlPool;
-
-export const getMySQLPool = async () => {
-  if (!mysqlPool) {
-    mysqlPool = await mysql.createPool(MYSQL_CONFIG);
-  }
-  return mysqlPool;
-};
-
-export const connectMySQL = async () => {
-  try {
-    const pool = await getMySQLPool();
-    const connection = await pool.getConnection();
-    await connection.ping();
-    connection.release();
-    console.log('MySQL connected successfully');
-  } catch (error) {
-    console.error('MySQL connection error:', error);
-    throw error;
-  }
-};
-
-// Close MySQL pool
-export const closeMySQL = async () => {
-  if (mysqlPool) {
-    await mysqlPool.end();
-    mysqlPool = null;
-  }
-};
 
 // ===================== MONGODB OPERATIONS =====================
 
 export const getMongoDocument = async (collectionName, filter = {}) => {
   try {
-    const db = getMongoDB();
+    const db = await getDB();
     return await db.collection(collectionName).findOne(filter);
   } catch (error) {
     console.error(`Error fetching document from ${collectionName}:`, error);
@@ -95,11 +19,13 @@ export const getMongoDocument = async (collectionName, filter = {}) => {
 
 export const getMongoDocuments = async (collectionName, filter = {}, options = {}) => {
   try {
-    const db = getMongoDB();
+    const db = await getDB();
     let query = db.collection(collectionName).find(filter);
+
     if (options.sort)  query = query.sort(options.sort);
     if (options.limit) query = query.limit(options.limit);
     if (options.skip)  query = query.skip(options.skip);
+
     return await query.toArray();
   } catch (error) {
     console.error(`Error querying documents from ${collectionName}:`, error);
@@ -109,7 +35,7 @@ export const getMongoDocuments = async (collectionName, filter = {}, options = {
 
 export const createMongoDocument = async (collectionName, data) => {
   try {
-    const db = getMongoDB();
+    const db = await getDB();
     const result = await db.collection(collectionName).insertOne({
       ...data,
       created_at: new Date()
@@ -123,7 +49,7 @@ export const createMongoDocument = async (collectionName, data) => {
 
 export const updateMongoDocument = async (collectionName, filter, updateData) => {
   try {
-    const db = getMongoDB();
+    const db = await getDB();
     const result = await db.collection(collectionName).findOneAndUpdate(
       filter,
       { $set: { ...updateData, updated_at: new Date() } },
@@ -138,7 +64,7 @@ export const updateMongoDocument = async (collectionName, filter, updateData) =>
 
 export const deleteMongoDocument = async (collectionName, filter) => {
   try {
-    const db = getMongoDB();
+    const db = await getDB();
     return await db.collection(collectionName).deleteOne(filter);
   } catch (error) {
     console.error(`Error deleting document from ${collectionName}:`, error);
@@ -150,17 +76,12 @@ export const deleteMongoDocument = async (collectionName, filter) => {
 
 // Execute raw SQL query
 export const executeMySQLQuery = async (sql, values = []) => {
-  const pool = await getMySQLPool();
-  const connection = await pool.getConnection();
-
   try {
-    const [results] = await connection.execute(sql, values);
+    const [results] = await db.execute(sql, values);
     return results;
   } catch (error) {
     console.error('Error executing MySQL query:', error);
     throw error;
-  } finally {
-    connection.release();
   }
 };
 
@@ -348,8 +269,7 @@ export const getNutritionInfo = async (barcode) => {
 // Initialize all database connections
 export const initializeDatabases = async () => {
   try {
-    await connectMongoDB();
-    await connectMySQL();
+    await connectDB(); // MongoDB
     console.log('All databases initialized successfully');
   } catch (error) {
     console.error('Error initializing databases:', error);
@@ -360,7 +280,6 @@ export const initializeDatabases = async () => {
 // Close all connections
 export const closeAllConnections = async () => {
   try {
-    await closeMongoDB();
     await closeMySQL();
     console.log('All connections closed');
   } catch (error) {
@@ -370,12 +289,8 @@ export const closeAllConnections = async () => {
 };
 
 export default {
-  connectMongoDB,
-  getMongoDB,
-  closeMongoDB,
-  getMySQLPool,
-  connectMySQL,
-  closeMySQL,
+  connectDB,
+  getDB,
   getMongoDocument,
   getMongoDocuments,
   createMongoDocument,

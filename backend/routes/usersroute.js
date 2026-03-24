@@ -4,7 +4,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import db from '../db_sql/db.js'; // <-- ES module import, .js extension
 import { v4 as uuidv4 } from 'uuid';
-import mongo from '../db_mongodb/db.js';
+import { getDB } from '../db_mongodb/db.js';
 const router = express.Router();
 
 // ─────────────────────────────────────────────
@@ -60,7 +60,9 @@ router.post('/register', async (req, res) => {
     const newUserId = result.insertId;
 
     // 🔥 Insert into MongoDB
-    await mongo.collection('users').insertOne({
+    const mongoDB = getDB();
+      
+    await mongoDB.collection('users').insertOne({
       uuid,
       username: username.trim(),
       email: email.trim(),
