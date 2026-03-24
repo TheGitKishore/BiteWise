@@ -1,9 +1,9 @@
 import axios from 'axios';
-import mongoose from 'mongoose';
+import {MongoClient} from 'mongodb';
 import mysql from 'mysql2/promise';
 
 // ===================== CONFIGURATION =====================
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/bitewise'; // testing
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/bitewise';
 const MYSQL_CONFIG = {
   host: process.env.MYSQL_HOST || 'localhost',
   user: process.env.MYSQL_USER || 'root',
@@ -16,21 +16,37 @@ const MYSQL_CONFIG = {
 const OPENFOODFACTS_BASE_URL = 'https://world.openfoodfacts.org/api/v0';
 
 // ===================== MONGODB CONNECTION =====================
+let mongoClient;
+let mongoDB;
+
 export const connectMongoDB = async () => {
   try {
-    if (mongoose.connection.readyState === 1) {
+    if (mongoDB) {
       console.log('MongoDB already connected');
-      return;
+      return mongoDB;
     }
-
-    await mongoose.connect(MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    mongoClient = new MongoClient(MONGODB_URI);
+    await mongoClient.connect();
+    mongoDB = mongoClient.db('bitewise');
     console.log('MongoDB connected successfully');
+    return mongoDB;
   } catch (error) {
     console.error('MongoDB connection error:', error);
     throw error;
+  }
+};
+
+export const getMongoDB = () => {
+  if (!mongoDB) throw new Error('MongoDB not connected. Call connectMongoDB() first.');
+  return mongoDB;
+};
+
+export const closeMongoDB = async () => {
+  if (mongoClient) {
+    await mongoClient.close();
+    mongoClient = null;
+    mongoDB = null;
+    console.log('MongoDB connection closed');
   }
 };
 
@@ -67,72 +83,65 @@ export const closeMySQL = async () => {
 
 // ===================== MONGODB OPERATIONS =====================
 
-// Get document from MongoDB
-export const getMongoDBDocument = async (model, filter = {}) => {
+export const getMongoDocument = async (collectionName, filter = {}) => {
   try {
-    await connectMongoDB();
-    const document = await model.findOne(filter);
-    return document;
+    const db = getMongoDB();
+    return await db.collection(collectionName).findOne(filter);
   } catch (error) {
-    console.error('Error fetching MongoDB document:', error);
+    console.error(`Error fetching document from ${collectionName}:`, error);
     throw error;
   }
 };
 
-// Create document in MongoDB
-export const createMongoDBDocument = async (model, data) => {
+export const getMongoDocuments = async (collectionName, filter = {}, options = {}) => {
   try {
-    await connectMongoDB();
-    const newDocument = new model(data);
-    const savedDocument = await newDocument.save();
-    return savedDocument;
+    const db = getMongoDB();
+    let query = db.collection(collectionName).find(filter);
+    if (options.sort)  query = query.sort(options.sort);
+    if (options.limit) query = query.limit(options.limit);
+    if (options.skip)  query = query.skip(options.skip);
+    return await query.toArray();
   } catch (error) {
-    console.error('Error creating MongoDB document:', error);
+    console.error(`Error querying documents from ${collectionName}:`, error);
     throw error;
   }
 };
 
-// Update document in MongoDB
-export const updateMongoDBDocument = async (model, filter, updateData) => {
+export const createMongoDocument = async (collectionName, data) => {
   try {
-    await connectMongoDB();
-    const updatedDocument = await model.findOneAndUpdate(filter, updateData, {
-      new: true,
+    const db = getMongoDB();
+    const result = await db.collection(collectionName).insertOne({
+      ...data,
+      created_at: new Date()
     });
-    return updatedDocument;
-  } catch (error) {
-    console.error('Error updating MongoDB document:', error);
-    throw error;
-  }
-};
-
-// Delete document from MongoDB
-export const deleteMongoDBDocument = async (model, filter) => {
-  try {
-    await connectMongoDB();
-    const result = await model.deleteOne(filter);
     return result;
   } catch (error) {
-    console.error('Error deleting MongoDB document:', error);
+    console.error(`Error creating document in ${collectionName}:`, error);
     throw error;
   }
 };
 
-// Query multiple documents from MongoDB
-export const queryMongoDBDocuments = async (model, filter = {}, options = {}) => {
+export const updateMongoDocument = async (collectionName, filter, updateData) => {
   try {
-    await connectMongoDB();
-    const query = model.find(filter);
-
-    if (options.select) query.select(options.select);
-    if (options.sort) query.sort(options.sort);
-    if (options.limit) query.limit(options.limit);
-    if (options.skip) query.skip(options.skip);
-
-    const documents = await query.exec();
-    return documents;
+    const db = getMongoDB();
+    const result = await db.collection(collectionName).findOneAndUpdate(
+      filter,
+      { $set: { ...updateData, updated_at: new Date() } },
+      { returnDocument: 'after' }
+    );
+    return result;
   } catch (error) {
-    console.error('Error querying MongoDB documents:', error);
+    console.error(`Error updating document in ${collectionName}:`, error);
+    throw error;
+  }
+};
+
+export const deleteMongoDocument = async (collectionName, filter) => {
+  try {
+    const db = getMongoDB();
+    return await db.collection(collectionName).deleteOne(filter);
+  } catch (error) {
+    console.error(`Error deleting document from ${collectionName}:`, error);
     throw error;
   }
 };
@@ -277,40 +286,23 @@ export const getProductByBarcode = async (barcode) => {
   }
 };
 
-// Search products with filters (brand, category, etc.)
+
 export const searchFoodProductsAdvanced = async (filters) => {
   try {
     const queryParams = {
       format: 'json',
       page_size: filters.pageSize || 20,
       page: filters.page || 1,
+      ...(filters.searchTerm     && { search_terms:      filters.searchTerm }),
+      ...(filters.brand          && { brands:            filters.brand }),
+      ...(filters.category       && { categories:        filters.category }),
+      ...(filters.country        && { countries:         filters.country }),
+      ...(filters.nutriscoreGrade && { nutrition_grades: filters.nutriscoreGrade }),
     };
-
-    if (filters.searchTerm) {
-      queryParams.search_terms = filters.searchTerm;
-    }
-
-    if (filters.brand) {
-      queryParams.brands = filters.brand;
-    }
-
-    if (filters.category) {
-      queryParams.categories = filters.category;
-    }
-
-    if (filters.country) {
-      queryParams.countries = filters.country;
-    }
-
-    if (filters.nutriscoreGrade) {
-      queryParams.nutrition_grades = filters.nutriscoreGrade;
-    }
-
-    const response = await axios.get(`${OPENFOODFACTS_BASE_URL}/cgi/search.pl`, {
-      params: queryParams,
-      timeout: 5000,
-    });
-
+    const response = await axios.get(
+      `${OPENFOODFACTS_BASE_URL}/cgi/search.pl`,
+      { params: queryParams, timeout: 5000 }
+    );
     return response.data;
   } catch (error) {
     console.error('Error searching products with advanced filters:', error);
@@ -379,14 +371,16 @@ export const closeAllConnections = async () => {
 
 export default {
   connectMongoDB,
+  getMongoDB,
+  closeMongoDB,
   getMySQLPool,
   connectMySQL,
   closeMySQL,
-  getMongoDBDocument,
-  createMongoDBDocument,
-  updateMongoDBDocument,
-  deleteMongoDBDocument,
-  queryMongoDBDocuments,
+  getMongoDocument,
+  getMongoDocuments,
+  createMongoDocument,
+  updateMongoDocument,
+  deleteMongoDocument,
   executeMySQLQuery,
   getMySQLRow,
   getMySQLRows,
