@@ -1,3 +1,6 @@
+import axios from 'axios'; //everything entity file needs this two lines of code
+const API_URL = 'http://192.168.50.129:3000/api/reviews'; // ⚠️ change IP to your wifi ip 192.168.x.x (best to not show your ip address to anyone)
+
 class Review {
   constructor({
     reviewId          = null,
@@ -53,80 +56,26 @@ class Review {
     const total = approved.reduce((sum, r) => sum + r.rating, 0);
     return Math.round((total / approved.length) * 10) / 10;
   }
-  // DATA ACCESS
-  // @return {Promise<Review[]>}
+  // ✅ Fetch from backend using axios
   static async fetchAll() {
-    const res = await fetch('http://localhost:8000/api/reviews/');
-    if (!res.ok) throw new Error('Failed to load reviews');
-    const raw = await res.json();
-    return raw.map((r) => new Review({
-      reviewId:         r.review_id,
-      userId:           r.review_user_id,
-      reviewerName:     r.reviewer_name,
+    const res = await axios.get(API_URL);
+
+    return res.data.map((r) => new Review({
+      reviewId: r.review_id,
+      userId: r.review_user_id,
+      reviewerName: r.reviewer_name,
       reviewerInitials: r.reviewer_initials,
-      profileType:      r.profile_type,
-      rating:           r.rating,
-      title:            r.title    ?? '',
-      content:          r.content,
+      profileType: r.profile_type,
+      rating: r.rating,
+      title: r.title ?? '',
+      content: r.content,
       membershipPlanId: r.membership_plan_id ?? null,
-      isApproved:       r.status === 'active',
+      isApproved: r.is_approved === 1,
       approvedByAdminId: r.approved_by_admin_id ?? null,
-      createdAt:        r.created_at,
-      updatedAt:        r.updated_at ?? null,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at ?? null,
     }));
   }
 }
-
-  // DATA ACCESS
-  // @return {Promise<Review[]>}
-  // Replace w API/Server Calls
-  /*
-  static async fetchAll() {
-    const raw = [
-      {
-        reviewId:         1,
-        userId:           101,
-        reviewerName:     'Sarah Johnson',
-        reviewerInitials: 'SJ',
-        profileType:      'Meal Planner',
-        rating:           5,
-        title:            '',
-        content:          'BiteWise has completely transformed how I plan my meals. The auto-generate feature is a lifesaver!',
-        membershipPlanId: 3,
-        isApproved:       true,
-        createdAt:        '2024-02-20',
-      },
-      {
-        reviewId:         2,
-        userId:           102,
-        reviewerName:     'Mike Chen',
-        reviewerInitials: 'MC',
-        profileType:      'Athlete',
-        rating:           5,
-        title:            '',
-        content:          'Perfect for tracking macros and keeping my nutrition on point for training. Highly recommend!',
-        membershipPlanId: 3,
-        isApproved:       true,
-        createdAt:        '2024-02-18',
-      },
-      {
-        reviewId:         3,
-        userId:           103,
-        reviewerName:     'Emily Davis',
-        reviewerInitials: 'ED',
-        profileType:      'Health-Oriented',
-        rating:           4,
-        title:            '',
-        content:          'Great app for monitoring my daily intake. The BMI tracking feature helps me stay on track with my health goals.',
-        membershipPlanId: 2,
-        isApproved:       true,
-        createdAt:        '2024-02-15',
-      },
-    ];
-
-    return raw.map((r) => new Review(r));
-  }
-}
-  */
 
 export default Review;
