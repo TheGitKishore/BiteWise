@@ -1,3 +1,5 @@
+import { getMySQLRow, getMySQLRows } from "../services/api";
+
 class MembershipPlan {
 
   constructor({
@@ -44,9 +46,59 @@ class MembershipPlan {
     return this.features;
   }
 
+  toJSON() {
+    return {
+      plan_id:       this.planId,
+      name:          this.name,
+      price:         this.price,
+      billing_cycle: this.billingCycle,
+      description:   this.description,
+      features:      this.features,
+      feature_ids:   this.featureIds,
+      is_popular:    this.isPopular,
+      is_active:     this.isActive,
+    };
+  }
 
   // STATIC / COLLECTION METHODS
+   static fromRow(row) {
+    if (!row) return null;
 
+    let parsedFeatures = [];
+    let parsedFeatureIds = [];
+
+    if (Array.isArray(row.features)) {
+      parsedFeatures = row.features;
+    } else if (typeof row.features === 'string') {
+      try {
+        parsedFeatures = JSON.parse(row.features);
+      } catch (error) {
+        parsedFeatures = [];
+      }
+    }
+
+    if (Array.isArray(row.feature_ids)) {
+      parsedFeatureIds = row.feature_ids;
+    } else if (typeof row.feature_ids === 'string') {
+      try {
+        parsedFeatureIds = JSON.parse(row.feature_ids);
+      } catch (error) {
+        parsedFeatureIds = [];
+      }
+    }
+
+    return new MembershipPlan({
+      planId: row.plan_id,
+      name: row.name,
+      price: Number(row.price) || 0,
+      billingCycle: row.billing_cycle || '',
+      description: row.description || '',
+      features: parsedFeatures,
+      featureIds: parsedFeatureIds,
+      isPopular: Boolean(row.is_popular),
+      isActive: Boolean(row.is_active),
+    });
+   }
   // @param  {MembershipPlan[]} plans
   // @return {MembershipPlan[]}
   static getActivePlans(plans) {
@@ -74,7 +126,28 @@ class MembershipPlan {
   // MembershipPlan instances ready for the controller to use.
   // replace the return body with a real API call once
   // backend is available
-  
+    static async getAll() {
+    const rows = await getMySQLRows('membership_plan', {}, {
+      orderBy: 'plan_id ASC',
+    });
+
+    return rows.map((row) => MembershipPlan.fromRow(row));
+  }
+
+  static async getById(planId) {
+    const row = await getMySQLRow('membership_plan', { plan_id: planId });
+    return MembershipPlan.fromRow(row);
+  }
+
+  static async getActive() {
+    const rows = await getMySQLRows('membership_plan', { is_active: 1 }, {
+      orderBy: 'price ASC',
+    });
+
+    return rows.map((row) => MembershipPlan.fromRow(row));
+  }
+}
+
   // @return {Promise<MembershipPlan[]>}
   /*
   static async fetchAll() {
@@ -122,6 +195,6 @@ class MembershipPlan {
     return raw.map((r) => new MembershipPlan(r));
   }
   */
-}
+
 
 export default MembershipPlan;
