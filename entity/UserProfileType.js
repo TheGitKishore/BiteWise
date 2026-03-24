@@ -1,6 +1,6 @@
-// For the user profile types
-import { getMySQLRow, getMySQLRows } from "../services/api";
+import api from '../services/api';
 
+// For the user profile types
 export const USER_PROFILE_TYPES = Object.freeze({
   MEAL_PLANNER:    'MEAL_PLANNER',
   ATHLETE:         'ATHLETE',
@@ -84,26 +84,31 @@ class UserProfileType {
   // DATA ACCESS
   // @return {Promise<UserProfileType[]>}
   static async getAll() {
-    const rows = await getMySQLRows('user_profile_type', {}, {
-      orderBy: 'profile_type_id ASC',
-    });
+    const api = (await import('../services/api')).default;
 
-    return rows.map((row) => UserProfileType.fromRow(row));
+    const res = await api.getUserProfileFeatures(); 
+    return res.map((row) => UserProfileType.fromRow(row));
   }
 
+  // Fetch a profile type by ID via API
   static async getById(profileTypeId) {
-    const row = await getMySQLRow('user_profile_type', {
-      profile_type_id: profileTypeId,
-    });
+    const api = (await import('../services/api')).default;
+
+    const res = await api.getUserProfileFeatures(); 
+    const row = res.find(p => p.profile_type_id === profileTypeId);
 
     return UserProfileType.fromRow(row);
   }
 
+  // Fetch a profile type by type via API
   static async getByType(type) {
-    const row = await getMySQLRow('user_profile_type', { type });
+    const api = (await import('../services/api')).default;
+
+    const res = await api.getUserProfileFeatures(); 
+    const row = res.find(p => p.type === type);
+
     return UserProfileType.fromRow(row);
   }
-}
 
   // DATA ACCESS
   // @return {Promise<UserProfileType[]>}
@@ -159,5 +164,5 @@ class UserProfileType {
   }
 }
 */
-
+}
 export default UserProfileType;
