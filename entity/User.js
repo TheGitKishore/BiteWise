@@ -1,3 +1,6 @@
+import axios from 'axios'; //everything entity file needs this two lines of code
+const API_URL = 'http://192.168.50.129:3000/api/users'; // ⚠️ change IP to your wifi ip 192.168.x.x (best to not show your ip address to anyone)
+
 class User {
   constructor({
     userId           = null,
@@ -121,26 +124,38 @@ class User {
       return { success: false, field: 'username', message: 'Username already exists', user: null };
     }
 
-    // UC #09: planId 2 = Premium, anything else = Free
-    const planId = selectedPlanId === 2 ? 2 : 1;
-    const role   = planId === 2 ? 'PREMIUM' : 'FREE';
+    try {
+      console.log('Sending request to:', `${API_URL}/register`);
+      const res = await axios.post(`${API_URL}/register`, {
+        username,
+        email,
+        password,
+        confirmPassword,
+        selectedPlanId
+      });
 
-    const newUser = new this({
-      userId:           Date.now(),
-      username:         username.trim(),
-      email:            email.trim(),
-      role,
-      membershipPlanId: planId,
-      isActive:         true,
-      createdAt:        new Date().toISOString(),
-    });
+      console.log('Response received:', res.data);
 
-    return {
-      success: true,
-      field:   null,
-      message: 'Account created successfully! Please log in.',
-      user:    newUser,
-    };
+      // ✅ backend may return same structure → just pass through
+      return res.data;
+    
+    } catch (err) {
+      
+      console.log('ERROR:', err?.response?.data || err.message);
+
+      // ✅ preserve backend message if exists
+      if (err.response?.data) {
+        return err.response.data;
+      }
+    
+      // ✅ fallback (same style as your original)
+      return {
+        success: false,
+        field: null,
+        message: 'Something went wrong. Please try again.',
+        user: null
+      };
+    }
   }
 
   // UC #10, #45 — verifies credentials and returns the user session.
@@ -158,30 +173,23 @@ class User {
       return { success: false, message: 'Password is required.', user: null };
     }
 
-    // Seed users for testing — replace with API call
-    const seedUsers = [
-      { username: 'xuanxuan', password: 'password123', role: 'FREE',    membershipPlanId: 1, email: 'xuanxuan@gmail.com' },
-      { username: 'premuser', password: 'password123', role: 'PREMIUM', membershipPlanId: 2, email: 'prem@gmail.com' },
-    ];
+    try {
+      const res = await axios.post(`${API_URL}/login`, {
+        username,
+        password
+      });
 
-    const match = seedUsers.find(
-      (u) => u.username === username.trim() && u.password === password
-    );
+      return res.data;
 
-    if (!match) {
-      return { success: false, message: 'Incorrect credentials. Please try again.', user: null };
+    } catch (err) {
+      if (err.response?.data) return err.response.data;
+
+      return {
+        success: false,
+        message: 'Incorrect credentials. Please try again.',
+        user: null
+      };
     }
-
-    const user = new this({
-      userId:           1,
-      username:         match.username,
-      email:            match.email,
-      role:             match.role,
-      membershipPlanId: match.membershipPlanId,
-      isActive:         true,
-    });
-
-    return { success: true, message: 'Logged in successfully!', user };
   }
 
   // UC #11, #46 — ends the user session.
@@ -199,19 +207,24 @@ class User {
   // @param  {User} user
   // @return {Promise<{ success, data, message }>}
   static async getAccountDetails(user) {
+  
     if (!user) {
       return { success: false, data: null, message: 'No user session found.' };
     }
-    return {
-      success: true,
-      data: {
-        username:         user.username,
-        email:            user.email,
-        role:             user.role,
-        membershipPlanId: user.membershipPlanId,
-      },
-      message: '',
-    };
+  
+    try {
+      const res = await axios.get(`${API_URL}/${user.userId}`);
+      return res.data;
+    
+    } catch (err) {
+      if (err.response?.data) return err.response.data;
+    
+      return {
+        success: false,
+        data: null,
+        message: 'Failed to fetch account details.'
+      };
+    }
   }
 
   // UC #13, #48 — validates and updates account details.
@@ -232,28 +245,26 @@ class User {
       return { success: false, field: 'email', message: emailCheck.message, user: null };
     }
 
-    // If username changed, check availability
-    if (username.trim() !== user.username) {
-      const available = await this.isUsernameAvailable(username);
-      if (!available) {
-        return { success: false, field: 'username', message: 'Username already exists', user: null };
+    try {
+        const res = await axios.put(`${API_URL}/update`, {
+          userId: user.userId,
+          username,
+          email
+        });
+      
+        return res.data;
+      
+      } catch (err) {
+        if (err.response?.data) return err.response.data;
+      
+        return {
+          success: false,
+          field: null,
+          message: 'Account details updated failed.',
+          user: null
+        };
       }
     }
-
-    const updatedUser = new this({
-      ...user,
-      username:  username.trim(),
-      email:     email.trim(),
-      updatedAt: new Date().toISOString(),
-    });
-
-    return {
-      success: true,
-      field:   null,
-      message: 'Account details updated successfully!',
-      user:    updatedUser,
-    };
-  }
 
   // UC #14, #49 — permanently removes the user account.
   // TODO: replace with real API call.
@@ -261,11 +272,25 @@ class User {
   // @param  {User} user
   // @return {Promise<{ success, message }>}
   static async terminateAccount(user) {
+
     if (!user) {
       return { success: false, message: 'No user session found.' };
     }
-    return { success: true, message: 'Account has been deleted.' };
+
+    try {
+      const res = await axios.delete(`${API_URL}/delete/${user.userId}`);
+      return res.data;
+
+    } catch (err) {
+      if (err.response?.data) return err.response.data;
+
+      return {
+        success: false,
+        message: 'Account deletion failed.'
+      };
+    }
   }
+  
 }
 
 export default User;
