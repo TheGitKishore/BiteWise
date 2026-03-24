@@ -1,4 +1,5 @@
 // For the user profile types
+import { getMySQLRow, getMySQLRows } from "../services/api";
 
 export const USER_PROFILE_TYPES = Object.freeze({
   MEAL_PLANNER:    'MEAL_PLANNER',
@@ -31,9 +32,42 @@ class UserProfileType {
     return this.profileTypeId !== null;
   }
 
-
+  toJSON() {
+    return {
+      profile_type_id: this.profileTypeId,
+      type:            this.type,
+      display_name:    this.displayName,
+      description:     this.description,
+      features:        this.features,
+      image_url:       this.imageUrl,
+    };
+  }
   // STATIC / COLLECTION METHODS
 
+  static fromRow(row) {
+    if (!row) return null;
+
+    let parsedFeatures = [];
+
+    if (Array.isArray(row.features)) {
+      parsedFeatures = row.features;
+    } else if (typeof row.features === 'string') {
+      try {
+        parsedFeatures = JSON.parse(row.features);
+      } catch (error) {
+        parsedFeatures = [];
+      }
+    }
+    
+    return new UserProfileType({
+      profileTypeId: row.profile_type_id,
+      type:          row.type,
+      displayName:   row.display_name,
+      description:   row.description,
+      features:        parsedFeatures,
+      imageUrl:      row.image_url ?? null,
+    });
+  }
   // @param  {UserProfileType[]} profiles
   // @return {boolean}
   static hasAvailableProfiles(profiles) {
@@ -49,18 +83,25 @@ class UserProfileType {
 
   // DATA ACCESS
   // @return {Promise<UserProfileType[]>}
-  static async fetchAll() {
-    const res = await fetch('http://localhost:8000/api/profile-types/');
-    if (!res.ok) throw new Error('Failed to load profile types');
-    const raw = await res.json();
-    return raw.map((r) => new UserProfileType({
-      profileTypeId: r.profile_type_id,
-      type:          r.type,           // should match USER_PROFILE_TYPES values
-      displayName:   r.display_name,
-      description:   r.description,
-      features:      r.features ?? [],
-      imageUrl:      r.image_url ?? null,
-    }));
+  static async getAll() {
+    const rows = await getMySQLRows('user_profile_type', {}, {
+      orderBy: 'profile_type_id ASC',
+    });
+
+    return rows.map((row) => UserProfileType.fromRow(row));
+  }
+
+  static async getById(profileTypeId) {
+    const row = await getMySQLRow('user_profile_type', {
+      profile_type_id: profileTypeId,
+    });
+
+    return UserProfileType.fromRow(row);
+  }
+
+  static async getByType(type) {
+    const row = await getMySQLRow('user_profile_type', { type });
+    return UserProfileType.fromRow(row);
   }
 }
 
