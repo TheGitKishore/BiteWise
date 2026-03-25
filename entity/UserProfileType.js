@@ -1,4 +1,5 @@
-import api from '../services/api';
+import axios from 'axios'; //everything entity file needs this two lines of code
+const API_URL = 'http://192.168.x.x:3000/api/user-profile-types';
 
 // For the user profile types
 export const USER_PROFILE_TYPES = Object.freeze({
@@ -81,34 +82,52 @@ class UserProfileType {
     return profiles.find((p) => p.type === type) ?? null;
   }
 
-  // DATA ACCESS
-  // @return {Promise<UserProfileType[]>}
+  // =========================
+  // API METHODS (AXIOS)
+  // =========================
+
   static async getAll() {
-    const api = (await import('../services/api')).default;
-
-    const res = await api.getUserProfileFeatures(); 
-    return res.map((row) => UserProfileType.fromRow(row));
+    try {
+      const res = await axios.get(API_URL);
+      return res.data.map(row => UserProfileType.fromRow(row));
+    } catch (error) {
+      console.error('Error fetching profile types:', error);
+      return [];
+    }
   }
 
-  // Fetch a profile type by ID via API
   static async getById(profileTypeId) {
-    const api = (await import('../services/api')).default;
-
-    const res = await api.getUserProfileFeatures(); 
-    const row = res.find(p => p.profile_type_id === profileTypeId);
-
-    return UserProfileType.fromRow(row);
+    try {
+      const res = await axios.get(`${API_URL}/${profileTypeId}`);
+      return UserProfileType.fromRow(res.data);
+    } catch (error) {
+      console.error('Error fetching profile type by ID:', error);
+      return null;
+    }
   }
 
-  // Fetch a profile type by type via API
   static async getByType(type) {
-    const api = (await import('../services/api')).default;
-
-    const res = await api.getUserProfileFeatures(); 
-    const row = res.find(p => p.type === type);
-
-    return UserProfileType.fromRow(row);
+    try {
+      const res = await axios.get(`${API_URL}/type/${type}`);
+      return UserProfileType.fromRow(res.data);
+    } catch (error) {
+      console.error('Error fetching profile type by type:', error);
+      return null;
+    }
   }
+
+  // =========================
+  // UTILS
+  // =========================
+
+  static hasAvailableProfiles(profiles) {
+    return profiles.some((p) => p.isAvailable());
+  }
+
+  static findByType(profiles, type) {
+    return profiles.find((p) => p.type === type) ?? null;
+  }
+
 
   // DATA ACCESS
   // @return {Promise<UserProfileType[]>}

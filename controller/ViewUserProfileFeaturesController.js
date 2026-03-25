@@ -26,7 +26,7 @@ class ViewUserProfileFeaturesController {
 
   async fetchAllProfiles() {
     return this._safeCall(async () => {
-      const profiles = await UserProfileType.fetchAll();
+      const profiles = await UserProfileType.getAll();
 
       // Alt Flow 1a: no profiles available
       if (!UserProfileType.hasAvailableProfiles(profiles)) {
