@@ -12,7 +12,17 @@ const router = express.Router();
 // ─────────────────────────────────────────────
 router.post('/register', async (req, res) => {
   const { username, email, password, confirmPassword, selectedPlanId } = req.body;
-
+  const planId = Number(selectedPlanId);
+  
+  const PLAN_ROLE_MAP = {
+    1: 'free',
+    2: 'premium'
+  };
+  
+  const role = PLAN_ROLE_MAP[planId] || 'free';
+  console.log('selectedPlanId:', selectedPlanId, typeof selectedPlanId);
+  console.log('planId:', planId);
+  console.log('role:', role);
   try {
     // Check if username already exists
     const [existingUsername] = await db.query(
@@ -45,16 +55,12 @@ router.post('/register', async (req, res) => {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Determine role based on selectedPlanId
-    // null = FREE, otherwise PREMIUM
-    const role = selectedPlanId ? 'PREMIUM' : 'FREE';
-
     // Insert new user
     const [result] = await db.query(
       `INSERT INTO users 
-        (uuid, username, email, password_hash, role, is_active, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'free', true, NOW(), NOW())`,
-      [uuid, username.trim(), email.trim(), passwordHash]
+        (uuid, username, email, password_hash, role, membership_plan_id, is_active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, true, NOW(), NOW())`,
+      [uuid, username.trim(), email.trim(), passwordHash, role, planId]
     );
 
     const newUserId = result.insertId;
@@ -67,7 +73,7 @@ router.post('/register', async (req, res) => {
       username: username.trim(),
       email: email.trim(),
       role,
-      membershipPlanId: selectedPlanId || null,
+      membershipPlanId: planId || null,
       createdAt: new Date()
     });
 
