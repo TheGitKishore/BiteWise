@@ -6,6 +6,7 @@ import reviewRoute from './routes/reviewroute.js';
 import membershipplanRoute from './routes/membershipplanroute.js';
 import userprofiletypeRoute from './routes/userprofiletyperoute.js';
 
+
 // ✅ ADD THIS
 import { initializeDatabases } from './backend_services/api.js';
 
@@ -17,7 +18,7 @@ app.use(express.json());
 // Routes
 app.use('/api/users', userRoute);
 app.use('/api/reviews', reviewRoute);
-app.use('/api/plans', membershipplanRoute);
+app.use('/api/membership-plans', membershipplanRoute);
 app.use('/api/user-profile-types', userprofiletypeRoute);
 
 // ✅ Initialize DB before server starts

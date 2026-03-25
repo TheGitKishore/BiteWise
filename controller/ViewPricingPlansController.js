@@ -38,7 +38,7 @@ class ViewPricingPlansController {
     return this._safeCall(async () => {
 
       // Step 2: ask the entity for all plans
-      const plans = await MembershipPlan.fetchAll();
+      const plans = await MembershipPlan.getAll();
 
       // Alt Flow 1a: no active plans available
       if (!MembershipPlan.hasAvailablePlans(plans)) {
