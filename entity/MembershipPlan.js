@@ -1,4 +1,5 @@
-import { getMySQLRow, getMySQLRows } from "../services/api";
+import axios from 'axios'; //everything entity file needs this two lines of code
+const API_URL = 'http://192.168.x.x:3000/api/membership-plans';
 
 class MembershipPlan {
 
@@ -126,27 +127,20 @@ class MembershipPlan {
   // MembershipPlan instances ready for the controller to use.
   // replace the return body with a real API call once
   // backend is available
-    static async getAll() {
-    const rows = await getMySQLRows('membership_plan', {}, {
-      orderBy: 'plan_id ASC',
-    });
-
-    return rows.map((row) => MembershipPlan.fromRow(row));
+  static async getAll() {
+    const res = await axios.get(API_URL);
+    return res.data.map((row) => MembershipPlan.fromRow(row));
   }
 
   static async getById(planId) {
-    const row = await getMySQLRow('membership_plan', { plan_id: planId });
-    return MembershipPlan.fromRow(row);
+    const res = await axios.get(`${API_URL}/${planId}`);
+    return MembershipPlan.fromRow(res.data);
   }
 
   static async getActive() {
-    const rows = await getMySQLRows('membership_plan', { is_active: 1 }, {
-      orderBy: 'price ASC',
-    });
-
-    return rows.map((row) => MembershipPlan.fromRow(row));
+    const res = await axios.get(`${API_URL}/active`);
+    return res.data.map((row) => MembershipPlan.fromRow(row));
   }
-}
 
   // @return {Promise<MembershipPlan[]>}
   /*
@@ -196,5 +190,5 @@ class MembershipPlan {
   }
   */
 
-
+}
 export default MembershipPlan;

@@ -1,9 +1,11 @@
 // server.js
 import express from 'express';
 import cors from 'cors';
-import userRoutes from './routes/usersroute.js'; // <-- note the .js extension (add files from routes folder)
-import reviewRoutes from './routes/reviewroute.js';
+import userRoute from './routes/usersroute.js'; // <-- note the .js extension (add files from routes folder)
+import reviewRoute from './routes/reviewroute.js';
 import membershipplanRoute from './routes/membershipplanroute.js';
+import userprofiletypeRoute from './routes/userprofiletyperoute.js';
+
 
 // ✅ ADD THIS
 import { initializeDatabases } from './backend_services/api.js';
@@ -14,9 +16,10 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/users', userRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/plans', membershipplanRoute);
+app.use('/api/users', userRoute);
+app.use('/api/reviews', reviewRoute);
+app.use('/api/membership-plans', membershipplanRoute);
+app.use('/api/user-profile-types', userprofiletypeRoute);
 
 // ✅ Initialize DB before server starts
 const startServer = async () => {
