@@ -53,8 +53,8 @@ router.post('/register', async (req, res) => {
     const [result] = await db.query(
       `INSERT INTO users 
         (uuid, username, email, password_hash, role, is_active, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'free', true, NOW(), NOW())`,
-      [uuid, username.trim(), email.trim(), passwordHash]
+      VALUES (?, ?, ?, ?, ?, true, NOW(), NOW())`,
+      [uuid, username.trim(), email.trim(), passwordHash, role]  // ← role added here
     );
 
     const newUserId = result.insertId;
