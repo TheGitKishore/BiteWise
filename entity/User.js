@@ -16,7 +16,9 @@ class User {
     membershipPlanId = null,
     isActive         = true,
     createdAt        = null,
-    updatedAt        = null,
+    updatedAt          = null,
+    dailyCalorieLimit  = 2000,   // UC #18, #54
+    nutritionTargets   = null,   // UC #53 — { calories, protein, carbs, fat, fiber, activityLevel, goal }
   } = {}) {
     this.userId           = userId;
     this.username         = username;
@@ -31,7 +33,9 @@ class User {
     this.membershipPlanId = membershipPlanId;
     this.isActive         = isActive;
     this.createdAt        = createdAt;
-    this.updatedAt        = updatedAt;
+    this.updatedAt          = updatedAt;
+    this.dailyCalorieLimit  = dailyCalorieLimit;
+    this.nutritionTargets   = nutritionTargets;
   }
 
 
@@ -290,7 +294,85 @@ class User {
       };
     }
   }
-  
+
+
+  // UC #18, #54 — validate calorie limit input
+  // @param  {number} limit
+  // @return {{ valid: boolean, field: string|null, message: string }}
+  static validateCalorieLimit(limit) {
+    if (!limit || isNaN(limit) || Number(limit) <= 0) {
+      return { valid: false, field: 'limit', message: 'Please enter a valid calorie goal.' };
+    }
+    if (Number(limit) < 500) {
+      return { valid: false, field: 'limit', message: 'Calorie goal must be at least 500 kcal.' };
+    }
+    if (Number(limit) > 10000) {
+      return { valid: false, field: 'limit', message: 'Calorie goal must be 10,000 kcal or less.' };
+    }
+    return { valid: true, field: null, message: '' };
+  }
+
+  // UC #18, #54 — validate and save the daily calorie limit.
+  // Replace w API calls
+  /*
+    static async setDailyCalorieLimit(userId, limit) {
+      const res = await axios.put(`${API_URL}/calorie-limit`, { userId, limit });
+      return res.data;
+    }
+  */
+
+  // @param  {User}   user
+  // @param  {number} limit
+  // @return {Promise<{ success, field, message, user }>}
+  static async setDailyCalorieLimit(user, limit) {
+    const check = this.validateCalorieLimit(limit);
+    if (!check.valid) {
+      return { success: false, field: check.field, message: check.message, user: null };
+    }
+
+    const updatedUser = new this({
+      ...user,
+      dailyCalorieLimit: Number(limit),
+      updatedAt:         new Date().toISOString(),
+    });
+
+    return {
+      success: true,
+      field:   null,
+      message: `Daily calorie goal set to ${limit} kcal.`,
+      user:    updatedUser,
+    };
+  }
+
+  // UC #53 — returns the personalised nutrition targets for a premium user.
+  // Replace w API calls
+  /*
+    static async fetchNutritionTargets(userId) {
+      const res = await axios.get(`${API_URL}/nutrition-targets/${userId}`);
+      return res.data;
+    }
+  */
+
+  // @param  {User} user
+  // @return {Promise<{ success, data, message }>}
+  static async fetchNutritionTargets(user) {
+    if (!user) {
+      return { success: false, data: null, message: 'No user session found.' };
+    }
+
+    const targets = {
+      calories:      user.nutritionTargets?.calories      ?? 2546,
+      protein:       user.nutritionTargets?.protein       ?? 191,
+      carbs:         user.nutritionTargets?.carbs         ?? 255,
+      fat:           user.nutritionTargets?.fat           ?? 85,
+      fiber:         user.nutritionTargets?.fiber         ?? 30,
+      activityLevel: user.nutritionTargets?.activityLevel ?? 'Moderate',
+      goal:          user.nutritionTargets?.goal          ?? 'Maintain Weight',
+    };
+
+    return { success: true, data: targets, message: '' };
+  }
+
 }
 
 export default User;
