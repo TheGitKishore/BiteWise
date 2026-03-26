@@ -26,15 +26,22 @@ class ViewPastCalorieEntriesController {
   // @return {Promise<{ success, data, message }>}
   async fetchPastEntries(userId) {
     return this._safeCall(async () => {
-      const result = await FoodIntakeEntry.getPastEntries(userId);
+      const data = await FoodIntakeEntry.getPastEntries(userId);
 
-      if (!result.data || result.data.length === 0) {
-        return { success: false, data: [], message: 'No past calorie entries available.' };
+      // ✅ Now data is already an array
+      if (!data || data.length === 0) {
+        return {
+          success: false,
+          data: [],
+          message: 'No past calorie entries available.',
+        };
       }
 
-      return result;
+      return {
+        success: true,
+        data: data,
+      };
     });
   }
 }
-
 export default ViewPastCalorieEntriesController;

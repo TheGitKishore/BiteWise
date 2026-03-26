@@ -165,6 +165,9 @@ router.get('/history/:userId', async (req, res) => {
       .find({ userId })
       .sort({ loggedAt: -1 })
       .toArray();
+      
+    console.log("USER ID:", userId);
+    console.log("ENTRIES:", entries);      
 
     return res.json({
       success: true,

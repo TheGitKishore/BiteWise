@@ -129,7 +129,12 @@ class FoodIntakeEntry {
   static async getTodayEntries(userId) {
     try {
       const res = await axios.get(`${API_URL}/today/${userId}`);
-      return res.data.data.map(e => new FoodIntakeEntry(e));
+      return res.data.data.map(e =>
+        new FoodIntakeEntry({
+          entryId: e._id,   // 🔥 FIX HERE
+          ...e,
+        })
+      );
     } catch (err) {
       return [];
     }
@@ -140,7 +145,12 @@ class FoodIntakeEntry {
     try {
       const res = await axios.get(`${API_URL}/history/${userId}`);
       console.log("HISTORY RESPONSE:", res.data);
-      return res.data.data.map(e => new FoodIntakeEntry(e));
+      return res.data.data.map(e =>
+        new FoodIntakeEntry({
+          entryId: e._id,   // 🔥 FIX HERE
+          ...e,
+        })
+      );
     } catch (err) {
       return [];
     }
