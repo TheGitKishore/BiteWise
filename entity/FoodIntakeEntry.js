@@ -1,14 +1,18 @@
+import axios from 'axios';
+
+const API_URL = 'http://192.168.x.x:3000/api/food-entries'; // ⚠️ replace with your backend IP
+
 class FoodIntakeEntry {
   constructor({
     entryId    = null,
     userId     = null,
     foodName   = '',
     calories   = 0,
-    protein    = 0,     // g
-    carbs      = 0,     // g
-    fat        = 0,     // g
-    meal       = '',    // 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack'
-    source     = '',    // 'manual' | 'camera' | 'database'
+    protein    = 0,
+    carbs      = 0,
+    fat        = 0,
+    meal       = '',
+    source     = '',
     loggedAt   = null,
   } = {}) {
     this.entryId  = entryId;
@@ -23,12 +27,9 @@ class FoodIntakeEntry {
     this.loggedAt = loggedAt;
   }
 
-
-  // STATIC VALIDATION METHODS
-
-  // UC #16, #51 — validate manual entry fields
-  // @param  {{ foodName, calories, protein, carbs, fat, meal }}
-  // @return {{ valid: boolean, field: string|null, message: string }}
+  // =========================
+  // VALIDATION
+  // =========================
   static validateManualEntry({ foodName, calories, protein, carbs, fat, meal }) {
     if (!foodName || foodName.trim().length === 0) {
       return { valid: false, field: 'foodName', message: 'Food name is required.' };
@@ -51,12 +52,9 @@ class FoodIntakeEntry {
     return { valid: true, field: null, message: '' };
   }
 
-
-  // STATIC / COLLECTION METHODS
-
-  // UC #20, #21, #56, #57 — sum today's logged entries
-  // @param  {FoodIntakeEntry[]} entries
-  // @return {{ calories, protein, carbs, fat }}
+  // =========================
+  // SUMMARY
+  // =========================
   static getTodaySummary(entries) {
     return entries.reduce(
       (acc, e) => ({
@@ -69,128 +67,82 @@ class FoodIntakeEntry {
     );
   }
 
+  // =========================
+  // API CALLS
+  // =========================
 
-  // DATA ACCESS
-  // Replace w API calls
-
-  /*
-    static async createManual(userId, { foodName, calories, protein, carbs, fat, meal }) {
-      const res = await axios.post(`${API_URL}/food-entries`, {
-        userId, foodName, calories, protein, carbs, fat, meal, source: 'manual'
-      });
-      return res.data;
+  // ✅ Create manual entry
+  static async createManual(userId, data) {
+    const validation = FoodIntakeEntry.validateManualEntry(data);
+    if (!validation.valid) {
+      return { success: false, ...validation, data: null };
     }
 
-    static async createFromCamera(userId, { foodName, calories, protein, carbs, fat, meal }) {
-      const res = await axios.post(`${API_URL}/food-entries`, {
-        userId, foodName, calories, protein, carbs, fat, meal, source: 'camera'
+    try {
+      const res = await axios.post(`${API_URL}/manual`, {
+        userId,
+        ...data,
       });
-      return res.data;
-    }
 
-    static async recogniseFromCamera() {
+      return res.data;
+    } catch (err) {
+        console.log("CREATE MANUAL ERROR:", err.response?.data || err.message);
+          
+        return {
+          success: false,
+          message: err.response?.data?.message || 'Failed to log food entry',
+        };
+      }
+  }
+
+  // ✅ Camera recognition
+  static async recogniseFromCamera() {
+    try {
       const res = await axios.post(`${API_URL}/food-recognition`);
       return res.data;
+    } catch (err) {
+      return {
+        success: false,
+        message: 'Food recognition failed',
+      };
     }
-
-    static async getTodayEntries(userId) {
-      const res = await axios.get(`${API_URL}/food-entries/today/${userId}`);
-      return res.data.map((r) => new FoodIntakeEntry(r));
-    }
-  */
-
-  // UC #16, #51 — create a manual food intake entry
-  // @param  {number} userId
-  // @param  {{ foodName, calories, protein, carbs, fat, meal }}
-  // @return {Promise<{ success, data, message }>}
-  static async createManual(userId, { foodName, calories, protein, carbs, fat, meal }) {
-    const validation = FoodIntakeEntry.validateManualEntry({ foodName, calories, protein, carbs, fat, meal });
-    if (!validation.valid) {
-      return { success: false, field: validation.field, message: validation.message, data: null };
-    }
-
-    const entry = new FoodIntakeEntry({
-      entryId:  Date.now(),
-      userId,
-      foodName: foodName.trim(),
-      calories: Number(calories),
-      protein:  Number(protein),
-      carbs:    Number(carbs),
-      fat:      Number(fat),
-      meal,
-      source:   'manual',
-      loggedAt: new Date().toISOString(),
-    });
-
-    return {
-      success: true,
-      field:   null,
-      message: `${entry.foodName} logged to ${meal.toLowerCase()}!`,
-      data:    entry,
-    };
   }
 
-  // UC #17, #52 — simulate camera recognition; returns a detected food item
-  // In production this calls the AI recognition API
-  // @return {Promise<{ success, data, message }>}
-  static async recogniseFromCamera() {
-    const detected = {
-      foodName: 'Grilled Chicken Breast',
-      calories: 165,
-      protein:  31,
-      carbs:    0,
-      fat:      3.6,
-    };
+  // ✅ Create from camera
+  static async createFromCamera(userId, data) {
+    try {
+      const res = await axios.post(`${API_URL}/camera`, {
+        userId,
+        ...data,
+      });
 
-    return { success: true, data: detected, message: '' };
-  }
-
-  // UC #17, #52 — log the confirmed camera-recognised entry
-  // @param  {number} userId
-  // @param  {{ foodName, calories, protein, carbs, fat, meal }}
-  // @return {Promise<{ success, data, message }>}
-  static async createFromCamera(userId, { foodName, calories, protein, carbs, fat, meal }) {
-    const entry = new FoodIntakeEntry({
-      entryId:  Date.now(),
-      userId,
-      foodName: foodName.trim(),
-      calories: Number(calories),
-      protein:  Number(protein),
-      carbs:    Number(carbs),
-      fat:      Number(fat),
-      meal,
-      source:   'camera',
-      loggedAt: new Date().toISOString(),
-    });
-
-    return {
-      success: true,
-      field:   null,
-      message: `${entry.foodName} logged to ${meal.toLowerCase()}!`,
-      data:    entry,
-    };
-  }
-
-
-  // UC #19, #55 — fetch past entries grouped by date
-  // Replace w API calls
-  /*
-    static async getPastEntries(userId) {
-      const res = await axios.get(`${API_URL}/food-entries/history/${userId}`);
-      return res.data.map((r) => new FoodIntakeEntry(r));
+      return res.data;
+    } catch (err) {
+      return {
+        success: false,
+        message: 'Failed to log camera entry',
+      };
     }
-  */
+  }
 
-  // @param  {number} userId
-  // @return {Promise<{ success, data, message }>}
+  // ✅ Get today entries
+  static async getTodayEntries(userId) {
+    try {
+      const res = await axios.get(`${API_URL}/today/${userId}`);
+      return res.data.map(e => new FoodIntakeEntry(e));
+    } catch (err) {
+      return [];
+    }
+  }
+
+  // ✅ Get past entries
   static async getPastEntries(userId) {
-    const entries = [
-      new FoodIntakeEntry({ entryId: 901, userId, foodName: 'Chicken Breast', calories: 165, protein: 31, carbs: 0,  fat: 3.6, meal: 'Lunch',   source: 'manual', loggedAt: '2024-03-24' }),
-      new FoodIntakeEntry({ entryId: 902, userId, foodName: 'Apple',          calories: 95,  protein: 0.5,carbs: 25, fat: 0.3, meal: 'Snack',   source: 'manual', loggedAt: '2024-03-24' }),
-      new FoodIntakeEntry({ entryId: 903, userId, foodName: 'Banana',         calories: 105, protein: 1.3,carbs: 27, fat: 0.4, meal: 'Breakfast',source:'manual', loggedAt: '2024-03-23' }),
-    ];
-
-    return { success: true, data: entries, message: '' };
+    try {
+      const res = await axios.get(`${API_URL}/history/${userId}`);
+      return res.data.map(e => new FoodIntakeEntry(e));
+    } catch (err) {
+      return [];
+    }
   }
 }
 

@@ -5,6 +5,7 @@ import userRoute from './routes/usersroute.js'; // <-- note the .js extension (a
 import reviewRoute from './routes/reviewroute.js';
 import membershipplanRoute from './routes/membershipplanroute.js';
 import userprofiletypeRoute from './routes/userprofiletyperoute.js';
+import foodintakeentryRoute from './routes/foodintakeentryroute.js';
 
 
 // ✅ ADD THIS
@@ -20,6 +21,7 @@ app.use('/api/users', userRoute);
 app.use('/api/reviews', reviewRoute);
 app.use('/api/membership-plans', membershipplanRoute);
 app.use('/api/user-profile-types', userprofiletypeRoute);
+app.use('/api/food-entries', foodintakeentryRoute);
 
 // ✅ Initialize DB before server starts
 const startServer = async () => {

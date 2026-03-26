@@ -5,10 +5,10 @@ const db = mysql.createPool({
   host: 'localhost',
   user: 'root', //user name in mysql
   // ZM password
-  //password: '1234',
+  password: '1234',
   
   // Leonard Password
-  password: '', //password to log into database in mysql
+  //password: '', //password to log into database in mysql
   database: 'fyp' //database name you created
 });
 
