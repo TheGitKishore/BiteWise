@@ -6,6 +6,7 @@ import reviewRoute from './routes/reviewroute.js';
 import membershipplanRoute from './routes/membershipplanroute.js';
 import userprofiletypeRoute from './routes/userprofiletyperoute.js';
 import foodintakeentryRoute from './routes/foodintakeentryroute.js';
+import fooditemRoute from './routes/fooditemroute.js';
 
 
 // ✅ ADD THIS
@@ -22,6 +23,7 @@ app.use('/api/reviews', reviewRoute);
 app.use('/api/membership-plans', membershipplanRoute);
 app.use('/api/user-profile-types', userprofiletypeRoute);
 app.use('/api/food-entries', foodintakeentryRoute);
+app.use('/api/food-items', fooditemRoute);
 
 // ✅ Initialize DB before server starts
 const startServer = async () => {
