@@ -172,8 +172,7 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Remove passwordHash before sending back
-    delete user.passwordHash;
+    user.role = user.role?.toLowerCase();
 
     return res.status(200).json({
       success: true,

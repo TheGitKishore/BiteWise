@@ -136,7 +136,7 @@ const LoginScreen = ({ navigation, route }) => {
 
     if (result.success) {
       // Navigate to dashboard, passing the user session as a route param
-      const dest = result.user?.role === 'PREMIUM' ? 'PremiumUserDashboardScreen' : 'FreeUserDashboardScreen';
+      const dest = result.user?.role === 'premium' ? 'PremiumUserDashboardScreen' : 'FreeUserDashboardScreen';
       navigation.navigate(dest, {
         user:           result.user,
         successMessage: result.message,
