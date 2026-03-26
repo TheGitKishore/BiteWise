@@ -9,7 +9,7 @@ import foodintakeentryRoute from './routes/foodintakeentryroute.js';
 
 
 // ✅ ADD THIS
-import { initializeDatabases } from './backend_services/api.js';
+import { initializeDatabases } from './routes/apiroute.js';
 
 const app = express();
 

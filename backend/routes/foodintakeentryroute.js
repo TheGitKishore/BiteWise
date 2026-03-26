@@ -21,7 +21,7 @@ router.post('/manual', async (req, res) => {
     const collection = db.collection('food_logs');
 
     const doc = {
-      userId,
+      userId: Number(userId),
       foodName,
       calories: Number(calories),
       protein: Number(protein),

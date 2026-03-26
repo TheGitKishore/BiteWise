@@ -1,6 +1,6 @@
 import axios from 'axios';
-
-const API_URL = 'http://192.168.x.x:3000/api/food-entries'; // ⚠️ replace with your backend IP
+import API_CONFIG from './api_config.js';
+const API_URL = `${API_CONFIG}/food-entries`;
 
 class FoodIntakeEntry {
   constructor({
@@ -129,7 +129,7 @@ class FoodIntakeEntry {
   static async getTodayEntries(userId) {
     try {
       const res = await axios.get(`${API_URL}/today/${userId}`);
-      return res.data.map(e => new FoodIntakeEntry(e));
+      return res.data.data.map(e => new FoodIntakeEntry(e));
     } catch (err) {
       return [];
     }
@@ -139,7 +139,8 @@ class FoodIntakeEntry {
   static async getPastEntries(userId) {
     try {
       const res = await axios.get(`${API_URL}/history/${userId}`);
-      return res.data.map(e => new FoodIntakeEntry(e));
+      console.log("HISTORY RESPONSE:", res.data);
+      return res.data.data.map(e => new FoodIntakeEntry(e));
     } catch (err) {
       return [];
     }

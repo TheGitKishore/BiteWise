@@ -1,5 +1,7 @@
 import axios from 'axios'; //everything entity file needs this two lines of code
-const API_URL = 'http://192.168.x.x:3000/api/user-profile-types';
+import API_CONFIG from './api_config.js';
+const API_URL = `${API_CONFIG}/user-profile-types`;
+
 
 // For the user profile types
 export const USER_PROFILE_TYPES = Object.freeze({

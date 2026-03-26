@@ -1,5 +1,7 @@
 import axios from 'axios'; //everything entity file needs this two lines of code
-const API_URL = 'http://192.168.x.x:3000/api/users'; // ⚠️ change IP to your wifi ip 192.168.x.x (best to not show your ip address to anyone)
+import API_CONFIG from './api_config.js';
+const API_URL = `${API_CONFIG}/users`;
+
 
 class User {
   constructor({
