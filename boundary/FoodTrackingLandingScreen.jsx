@@ -4,6 +4,7 @@ import {
   StyleSheet, StatusBar, ActivityIndicator, Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import ViewFoodDatabaseController          from '../controller/ViewFoodDatabaseController';
 import CreateManualFoodEntryController     from '../controller/CreateManualFoodEntryController';
@@ -603,26 +604,52 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
 
   // UC #19 — load history when History tab is first opened
   const loadHistory = useCallback(async () => {
-    if (pastEntries.length > 0) return; // already loaded
+    if (!currentUser?.userId) return; // ✅ wait for user
     setHistLoading(true);
     setHistError('');
-    const result = await historyController.fetchPastEntries(currentUser?.userId);
+    const result = await historyController.fetchPastEntries(currentUser.userId);
     if (result.success) setPastEntries(result.data);
     else setHistError(result.message);
     setHistLoading(false);
-  }, [currentUser, pastEntries]);
+    console.log("USER ID:", currentUser?.userId);
+    console.log("FETCH RESULT:", result);
+  }, [currentUser]);
+
+  const loadTodayEntries = useCallback(async () => {
+    if (!currentUser?.userId) return;
+    const result = await historyController._safeCall(async () => {
+      return await import('../entity/FoodIntakeEntry')
+        .then(m => m.default.getTodayEntries(currentUser.userId));
+    });
+    if (result) {
+      setTodaysEntries(result);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    loadTodayEntries();
+  }, [loadTodayEntries]);  
+
+  useFocusEffect(
+    useCallback(() => {
+      loadTodayEntries();
+    }, [loadTodayEntries])
+  );  
 
   const handleTabSelect = useCallback((tab) => {
     setActiveTab(tab);
+
     if (tab === 'History') loadHistory();
-  }, [loadHistory]);
+    if (tab === "Today's Entries") loadTodayEntries(); // ✅ ADD THIS
+  }, [loadHistory, loadTodayEntries]);
 
   // Called by Manual and Camera modals on success
   const handleEntryLogged = useCallback((message, entry) => {
     setShowManual(false);
     setShowCamera(false);
     setBanner(message);
-    setTodaysEntries((prev) => [...prev, entry]);
+    // ✅ reload from backend (source of truth)
+    loadTodayEntries();
     setActiveTab("Today's Entries");
     setTimeout(() => setBanner(''), 4000);
   }, []);
