@@ -1,9 +1,14 @@
-import React from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import UserController from '../controller/UserController';
+import FoodIntakeEntry from '../entity/FoodIntakeEntry';
+
+const userController = new UserController();
 
 // Design Tokens
 const C = {
@@ -325,19 +330,66 @@ const gs = StyleSheet.create({
 // MAIN SCREEN
 
 const FreeUserDashboardScreen = ({ navigation, route }) => {
-  const user           = route?.params?.user           || null;
+  const initialUser = route?.params?.user || null;
+  const [currentUser, setCurrentUser] = useState(initialUser);
+  const [goal, setGoal] = useState(initialUser?.dailyCalorieLimit ?? 2000);
   const successMessage = route?.params?.successMessage || '';
-  const isFree         = user?.role !== 'PREMIUM';
+  const isFree = currentUser?.role !== 'PREMIUM';
+  const [todaysEntries, setTodaysEntries] = useState([]);
 
   // Sprint 2 will replace with real FoodIntakeEntry data
-  const consumed = 0;
-  const goal     = 2000;
+  const [consumed, setConsumed] = useState(0);
+
+  const refreshUserData = useCallback(async () => {
+    if (!currentUser?.userId) return;
+
+    try {
+      const result = await userController.getUser(currentUser.userId);
+      const userData = result?.data || result?.user;
+
+      if (userData) {
+        setCurrentUser(userData);
+        setGoal(userData.dailyCalorieLimit ?? 2000);
+      }
+    } catch (err) {
+      console.log("Dashboard refresh failed:", err);
+    }
+  }, [currentUser?.userId]);
+
+  const fetchTodayEntries = async () => {
+    try {
+      if (!currentUser?.userId) return;
+
+      const entries = await FoodIntakeEntry.getTodayEntries(currentUser.userId);
+
+      setTodaysEntries(entries || []);
+
+      const { calories } =
+        FoodIntakeEntry.getTodaySummary(entries || []);
+
+      setConsumed(calories);
+
+    } catch (err) {
+      console.log("Failed to load entries", err);
+      setTodaysEntries([]);
+      setConsumed(0);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!currentUser?.userId) return;
+    
+      refreshUserData();
+      fetchTodayEntries();
+    }, [currentUser?.userId])
+  );
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
 
-      <NavBar onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user })} />
+      <NavBar onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user: currentUser })} />
       <Banner message={successMessage} />
 
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
@@ -345,7 +397,7 @@ const FreeUserDashboardScreen = ({ navigation, route }) => {
         {/* Greeting */}
         <View style={styles.greetingWrap}>
           <Text style={styles.greetingTitle}>
-            Welcome back, {user?.username || 'User'}!
+            Welcome back, {currentUser?.username || 'User'}!
           </Text>
           <Text style={styles.greetingSub}>
             Subscription:{' '}
@@ -366,37 +418,37 @@ const FreeUserDashboardScreen = ({ navigation, route }) => {
           icon="🍴"
           title="Food Tracking"
           subtitle="Log your meals and track calories"
-          onPress={() => navigation.navigate('FoodTrackingLandingScreen', { user })}
+          onPress={() => navigation.navigate('FoodTrackingLandingScreen', { user: currentUser})}
         />
         <FeatureTile
           icon="📅"
           title="Meal Plans"
           subtitle="Create and manage meal plans"
-          onPress={() => navigation.navigate('MealPlansScreen', { user })}
+          onPress={() => navigation.navigate('MealPlansScreen', { user: currentUser})}
         />
         <FeatureTile
           icon="📖"
           title="Recipes"
           subtitle="Browse healthy recipe ideas"
-          onPress={() => navigation.navigate('RecipesScreen', { user })}
+          onPress={() => navigation.navigate('RecipesScreen', { user: currentUser})}
         />
         <FeatureTile
           icon="👨‍🍳"
           title="My Recipes"
           subtitle="Create your own recipes"
-          onPress={() => navigation.navigate('MyRecipesScreen', { user })}
+          onPress={() => navigation.navigate('MyRecipesScreen', { user: currentUser})}
         />
         <FeatureTile
           icon="📈"
           title="Reports"
           subtitle="View your progress over time"
-          onPress={() => navigation.navigate('ReportsScreen', { user })}
+          onPress={() => navigation.navigate('ReportsScreen', { user: currentUser})}
         />
         <FeatureTile
           icon="👤"
           title="Account"
           subtitle="Manage your profile and settings"
-          onPress={() => navigation.navigate('AccountSettingsScreen', { user })}
+          onPress={() => navigation.navigate('AccountSettingsScreen', { user: currentUser})}
         />
 
         {/* Getting Started */}

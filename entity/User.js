@@ -239,38 +239,38 @@ class User {
   // @param  {User}   user
   // @param  {{ username: string, email: string }}
   // @return {Promise<{ success, field, message, user }>}
-  static async updateAccountDetails(user, { username, email }) {
-
-    const usernameCheck = this.validateUsername(username);
-    if (!usernameCheck.valid) {
-      return { success: false, field: 'username', message: usernameCheck.message, user: null };
-    }
-
-    const emailCheck = this.validateEmail(email);
-    if (!emailCheck.valid) {
-      return { success: false, field: 'email', message: emailCheck.message, user: null };
-    }
-
-    try {
-        const res = await axios.put(`${API_URL}/update`, {
-          userId: user.userId,
-          username,
-          email
-        });
-      
-        return res.data;
-      
-      } catch (err) {
-        if (err.response?.data) return err.response.data;
-      
-        return {
-          success: false,
-          field: null,
-          message: 'Account details updated failed.',
-          user: null
-        };
-      }
-    }
+//  static async updateAccountDetails(user, { username, email }) {
+//
+//    const usernameCheck = this.validateUsername(username);
+//    if (!usernameCheck.valid) {
+//      return { success: false, field: 'username', message: usernameCheck.message, user: null };
+//    }
+//
+//    const emailCheck = this.validateEmail(email);
+//    if (!emailCheck.valid) {
+//      return { success: false, field: 'email', message: emailCheck.message, user: null };
+//    }
+//
+//    try {
+//        const res = await axios.put(`${API_URL}/update`, {
+//          userId: user.userId,
+//          username,
+//          email
+//        });
+//      
+//        return res.data;
+//      
+//      } catch (err) {
+//        if (err.response?.data) return err.response.data;
+//      
+//        return {
+//          success: false,
+//          field: null,
+//          message: 'Account details updated failed.',
+//          user: null
+//        };
+//      }
+//    }
 
   // UC #14, #49 — permanently removes the user account.
   // TODO: replace with real API call.
@@ -302,7 +302,7 @@ class User {
   // @param  {number} limit
   // @return {{ valid: boolean, field: string|null, message: string }}
   static validateCalorieLimit(limit) {
-    if (!limit || isNaN(limit) || Number(limit) <= 0) {
+    if (limit === null || limit === undefined || isNaN(limit) || Number(limit) <= 0) {
       return { valid: false, field: 'limit', message: 'Please enter a valid calorie goal.' };
     }
     if (Number(limit) < 500) {
@@ -332,18 +332,47 @@ class User {
       return { success: false, field: check.field, message: check.message, user: null };
     }
 
-    const updatedUser = new this({
-      ...user,
-      dailyCalorieLimit: Number(limit),
-      updatedAt:         new Date().toISOString(),
-    });
+    try {
+      const res = await axios.put(`${API_URL}/calorie-limit`, {
+        userId: user.userId,
+        dailyCalorieLimit: Number(limit)
+      });
 
-    return {
-      success: true,
-      field:   null,
-      message: `Daily calorie goal set to ${limit} kcal.`,
-      user:    updatedUser,
-    };
+      return res.data;
+
+    } catch (err) {
+      if (err.response?.data) return err.response.data;
+
+      return {
+        success: false,
+        field: null,
+        message: 'Failed to update calorie limit.',
+        user: null
+      };
+    }
+  }
+
+
+  // UC #12, #47 — fetch single user from MySQL
+  static async getUser(userId) {
+    if (!userId) {
+      return { success: false, data: null, message: 'User ID is required.' };
+    }
+  
+    try {
+      const res = await axios.get(`${API_URL}/${userId}`);
+    
+      return {
+        success: true,
+        data: res.data.user || res.data.data || res.data
+      };
+    } catch (err) {
+      return {
+        success: false,
+        data: null,
+        message: err.response?.data?.message || 'Failed to fetch user.'
+      };
+    }
   }
 
   // UC #53 — returns the personalised nutrition targets for a premium user.

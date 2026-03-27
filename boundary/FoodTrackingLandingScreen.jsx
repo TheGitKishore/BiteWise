@@ -13,6 +13,7 @@ import SetDailyCalorieLimitController      from '../controller/SetDailyCalorieLi
 import ViewPastCalorieEntriesController    from '../controller/ViewPastCalorieEntriesController';
 import ViewCurrentCalorieIntakeController  from '../controller/ViewCurrentCalorieIntakeController';
 import CheckDailyCalorieTargetController   from '../controller/CheckDailyCalorieTargetController';
+import UserController from '../controller/UserController';
 
 const dbController          = new ViewFoodDatabaseController();
 const manualController      = new CreateManualFoodEntryController();
@@ -21,6 +22,7 @@ const goalController        = new SetDailyCalorieLimitController();
 const historyController     = new ViewPastCalorieEntriesController();
 const intakeController      = new ViewCurrentCalorieIntakeController();
 const targetController      = new CheckDailyCalorieTargetController();
+const userController = new UserController();
 
 const MEAL_OPTIONS = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 const TABS         = ['Log Food', "Today's Entries", 'History'];
@@ -626,6 +628,23 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
     }
   }, [currentUser]);
 
+  const refreshUserData = useCallback(async () => {
+    if (!currentUser?.userId) return;
+  
+    try {
+      const result = await userController.getUser(currentUser.userId); // ✅ FIXED
+    
+      const userData = result?.data || result?.user;
+    
+      if (userData) {
+        setCurrentUser(userData);
+        setDailyGoal(userData.dailyCalorieLimit || 2000);
+      }
+    } catch (err) {
+      console.log("Failed to refresh user:", err);
+    }
+  }, [currentUser]);
+
   useEffect(() => {
     loadTodayEntries();
   }, [loadTodayEntries]);  
@@ -633,8 +652,9 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
   useFocusEffect(
     useCallback(() => {
       loadTodayEntries();
-    }, [loadTodayEntries])
-  );  
+      refreshUserData();   // ✅ ADD THIS
+    }, [loadTodayEntries, refreshUserData])
+  );
 
   const handleTabSelect = useCallback((tab) => {
     setActiveTab(tab);

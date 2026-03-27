@@ -209,6 +209,7 @@ router.get('/:userId', async (req, res) => {
         profile_type   AS profileType,
         role,
         membership_plan_id AS membershipPlanId,
+        daily_calorie_limit AS dailyCalorieLimit,
         is_active      AS isActive,
         created_at     AS createdAt,
         updated_at     AS updatedAt
@@ -350,6 +351,44 @@ router.delete('/delete/:userId', async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Account deletion failed.'
+    });
+  }
+});
+
+router.put('/calorie-limit', async (req, res) => {
+  const { userId, dailyCalorieLimit } = req.body;
+
+  try {
+    await db.query(
+      `UPDATE users 
+       SET daily_calorie_limit = ?, updated_at = NOW()
+       WHERE user_id = ?`,
+      [dailyCalorieLimit, userId]
+    );
+
+    const [rows] = await db.query(
+      `SELECT 
+        user_id AS userId,
+        username,
+        email,
+        daily_calorie_limit AS dailyCalorieLimit
+       FROM users
+       WHERE user_id = ?`,
+      [userId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Calorie limit updated successfully.',
+      user: rows[0]
+    });
+
+  } catch (err) {
+    console.error('[PUT /calorie-limit]', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update calorie limit.',
+      user: null
     });
   }
 });
