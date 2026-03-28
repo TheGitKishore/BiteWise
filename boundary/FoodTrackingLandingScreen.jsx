@@ -455,7 +455,13 @@ const cm = StyleSheet.create({
 
 // FOOD DATABASE SECTION — UC #15
 
-const FoodDatabaseSection = ({ allItems, isLoading, errorMsg }) => {
+const FoodDatabaseSection = ({ 
+  allItems,
+  isLoading,
+  errorMsg,
+  userId,
+  onEntryLogged
+}) => {
   const [search,     setSearch]     = useState('');
   const [expanded,   setExpanded]   = useState(null);
   const [quantities, setQuantities] = useState({});
@@ -464,8 +470,24 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg }) => {
   const handleAdd = (item) => { setExpanded(item.foodItemId); setQuantities((p) => ({ ...p, [item.foodItemId]: p[item.foodItemId] || 1 })); };
   const handleInc = (id)   => setQuantities((p) => ({ ...p, [id]: (p[id] || 1) + 1 }));
   const handleDec = (id)   => setQuantities((p) => ({ ...p, [id]: Math.max(1, (p[id] || 1) - 1) }));
-  const handleLog = ()     => setExpanded(null);
+  const handleLog = async (item) => {
+    if (!userId) return; // safety check
+    const qty = quantities[item.foodItemId] || 1;
+    console.log("Logging item:", item.name, "Qty:", qty);
+    const result = await manualController.createManualEntry(userId, {
+      foodName: item.name,
+      calories: item.calories * qty,
+      protein: item.protein * qty,
+      carbs: item.carbs * qty,
+      fat: item.fat * qty,
+      meal: 'Lunch', // or dynamic later
+    });
 
+    if (result.success) {
+      setExpanded(null);
+      onEntryLogged(result.message, result.data);
+    }
+  };
   if (isLoading) return <ActivityIndicator size="small" color={C.purple} style={{ marginTop: 16 }} />;
   if (errorMsg)  return <Text style={{ color: C.errorText, textAlign: 'center', marginTop: 16 }}>{errorMsg}</Text>;
 
@@ -496,11 +518,17 @@ const db = StyleSheet.create({
 
 // LOG FOOD TAB
 
-const LogFoodTab = ({ user, allItems, dbLoading, dbError, onOpenManual, onOpenCamera }) => (
+const LogFoodTab = ({ user, allItems, dbLoading, dbError, onOpenManual, onOpenCamera, onEntryLogged }) => (
   <View>
     <ActionTile icon="➕"  title="Manual Entry"   subtitle="Manually log food details"      onPress={onOpenManual} />
     <ActionTile icon="📷" title="Camera Capture" subtitle="Take a photo to recognize food" onPress={onOpenCamera} />
-    <FoodDatabaseSection allItems={allItems} isLoading={dbLoading} errorMsg={dbError} />
+    <FoodDatabaseSection
+      allItems={allItems}
+      isLoading={dbLoading}
+      errorMsg={dbError}
+      userId={user?.userId}
+      onEntryLogged={onEntryLogged}
+    />
   </View>
 );
 
@@ -672,7 +700,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
     loadTodayEntries();
     setActiveTab("Today's Entries");
     setTimeout(() => setBanner(''), 4000);
-  }, []);
+  }, [loadTodayEntries]);
 
   // UC #18 — goal saved
   const handleGoalSaved = useCallback((message, updatedUser) => {
@@ -730,7 +758,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
 
         <TabBar activeTab={activeTab} onSelect={handleTabSelect} />
 
-        {activeTab === 'Log Food'        && <LogFoodTab user={currentUser} allItems={allItems} dbLoading={dbLoading} dbError={dbError} onOpenManual={() => setShowManual(true)} onOpenCamera={() => setShowCamera(true)} />}
+        {activeTab === 'Log Food'        && <LogFoodTab user={currentUser} allItems={allItems} dbLoading={dbLoading} dbError={dbError} onOpenManual={() => setShowManual(true)} onOpenCamera={() => setShowCamera(true)} onEntryLogged={handleEntryLogged}/>}
         {activeTab === "Today's Entries" && <TodaysEntriesTab entries={todaysEntries} />}
         {activeTab === 'History'         && <HistoryTab pastEntries={pastEntries} isLoading={histLoading} errorMsg={histError} />}
 
