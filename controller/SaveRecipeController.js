@@ -29,7 +29,11 @@ class SaveRecipeController {
   // @param  {Recipe} recipe
   // @return {Promise<{ success, message, isPremiumGate }>}
   async saveRecipe(role, userId, recipe) {
-    if (role !== 'PREMIUM') {
+    console.log("SAVE CALL:", userId, recipe);
+    console.log("ROLE:", role);
+    console.log("USER:", userId);
+    console.log("RECIPE:", recipe);
+    if (role !== 'premium') {
       return {
         success:       false,
         message:       'Saving recipes is a Premium feature',

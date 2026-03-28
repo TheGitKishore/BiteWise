@@ -8,7 +8,7 @@ import userprofiletypeRoute from './routes/userprofiletyperoute.js';
 import foodintakeentryRoute from './routes/foodintakeentryroute.js';
 import fooditemRoute from './routes/fooditemroute.js';
 import exerciseentryRoute from './routes/exerciseentryroute.js';
-
+import recipeRoute from './routes/reciperoute.js'
 
 // ✅ ADD THIS
 import { initializeDatabases } from './routes/apiroute.js';
@@ -26,6 +26,7 @@ app.use('/api/user-profile-types', userprofiletypeRoute);
 app.use('/api/food-entries', foodintakeentryRoute);
 app.use('/api/food-items', fooditemRoute);
 app.use('/api/exercise-entries', exerciseentryRoute);
+app.use('/api/recipes', recipeRoute);
 
 // ✅ Initialize DB before server starts
 const startServer = async () => {
