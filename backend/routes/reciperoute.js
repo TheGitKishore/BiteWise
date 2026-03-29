@@ -10,7 +10,7 @@ const getCollections = () => {
   const dbMongo = getDB();
   return {
     recipes: dbMongo.collection('recipes'),
-    saved: dbMongo.collection('saved_recipes'),
+    savedRecipes: dbMongo.collection('saved_recipes'),
   };
 };
 
@@ -58,8 +58,33 @@ router.post('/', async (req, res) => {
 // ─────────────────────────────────────────────
 router.post('/save', async (req, res) => {
   try {
-    const { saved } = getCollections();
+    const { savedRecipes } = getCollections();
     const { userId, recipeId } = req.body;
+
+    // ✅ Debug log (correct place)
+    console.log("RECIPE ID RECEIVED:", recipeId);
+    console.log("TYPE:", typeof recipeId);
+
+    // ✅ Validate ObjectId
+    if (!ObjectId.isValid(recipeId)) {
+      return res.status(400).json({
+        message: 'Invalid recipeId',
+      });
+    }
+
+    // ✅ Prevent duplicate save
+    const [rows] = await db.execute(
+      `SELECT * FROM saved_recipes 
+       WHERE user_id = ? AND recipe_mongo_id = ?`,
+      [userId, recipeId.toString()]
+    );
+
+    if (rows.length > 0) {
+      return res.json({
+        success: false,
+        message: 'Recipe already saved',
+      });
+    }
 
     // 1. Save in MongoDB (optional)
     const mongoEntry = {
@@ -67,11 +92,11 @@ router.post('/save', async (req, res) => {
       recipeId,
       savedAt: new Date(),
     };
-    await saved.insertOne(mongoEntry);
+    await savedRecipes.insertOne(mongoEntry);
 
-    // 2. Save in MySQL (using db.execute)
+    // 2. Save in MySQL
     await db.execute(
-      `INSERT INTO user_saved_recipes (user_id, recipe_mongo_id)
+      `INSERT INTO saved_recipes (user_id, recipe_mongo_id)
        VALUES (?, ?)`,
       [userId, recipeId.toString()]
     );
@@ -83,7 +108,12 @@ router.post('/save', async (req, res) => {
     });
 
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("SAVE ERROR FULL:", err);
+    res.status(500).json({
+      message: err.message,
+      sqlMessage: err.sqlMessage,
+      code: err.code,
+    });
   }
 });
 
@@ -98,7 +128,7 @@ router.get('/saved/:userId', async (req, res) => {
 
     // 1. Get saved recipe IDs from MySQL
     const [rows] = await db.execute(
-      `SELECT recipe_mongo_id FROM user_saved_recipes WHERE user_id = ?`,
+      `SELECT recipe_mongo_id FROM saved_recipes WHERE user_id = ?`,
       [userId]
     );
 
@@ -109,10 +139,11 @@ router.get('/saved/:userId', async (req, res) => {
     }
 
     // 2. Fetch recipes from MongoDB
-    const data = await recipes
-      .find({ _id: { $in: recipeIds.map(id => new ObjectId(id)) } })
-      .toArray();
+    const validIds = recipeIds.filter(ObjectId.isValid);
 
+    const data = await recipes
+      .find({ _id: { $in: validIds.map(id => new ObjectId(id)) } })
+      .toArray();
     res.json(data);
 
   } catch (err) {

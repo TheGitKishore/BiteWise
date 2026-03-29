@@ -151,20 +151,17 @@ class Recipe {
   // @return {Promise<{ success, data, message }>}
 // UC #22, #61 — fetch all recipes
   static async fetchAll() {
-    try {
-      const res = await axios.get(API_URL);
-      return {
-        success: true,
-        data: res.data.map((r) => new Recipe(r)),
-        message: '',
-      };
-    } catch (err) {
-      return {
-        success: false,
-        data: [],
-        message: err.message || 'Failed to fetch recipes',
-      };
-    }
+    const res = await axios.get(API_URL);
+    
+    return {
+      success: true,
+      data: res.data.map((r) =>
+        new Recipe({
+          ...r,
+          recipeId: r._id?.toString() || null, // 🔥 FORCE Mongo ID ONLY
+        })
+      ),
+    };
   }
 
 

@@ -31,18 +31,30 @@ class SaveRecipeController {
   async saveRecipe(role, userId, recipe) {
     console.log("SAVE CALL:", userId, recipe);
     console.log("ROLE:", role);
-    console.log("USER:", userId);
-    console.log("RECIPE:", recipe);
+  
     if (role !== 'premium') {
       return {
-        success:       false,
-        message:       'Saving recipes is a Premium feature',
+        success: false,
+        message: 'Saving recipes is a Premium feature',
         isPremiumGate: true,
       };
     }
-
+  
     return this._safeCall(async () => {
-      const result = await Recipe.saveRecipe(userId, recipe);
+      const recipeId = recipe?.recipeId || recipe?._id;
+    
+      if (!recipeId) {
+        return {
+          success: false,
+          message: 'Invalid recipe: missing recipeId',
+        };
+      }
+    
+      const result = await Recipe.saveRecipe(userId, {
+        ...recipe,
+        recipeId,
+      });
+    
       return { ...result, isPremiumGate: false };
     });
   }
