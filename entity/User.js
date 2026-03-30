@@ -239,38 +239,38 @@ class User {
   // @param  {User}   user
   // @param  {{ username: string, email: string }}
   // @return {Promise<{ success, field, message, user }>}
-//  static async updateAccountDetails(user, { username, email }) {
-//
-//    const usernameCheck = this.validateUsername(username);
-//    if (!usernameCheck.valid) {
-//      return { success: false, field: 'username', message: usernameCheck.message, user: null };
-//    }
-//
-//    const emailCheck = this.validateEmail(email);
-//    if (!emailCheck.valid) {
-//      return { success: false, field: 'email', message: emailCheck.message, user: null };
-//    }
-//
-//    try {
-//        const res = await axios.put(`${API_URL}/update`, {
-//          userId: user.userId,
-//          username,
-//          email
-//        });
-//      
-//        return res.data;
-//      
-//      } catch (err) {
-//        if (err.response?.data) return err.response.data;
-//      
-//        return {
-//          success: false,
-//          field: null,
-//          message: 'Account details updated failed.',
-//          user: null
-//        };
-//      }
-//    }
+  static async updateAccountDetails(user, { username, email }) {
+
+    const usernameCheck = this.validateUsername(username);
+    if (!usernameCheck.valid) {
+      return { success: false, field: 'username', message: usernameCheck.message, user: null };
+    }
+
+    const emailCheck = this.validateEmail(email);
+    if (!emailCheck.valid) {
+      return { success: false, field: 'email', message: emailCheck.message, user: null };
+    }
+
+    try {
+        const res = await axios.put(`${API_URL}/update`, {
+          userId: user.userId,
+          username,
+          email
+        });
+      
+        return res.data;
+      
+      } catch (err) {
+        if (err.response?.data) return err.response.data;
+      
+        return {
+          success: false,
+          field: null,
+          message: 'Account details updated failed.',
+          user: null
+        };
+      }
+    }
 
   // UC #14, #49 — permanently removes the user account.
   // TODO: replace with real API call.
