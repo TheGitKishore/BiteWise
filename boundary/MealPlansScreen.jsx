@@ -9,11 +9,13 @@ import ViewMealPlansController    from '../controller/ViewMealPlansController';
 import CreateMealPlanController   from '../controller/CreateMealPlanController';
 import GenerateMealPlanController from '../controller/GenerateMealPlanController';
 import DeleteMealPlanController   from '../controller/DeleteMealPlanController';
+import UpdateMealPlanController from '../controller/UpdateMealPlanController';
 
 const viewCtrl     = new ViewMealPlansController();
 const createCtrl   = new CreateMealPlanController();
 const generateCtrl = new GenerateMealPlanController();
 const deleteCtrl   = new DeleteMealPlanController();
+const updateCtrl = new UpdateMealPlanController();
 
 const C = {
   purple:      '#7C3AED',
@@ -253,7 +255,7 @@ const ag = StyleSheet.create({
 
 
 // Meal plan card — with View Details / Edit / Delete actions
-const MealPlanCard = ({ plan, isPremium, onDelete, onViewDetails }) => (
+const MealPlanCard = ({ plan, isPremium, onDelete, onViewDetails, onEdit }) => (
   <View style={mc.card}>
     <View style={mc.titleRow}>
       <Text style={mc.title}>{plan.name}</Text>
@@ -281,7 +283,11 @@ const MealPlanCard = ({ plan, isPremium, onDelete, onViewDetails }) => (
       </TouchableOpacity>
       {/* Edit — Premium only (#74) */}
       {isPremium && (
-        <TouchableOpacity style={mc.editBtn} onPress={() => {}} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={mc.editBtn}
+          onPress={() => onEdit(plan)}
+          activeOpacity={0.8}
+        >
           <Text style={mc.editBtnText}>✏ Edit</Text>
         </TouchableOpacity>
       )}
@@ -319,7 +325,7 @@ const mc = StyleSheet.create({
 
 const MealPlansScreen = ({ navigation, route }) => {
   const user      = route?.params?.user || null;
-  const isPremium = user?.role === 'PREMIUM';
+  const isPremium = user?.role === 'premium';
 
   const [plans,         setPlans]         = useState([]);
   const [isLoading,     setIsLoading]     = useState(true);
@@ -327,6 +333,7 @@ const MealPlansScreen = ({ navigation, route }) => {
   const [showCreate,    setShowCreate]    = useState(false);
   const [showGenerate,  setShowGenerate]  = useState(false);
   const [viewingPlan,   setViewingPlan]   = useState(null); // UC #73
+  const [editingPlan, setEditingPlan] = useState(null);
 
   useEffect(() => {
     viewCtrl.fetchMealPlans(user?.userId).then((result) => {
@@ -344,6 +351,193 @@ const MealPlansScreen = ({ navigation, route }) => {
     setPlans((prev) => [...prev, plan]);
     showBanner(message);
   }, []);
+
+  const EditPlanModal = ({ visible, plan, onClose, onSuccess }) => {
+    const [name,        setName]        = useState('');
+    const [description, setDescription] = useState('');
+    const [numDays,     setNumDays]     = useState(7);
+    const [days,        setDays]        = useState([]);
+    const [fieldError,  setFieldError]  = useState('');
+    const [isLoading,   setIsLoading]   = useState(false);
+
+    useEffect(() => {
+      if (!plan) return;
+
+      setName(plan.name || '');
+      setDescription(plan.description || '');
+      setNumDays(plan.numDays || 7);
+
+      const safeDays = Array.from({ length: plan.numDays || 7 }, (_, i) => {
+        const existing = plan.days?.[i] || {};
+        return {
+          day: i + 1,
+          breakfast: existing.breakfast || '',
+          lunch: existing.lunch || '',
+          dinner: existing.dinner || '',
+          snack: existing.snack || '',
+        };
+      });
+
+      setDays(safeDays);
+    }, [plan]);
+
+    const updateMeal = (dayIdx, slot, value) => {
+      setDays((prev) => {
+        const updated = [...prev];
+        updated[dayIdx] = { ...updated[dayIdx], [slot.toLowerCase()]: value };
+        return updated;
+      });
+    };
+
+    const handleUpdate = async () => {
+      setFieldError('');
+      setIsLoading(true);
+
+      const result = await updateCtrl.updateMealPlan(plan.planId, {
+        name,
+        description,
+        numDays,
+        days,
+      });
+
+      setIsLoading(false);
+
+      if (result.success) {
+        onSuccess(result.message, result.data);
+        onClose();
+      } else {
+        setFieldError(result.message);
+      }
+    };
+
+    const resetAndClose = () => {
+      setName('');
+      setDescription('');
+      setDays([]);
+      setFieldError('');
+      onClose();
+    };
+
+    useEffect(() => {
+      setDays(prev => {
+        const updated = Array.from({ length: numDays }, (_, i) => {
+          const existing = prev[i] || {};
+          return {
+            day: i + 1,
+            breakfast: existing.breakfast || '',
+            lunch: existing.lunch || '',
+            dinner: existing.dinner || '',
+            snack: existing.snack || '',
+          };
+        });
+        return updated;
+      });
+    }, [numDays]);    
+
+    if (!plan) return null;
+
+    return (
+      <ModalSheet
+        visible={visible}
+        title="Edit Meal Plan"
+        subtitle="Update your existing meal plan"
+        onClose={resetAndClose}
+      >
+        <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: 500 }}>
+
+          {/* SAME AS CREATE */}
+          <Field
+            label="Plan Name"
+            value={name}
+            onChangeText={setName}
+            placeholder="My Weekly Plan"
+            error={fieldError}
+          />
+
+          <Field
+            label="Description (Optional)"
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Describe your meal plan..."
+            multiline
+          />
+
+          {/* SAME DAY SELECTOR */}
+          <Text style={{ fontSize:13, fontWeight:'600', color:C.dark, marginBottom:8 }}>
+            Number of Days
+          </Text>
+
+          <View style={cp.dayRow}>
+            {DAY_OPTIONS.map((opt) => (
+              <TouchableOpacity
+                key={opt.value}
+                style={[
+                  cp.dayChip,
+                  numDays === opt.value && cp.dayChipActive
+                ]}
+                onPress={() => setNumDays(opt.value)}
+                activeOpacity={0.8}
+              >
+                <Text style={[
+                  cp.dayChipText,
+                  numDays === opt.value && cp.dayChipTextActive
+                ]}>
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* MEAL DETAILS */}
+          <Text style={{ fontSize:13, color:C.subtle, marginBottom:10, marginTop:4 }}>
+            Meal Details
+          </Text>
+
+          {days.map((day, i) => (
+            <View key={i}>
+              <Text style={cp.dayHeading}>Day {day.day}</Text>
+
+              {MEAL_SLOTS.map((slot) => (
+                <View key={slot} style={cp.mealRow}>
+                  <Text style={cp.mealSlot}>{slot}</Text>
+
+                  <TextInput
+                    style={cp.mealInput}
+                    value={day[slot.toLowerCase()] || ''}
+                    onChangeText={(v) => updateMeal(i, slot, v)}
+                    placeholder={
+                      slot === 'Breakfast'
+                        ? 'e.g., Oatmeal with berries'
+                        : slot === 'Lunch'
+                        ? 'e.g., Grilled chicken salad'
+                        : slot === 'Dinner'
+                        ? 'e.g., Salmon with vegetables'
+                        : 'e.g., Greek yogurt'
+                    }
+                    placeholderTextColor={C.subtle}
+                    autoCorrect={false}
+                  />
+                </View>
+              ))}
+            </View>
+          ))}
+
+          {/* SAVE BUTTON (same style as create) */}
+          <TouchableOpacity
+            style={[cp.createBtn, isLoading && cp.createBtnDisabled]}
+            onPress={handleUpdate}
+            activeOpacity={0.85}
+            disabled={isLoading}
+          >
+            <Text style={cp.createBtnText}>
+              {isLoading ? 'Saving...' : 'Save Changes'}
+            </Text>
+          </TouchableOpacity>
+
+        </ScrollView>
+      </ModalSheet>
+    );
+  };
 
   // UC #30, #75 — delete
   const handleDelete = useCallback((planId) => {
@@ -412,6 +606,17 @@ const MealPlansScreen = ({ navigation, route }) => {
         onSuccess={handlePlanAdded}
       />
 
+      <EditPlanModal
+        visible={!!editingPlan}
+        plan={editingPlan}
+        onClose={() => setEditingPlan(null)}
+        onSuccess={async (msg) => {
+          const result = await viewCtrl.fetchMealPlans(user?.userId);
+          if (result.success) setPlans(result.data);
+          showBanner(msg);
+        }}
+      />
+
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
 
         {/* Page title */}
@@ -455,6 +660,7 @@ const MealPlansScreen = ({ navigation, route }) => {
               isPremium={isPremium}
               onDelete={handleDelete}
               onViewDetails={setViewingPlan}
+              onEdit={setEditingPlan}
             />
           ))
         )}
