@@ -96,9 +96,22 @@ class FoodIntakeEntry {
   }
 
   // ✅ Camera recognition
-  static async recogniseFromCamera() {
+  static async recogniseFromCamera(photo) {
     try {
-      const res = await axios.post(`${API_URL}/food-recognition`);
+      const formData = new FormData();
+    
+      formData.append('image', {
+        uri: photo.uri,
+        name: 'food.jpg',
+        type: 'image/jpeg',
+      });
+    
+      const res = await axios.post(`${API_URL}/food-recognition`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    
       return res.data;
     } catch (err) {
       return {

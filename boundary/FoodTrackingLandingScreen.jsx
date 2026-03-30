@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
 import ViewFoodDatabaseController          from '../controller/ViewFoodDatabaseController';
 import CreateManualFoodEntryController     from '../controller/CreateManualFoodEntryController';
@@ -372,18 +373,43 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
   const [meal,      setMeal]      = useState('Lunch');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg,  setErrorMsg]  = useState('');
+  const [permission, requestPermission] = useCameraPermissions();
+  const [cameraRef, setCameraRef] = useState(null);
 
   const reset = () => { setStep('capture'); setDetected(null); setFoodName(''); setMeal('Lunch'); setErrorMsg(''); };
   const handleClose = () => { reset(); onClose(); };
 
   const handleCapture = useCallback(async () => {
-    setIsLoading(true);
-    setErrorMsg('');
-    const result = await cameraController.recogniseFood();
-    setIsLoading(false);
-    if (result.success) { setDetected(result.data); setFoodName(result.data.foodName); setStep('confirm'); }
-    else setErrorMsg(result.message || 'Could not recognise food. Please try again or enter manually.');
-  }, []);
+    if (!cameraRef) return;
+
+    try {
+      setIsLoading(true);
+      setErrorMsg('');
+
+      const photo = await cameraRef.takePictureAsync({
+        base64: true,
+        quality: 0.5,
+      });
+
+      console.log("PHOTO:", photo.uri);
+
+      // 🔥 Send to backend for recognition
+      const result = await cameraController.recogniseFood(photo);
+
+      setIsLoading(false);
+
+      if (result.success) {
+        setDetected(result.data);
+        setFoodName(result.data.foodName);
+        setStep('confirm');
+      } else {
+        setErrorMsg(result.message || 'Recognition failed');
+      }
+    } catch (err) {
+      setIsLoading(false);
+      setErrorMsg('Camera error occurred');
+    }
+  }, [cameraRef]);
 
   const handleConfirmLog = useCallback(async () => {
     if (!detected) return;
@@ -393,6 +419,21 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
     if (result.success) { reset(); onSuccess(result.message, result.data); }
   }, [detected, foodName, meal, userId]);
 
+  if (!permission) {
+    return <View />;
+  }
+
+  if (!permission.granted) {
+    return (
+      <View>
+        <Text>No access to camera</Text>
+        <TouchableOpacity onPress={requestPermission}>
+          <Text>Grant Permission</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }  
+
   return (
     <ModalSheet
       visible={visible}
@@ -400,33 +441,35 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
       subtitle={step === 'capture' ? 'Simulate taking a photo to automatically recognize food' : 'Verify the details and select a meal category'}
       onClose={handleClose}
     >
-      {step === 'capture' ? (
+      {step === 'capture' && (
         <>
-          <View style={cm.viewfinder}><Text style={cm.cameraIcon}>📷</Text></View>
-          {errorMsg ? <Text style={cm.errorText}>{errorMsg}</Text> : null}
-          <TouchableOpacity style={[cm.captureBtn, isLoading && cm.btnDisabled]} onPress={handleCapture} activeOpacity={0.85} disabled={isLoading}>
-            <Text style={cm.captureBtnText}>{isLoading ? 'Recognising...' : 'Capture & Recognize Food'}</Text>
-          </TouchableOpacity>
-          <Text style={cm.demoNote}>This is a demo feature. In production, this would use the device camera.</Text>
-        </>
-      ) : (
-        <>
-          {detected && (
-            <View style={cm.pillRow}>
-              {[{ value: detected.calories, label: 'kcal' }, { value: `${detected.protein}g`, label: 'Protein' }, { value: `${detected.carbs}g`, label: 'Carbs' }, { value: `${detected.fat}g`, label: 'Fat' }].map((p) => (
-                <View key={p.label} style={cm.pill}><Text style={cm.pillValue}>{p.value}</Text><Text style={cm.pillLabel}>{p.label}</Text></View>
-              ))}
-            </View>
+          {!permission ? (
+            <Text>Requesting camera permission...</Text>
+          ) : !permission.granted ? (
+            <>
+              <Text>No access to camera</Text>
+              <TouchableOpacity onPress={requestPermission}>
+                <Text>Grant Permission</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <CameraView
+              style={cm.viewfinder}
+              ref={(ref) => setCameraRef(ref)}
+            />
           )}
-          <Text style={cm.detectedLabel}>Detected food item</Text>
-          <Field label="Food Name (Edit if incorrect)" value={foodName} onChangeText={setFoodName} placeholder="" />
-          <MealPicker value={meal} onSelect={setMeal} />
-          <View style={cm.confirmRow}>
-            <TouchableOpacity style={cm.tryAgainBtn} onPress={() => setStep('capture')}><Text style={cm.tryAgainText}>Try Again</Text></TouchableOpacity>
-            <TouchableOpacity style={[cm.confirmBtn, isLoading && cm.btnDisabled]} onPress={handleConfirmLog} activeOpacity={0.85} disabled={isLoading}>
-              <Text style={cm.confirmBtnText}>{isLoading ? 'Logging...' : 'Confirm & Log'}</Text>
-            </TouchableOpacity>
-          </View>
+
+          {errorMsg ? <Text style={cm.errorText}>{errorMsg}</Text> : null}
+        
+          <TouchableOpacity
+            style={[cm.captureBtn, isLoading && cm.btnDisabled]}
+            onPress={handleCapture}
+            disabled={isLoading}
+          >
+            <Text style={cm.captureBtnText}>
+              {isLoading ? 'Recognising...' : 'Capture & Recognize Food'}
+            </Text>
+          </TouchableOpacity>
         </>
       )}
     </ModalSheet>

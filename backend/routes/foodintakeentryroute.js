@@ -2,6 +2,8 @@ import express from 'express';
 import { getDB } from '../db_mongodb/db.js';
 
 const router = express.Router();
+import multer from 'multer';
+const upload = multer({ dest: 'uploads/' });
 
 // ===============================
 // CREATE MANUAL ENTRY
@@ -91,31 +93,28 @@ router.post('/camera', async (req, res) => {
 // ===============================
 // FOOD RECOGNITION (MOCK OR AI)
 // ===============================
-router.post('/food-recognition', async (req, res) => {
-  try {
-    // Placeholder (replace with AI service later)
-    const detected = {
-      foodName: 'Grilled Chicken Breast',
-      calories: 165,
-      protein: 31,
-      carbs: 0,
-      fat: 3.6,
-    };
+router.post('/food-recognition', upload.single('image'), async (req, res) => {
+  const file = req.file;
 
-    return res.json({
-      success: true,
-      data: detected,
-      message: 'Food detected successfully',
-    });
-
-  } catch (err) {
-    return res.status(500).json({
+  if (!file) {
+    return res.status(400).json({
       success: false,
-      message: err.message,
+      message: 'No image uploaded',
     });
   }
-});
 
+  // 🔥 Simulate detection (replace later with AI)
+  return res.json({
+    success: true,
+    data: {
+      foodName: 'Chicken Rice',
+      calories: 600,
+      protein: 35,
+      carbs: 70,
+      fat: 20,
+    },
+  });
+});
 
 // ===============================
 // GET TODAY ENTRIES
