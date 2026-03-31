@@ -239,7 +239,7 @@ class User {
   // @param  {User}   user
   // @param  {{ username: string, email: string }}
   // @return {Promise<{ success, field, message, user }>}
-  static async updateAccountDetails(user, { username, email }) {
+  static async updateAccountDetails(user, { username, email, role, membershipPlanId }) {
 
     const usernameCheck = this.validateUsername(username);
     if (!usernameCheck.valid) {
@@ -255,7 +255,9 @@ class User {
         const res = await axios.put(`${API_URL}/update`, {
           userId: user.userId,
           username,
-          email
+          email,
+          role: role ?? user.role,
+          membershipPlanId: membershipPlanId ?? user.membershipPlanId
         });
       
         return res.data;
@@ -271,6 +273,16 @@ class User {
         };
       }
     }
+
+  static async upgradeMembership(user, planId) {
+    const res = await axios.put(`${API_URL}/upgrade-plan`, {
+      userId: user.userId,
+      membershipPlanId: planId,
+      role: 'premium'
+    });
+  
+    return res.data;
+  }    
 
   // UC #14, #49 — permanently removes the user account.
   // TODO: replace with real API call.

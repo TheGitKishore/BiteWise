@@ -3,7 +3,7 @@ import {
   StyleSheet, StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import UserController from '../controller/UserController';
 import FoodIntakeEntry from '../entity/FoodIntakeEntry';
@@ -222,6 +222,12 @@ const PremiumUserDashboardScreen = ({ navigation, route }) => {
       fetchTodayEntries();
     }, [currentUser?.userId])
   );
+
+  useEffect(() => {
+    if (route?.params?.user) {
+      setCurrentUser(route.params.user);
+    }
+  }, [route?.params?.user]);
 
   return (
     <SafeAreaView style={styles.safe}>
