@@ -277,12 +277,12 @@ const pc = StyleSheet.create({
 
 // MAIN SCREEN
 
-const CreateAccountScreen = ({ navigation }) => {
+const CreateAccountScreen = ({ navigation, route }) => {
   const [username,        setUsername]        = useState('');
   const [email,           setEmail]           = useState('');
   const [password,        setPassword]        = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [selectedPlanId,  setSelectedPlanId]  = useState(1);  // defaults to Free
+  const [selectedPlanId, setSelectedPlanId] = useState(route?.params?.selectedPlanId || 1);
   const [fieldErrors,     setFieldErrors]     = useState({});
   const [isLoading,       setIsLoading]       = useState(false);
   const [plans,           setPlans]           = useState([]);
@@ -295,6 +295,12 @@ const CreateAccountScreen = ({ navigation }) => {
       setPlansLoading(false);
     });
   }, []);
+
+  useEffect(() => {
+    if (route?.params?.selectedPlanId) {
+      setSelectedPlanId(route.params.selectedPlanId);
+    }
+  }, [route?.params?.selectedPlanId]);
 
   // UC #08 / #09 Step 2: user taps Create Account
   const handleCreateAccount = useCallback(async () => {

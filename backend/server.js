@@ -5,10 +5,15 @@ import userRoute from './routes/usersroute.js'; // <-- note the .js extension (a
 import reviewRoute from './routes/reviewroute.js';
 import membershipplanRoute from './routes/membershipplanroute.js';
 import userprofiletypeRoute from './routes/userprofiletyperoute.js';
+import foodintakeentryRoute from './routes/foodintakeentryroute.js';
+import fooditemRoute from './routes/fooditemroute.js';
+import exerciseentryRoute from './routes/exerciseentryroute.js';
+import mealplanRoute from './routes/mealplanroute.js';
+import recipeRoute from './routes/reciperoute.js';
 
 
-// ✅ ADD THIS
-import { initializeDatabases } from './backend_services/api.js';
+// ? ADD THIS
+import { initializeDatabases } from './routes/apiroute.js';
 
 const app = express();
 
@@ -20,11 +25,16 @@ app.use('/api/users', userRoute);
 app.use('/api/reviews', reviewRoute);
 app.use('/api/membership-plans', membershipplanRoute);
 app.use('/api/user-profile-types', userprofiletypeRoute);
+app.use('/api/food-entries', foodintakeentryRoute);
+app.use('/api/food-items', fooditemRoute);
+app.use('/api/exercise-entries', exerciseentryRoute);
+app.use('/api/meal-plans', mealplanRoute);
+app.use('/api/recipes', recipeRoute);
 
-// ✅ Initialize DB before server starts
+// ? Initialize DB before server starts
 const startServer = async () => {
   try {
-    await initializeDatabases();   // 🔥 THIS IS WHAT YOU WERE MISSING
+    await initializeDatabases();   // ?? THIS IS WHAT YOU WERE MISSING
 
     app.listen(3000, () => {
       console.log('Server running on port 3000');

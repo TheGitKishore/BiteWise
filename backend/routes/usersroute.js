@@ -172,8 +172,7 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Remove passwordHash before sending back
-    delete user.passwordHash;
+    user.role = user.role?.toLowerCase();
 
     return res.status(200).json({
       success: true,
@@ -210,6 +209,7 @@ router.get('/:userId', async (req, res) => {
         profile_type   AS profileType,
         role,
         membership_plan_id AS membershipPlanId,
+        daily_calorie_limit AS dailyCalorieLimit,
         is_active      AS isActive,
         created_at     AS createdAt,
         updated_at     AS updatedAt
@@ -245,8 +245,8 @@ router.get('/:userId', async (req, res) => {
 // PUT /api/users/update   — UC #13 / #48
 // ─────────────────────────────────────────────
 router.put('/update', async (req, res) => {
-  const { userId, username, email } = req.body;
-
+  const { userId, username, email, membershipPlanId, role } = req.body;
+  console.log("REQ BODY:", req.body);
   try {
     // Check if username is taken by another user
     const [existingUsername] = await db.query(
@@ -279,9 +279,9 @@ router.put('/update', async (req, res) => {
     // Update user
     await db.query(
       `UPDATE users 
-       SET username = ?, email = ?, updated_at = NOW()
+       SET username = ?, email = ?, membership_plan_id = ?, role = ?, updated_at = NOW()
        WHERE user_id = ?`,
-      [username.trim(), email.trim(), userId]
+      [username.trim(), email.trim(), membershipPlanId, role, userId]
     );
 
     // Fetch updated user
@@ -351,6 +351,44 @@ router.delete('/delete/:userId', async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Account deletion failed.'
+    });
+  }
+});
+
+router.put('/calorie-limit', async (req, res) => {
+  const { userId, dailyCalorieLimit } = req.body;
+
+  try {
+    await db.query(
+      `UPDATE users 
+       SET daily_calorie_limit = ?, updated_at = NOW()
+       WHERE user_id = ?`,
+      [dailyCalorieLimit, userId]
+    );
+
+    const [rows] = await db.query(
+      `SELECT 
+        user_id AS userId,
+        username,
+        email,
+        daily_calorie_limit AS dailyCalorieLimit
+       FROM users
+       WHERE user_id = ?`,
+      [userId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Calorie limit updated successfully.',
+      user: rows[0]
+    });
+
+  } catch (err) {
+    console.error('[PUT /calorie-limit]', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update calorie limit.',
+      user: null
     });
   }
 });

@@ -1,4 +1,9 @@
 // Exercise types with their estimated cal/min burn rate
+import axios from 'axios'; //everything entity file needs this two lines of code
+import API_CONFIG from './api_config.js';
+const API_URL = `${API_CONFIG}/exercise-entries`;
+
+// Exercise types with their estimated cal/min burn rate
 export const EXERCISE_TYPES = [
   { label: 'Running (~10 cal/min)',     value: 'Running',     calPerMin: 10 },
   { label: 'Cycling (~8 cal/min)',      value: 'Cycling',     calPerMin: 8  },
@@ -12,108 +17,84 @@ export const EXERCISE_TYPES = [
 
 class ExerciseEntry {
   constructor({
-    entryId        = null,
-    userId         = null,
-    exerciseType   = '',
-    durationMins   = 0,
+    entryId = null,
+    userId = null,
+    exerciseType = '',
+    durationMins = 0,
     caloriesBurned = 0,
-    notes          = '',
-    loggedAt       = null,
+    notes = '',
+    loggedAt = null,
   } = {}) {
-    this.entryId        = entryId;
-    this.userId         = userId;
-    this.exerciseType   = exerciseType;
-    this.durationMins   = durationMins;
-    this.caloriesBurned = caloriesBurned;
-    this.notes          = notes;
-    this.loggedAt       = loggedAt;
+    Object.assign(this, {
+      entryId,
+      userId,
+      exerciseType,
+      durationMins,
+      caloriesBurned,
+      notes,
+      loggedAt,
+    });
   }
 
-
-  // STATIC VALIDATION METHODS
-
-  // UC #58 — validate exercise log fields
-  // @param  {{ exerciseType, durationMins }}
-  // @return {{ valid: boolean, field: string|null, message: string }}
+  // VALIDATION
   static validateEntry({ exerciseType, durationMins }) {
-    if (!exerciseType || exerciseType.trim().length === 0) {
+    if (!exerciseType?.trim()) {
       return { valid: false, field: 'exerciseType', message: 'Please select an exercise type.' };
     }
+
     if (!durationMins || isNaN(durationMins) || Number(durationMins) <= 0) {
       return { valid: false, field: 'durationMins', message: 'Please enter a valid duration.' };
     }
+
     if (Number(durationMins) > 600) {
       return { valid: false, field: 'durationMins', message: 'Duration cannot exceed 600 minutes.' };
     }
-    return { valid: true, field: null, message: '' };
+
+    return { valid: true };
   }
 
-  // Auto-calculate calories burned from exercise type and duration
-  // @param  {string} exerciseType
-  // @param  {number} durationMins
-  // @return {number}
+  // CALORIES CALC
   static calculateCaloriesBurned(exerciseType, durationMins) {
-    const match = EXERCISE_TYPES.find((e) => e.value === exerciseType);
-    const rate  = match ? match.calPerMin : 5;
+    const match = EXERCISE_TYPES.find(e => e.value === exerciseType);
+    const rate = match ? match.calPerMin : 5;
     return Math.round(rate * Number(durationMins));
   }
 
+  // CREATE ENTRY (CALL BACKEND → MYSQL)
+  static async create(userId, { exerciseType, durationMins, notes }) {
+    const check = ExerciseEntry.validateEntry({ exerciseType, durationMins });
 
-  // STATIC / COLLECTION METHODS
+    if (!check.valid) {
+      return { success: false, field: check.field, message: check.message };
+    }
 
-  // @param  {ExerciseEntry[]} entries
-  // @return {number} total calories burned
-  static getTotalCaloriesBurned(entries) {
-    return entries.reduce((sum, e) => sum + e.caloriesBurned, 0);
+    try {
+      const res = await axios.post(`${API_URL}`, {
+        userId,
+        exerciseType,
+        durationMins: Number(durationMins),
+        notes: notes || '',
+      });
+
+      return res.data;
+
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || 'Server error',
+      };
+    }
   }
 
+  // GET TODAY ENTRIES
+  static async getTodayEntries(userId) {
+    const res = await axios.get(`${API_URL}/today/${userId}`);
+    return res.data.map(e => new ExerciseEntry(e));
+  }
 
-  // DATA ACCESS
-  // Replace w API calls
-  /*
-    static async create(userId, { exerciseType, durationMins, caloriesBurned, notes }) {
-      const res = await axios.post(`${API_URL}/exercise-entries`, {
-        userId, exerciseType, durationMins, caloriesBurned, notes
-      });
-      return res.data;
-    }
-
-    static async getTodayEntries(userId) {
-      const res = await axios.get(`${API_URL}/exercise-entries/today/${userId}`);
-      return res.data.map((r) => new ExerciseEntry(r));
-    }
-  */
-
-  // UC #58 — validate and create an exercise entry
-  // @param  {number} userId
-  // @param  {{ exerciseType, durationMins, caloriesBurned, notes }}
-  // @return {Promise<{ success, field, message, data }>}
-  static async create(userId, { exerciseType, durationMins, caloriesBurned, notes }) {
-    const check = ExerciseEntry.validateEntry({ exerciseType, durationMins });
-    if (!check.valid) {
-      return { success: false, field: check.field, message: check.message, data: null };
-    }
-
-    const burned = caloriesBurned && Number(caloriesBurned) > 0
-      ? Number(caloriesBurned)
-      : ExerciseEntry.calculateCaloriesBurned(exerciseType, durationMins);
-
-    const entry = new ExerciseEntry({
-      entryId:        Date.now(),
-      userId,
-      exerciseType,
-      durationMins:   Number(durationMins),
-      caloriesBurned: burned,
-      notes:          notes || '',
-      loggedAt:       new Date().toISOString(),
-    });
-
-    return {
-      success: true,
-      field:   null,
-      message: `${exerciseType} logged! ${burned} calories burned.`,
-      data:    entry,
-    };
+  // TOTAL CALORIES
+  static getTotalCaloriesBurned(entries) {
+    return entries.reduce((sum, e) => sum + e.caloriesBurned, 0);
   }
 }
 

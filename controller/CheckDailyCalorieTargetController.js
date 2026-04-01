@@ -33,6 +33,9 @@ class CheckDailyCalorieTargetController {
 
     const remaining  = Math.max(0, goal - consumed);
     const percentage = Math.min(Math.round((consumed / goal) * 100), 100);
+    const result = new CheckDailyCalorieTargetController().checkDailyTarget(
+      todaysEntries,
+    );    
 
     let status = 'on_track';
     if (percentage >= 100)     status = 'exceeded';

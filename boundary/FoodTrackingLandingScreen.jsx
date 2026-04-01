@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
 import ViewFoodDatabaseController          from '../controller/ViewFoodDatabaseController';
 import CreateManualFoodEntryController     from '../controller/CreateManualFoodEntryController';
@@ -12,6 +14,7 @@ import SetDailyCalorieLimitController      from '../controller/SetDailyCalorieLi
 import ViewPastCalorieEntriesController    from '../controller/ViewPastCalorieEntriesController';
 import ViewCurrentCalorieIntakeController  from '../controller/ViewCurrentCalorieIntakeController';
 import CheckDailyCalorieTargetController   from '../controller/CheckDailyCalorieTargetController';
+import UserController from '../controller/UserController';
 
 const dbController          = new ViewFoodDatabaseController();
 const manualController      = new CreateManualFoodEntryController();
@@ -20,6 +23,7 @@ const goalController        = new SetDailyCalorieLimitController();
 const historyController     = new ViewPastCalorieEntriesController();
 const intakeController      = new ViewCurrentCalorieIntakeController();
 const targetController      = new CheckDailyCalorieTargetController();
+const userController = new UserController();
 
 const MEAL_OPTIONS = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 const TABS         = ['Log Food', "Today's Entries", 'History'];
@@ -369,18 +373,43 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
   const [meal,      setMeal]      = useState('Lunch');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg,  setErrorMsg]  = useState('');
+  const [permission, requestPermission] = useCameraPermissions();
+  const [cameraRef, setCameraRef] = useState(null);
 
   const reset = () => { setStep('capture'); setDetected(null); setFoodName(''); setMeal('Lunch'); setErrorMsg(''); };
   const handleClose = () => { reset(); onClose(); };
 
   const handleCapture = useCallback(async () => {
-    setIsLoading(true);
-    setErrorMsg('');
-    const result = await cameraController.recogniseFood();
-    setIsLoading(false);
-    if (result.success) { setDetected(result.data); setFoodName(result.data.foodName); setStep('confirm'); }
-    else setErrorMsg(result.message || 'Could not recognise food. Please try again or enter manually.');
-  }, []);
+    if (!cameraRef) return;
+
+    try {
+      setIsLoading(true);
+      setErrorMsg('');
+
+      const photo = await cameraRef.takePictureAsync({
+        base64: true,
+        quality: 0.5,
+      });
+
+      console.log("PHOTO:", photo.uri);
+
+      // 🔥 Send to backend for recognition
+      const result = await cameraController.recogniseFood(photo);
+
+      setIsLoading(false);
+
+      if (result.success) {
+        setDetected(result.data);
+        setFoodName(result.data.foodName);
+        setStep('confirm');
+      } else {
+        setErrorMsg(result.message || 'Recognition failed');
+      }
+    } catch (err) {
+      setIsLoading(false);
+      setErrorMsg('Camera error occurred');
+    }
+  }, [cameraRef]);
 
   const handleConfirmLog = useCallback(async () => {
     if (!detected) return;
@@ -390,6 +419,21 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
     if (result.success) { reset(); onSuccess(result.message, result.data); }
   }, [detected, foodName, meal, userId]);
 
+  if (!permission) {
+    return <View />;
+  }
+
+  if (!permission.granted) {
+    return (
+      <View>
+        <Text>No access to camera</Text>
+        <TouchableOpacity onPress={requestPermission}>
+          <Text>Grant Permission</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }  
+
   return (
     <ModalSheet
       visible={visible}
@@ -397,33 +441,35 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
       subtitle={step === 'capture' ? 'Simulate taking a photo to automatically recognize food' : 'Verify the details and select a meal category'}
       onClose={handleClose}
     >
-      {step === 'capture' ? (
+      {step === 'capture' && (
         <>
-          <View style={cm.viewfinder}><Text style={cm.cameraIcon}>📷</Text></View>
-          {errorMsg ? <Text style={cm.errorText}>{errorMsg}</Text> : null}
-          <TouchableOpacity style={[cm.captureBtn, isLoading && cm.btnDisabled]} onPress={handleCapture} activeOpacity={0.85} disabled={isLoading}>
-            <Text style={cm.captureBtnText}>{isLoading ? 'Recognising...' : 'Capture & Recognize Food'}</Text>
-          </TouchableOpacity>
-          <Text style={cm.demoNote}>This is a demo feature. In production, this would use the device camera.</Text>
-        </>
-      ) : (
-        <>
-          {detected && (
-            <View style={cm.pillRow}>
-              {[{ value: detected.calories, label: 'kcal' }, { value: `${detected.protein}g`, label: 'Protein' }, { value: `${detected.carbs}g`, label: 'Carbs' }, { value: `${detected.fat}g`, label: 'Fat' }].map((p) => (
-                <View key={p.label} style={cm.pill}><Text style={cm.pillValue}>{p.value}</Text><Text style={cm.pillLabel}>{p.label}</Text></View>
-              ))}
-            </View>
+          {!permission ? (
+            <Text>Requesting camera permission...</Text>
+          ) : !permission.granted ? (
+            <>
+              <Text>No access to camera</Text>
+              <TouchableOpacity onPress={requestPermission}>
+                <Text>Grant Permission</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <CameraView
+              style={cm.viewfinder}
+              ref={(ref) => setCameraRef(ref)}
+            />
           )}
-          <Text style={cm.detectedLabel}>Detected food item</Text>
-          <Field label="Food Name (Edit if incorrect)" value={foodName} onChangeText={setFoodName} placeholder="" />
-          <MealPicker value={meal} onSelect={setMeal} />
-          <View style={cm.confirmRow}>
-            <TouchableOpacity style={cm.tryAgainBtn} onPress={() => setStep('capture')}><Text style={cm.tryAgainText}>Try Again</Text></TouchableOpacity>
-            <TouchableOpacity style={[cm.confirmBtn, isLoading && cm.btnDisabled]} onPress={handleConfirmLog} activeOpacity={0.85} disabled={isLoading}>
-              <Text style={cm.confirmBtnText}>{isLoading ? 'Logging...' : 'Confirm & Log'}</Text>
-            </TouchableOpacity>
-          </View>
+
+          {errorMsg ? <Text style={cm.errorText}>{errorMsg}</Text> : null}
+        
+          <TouchableOpacity
+            style={[cm.captureBtn, isLoading && cm.btnDisabled]}
+            onPress={handleCapture}
+            disabled={isLoading}
+          >
+            <Text style={cm.captureBtnText}>
+              {isLoading ? 'Recognising...' : 'Capture & Recognize Food'}
+            </Text>
+          </TouchableOpacity>
         </>
       )}
     </ModalSheet>
@@ -502,6 +548,11 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg }) => {
   const handleDec = (id) => setQuantities((p) => ({ ...p, [id]: Math.max(1, (p[id] || 1) - 1) }));
   const handleLog = ()   => setExpanded(null);
 
+    if (result.success) {
+      setExpanded(null);
+      onEntryLogged(result.message, result.data);
+    }
+  };
   if (isLoading) return <ActivityIndicator size="small" color={C.purple} style={{ marginTop: 16 }} />;
   if (errorMsg)  return <Text style={{ color: C.errorText, textAlign: 'center', marginTop: 16 }}>{errorMsg}</Text>;
 
@@ -569,11 +620,17 @@ const db = StyleSheet.create({
 
 // LOG FOOD TAB — unchanged
 
-const LogFoodTab = ({ user, allItems, dbLoading, dbError, onOpenManual, onOpenCamera }) => (
+const LogFoodTab = ({ user, allItems, dbLoading, dbError, onOpenManual, onOpenCamera, onEntryLogged }) => (
   <View>
     <ActionTile icon="➕"  title="Manual Entry"   subtitle="Manually log food details"      onPress={onOpenManual} />
     <ActionTile icon="📷" title="Camera Capture" subtitle="Take a photo to recognize food" onPress={onOpenCamera} />
-    <FoodDatabaseSection allItems={allItems} isLoading={dbLoading} errorMsg={dbError} />
+    <FoodDatabaseSection
+      allItems={allItems}
+      isLoading={dbLoading}
+      errorMsg={dbError}
+      userId={user?.userId}
+      onEntryLogged={onEntryLogged}
+    />
   </View>
 );
 
@@ -675,28 +732,72 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
   }, []);
 
   const loadHistory = useCallback(async () => {
-    if (pastEntries.length > 0) return;
+    if (!currentUser?.userId) return; // ✅ wait for user
     setHistLoading(true);
     setHistError('');
-    const result = await historyController.fetchPastEntries(currentUser?.userId);
+    const result = await historyController.fetchPastEntries(currentUser.userId);
     if (result.success) setPastEntries(result.data);
     else setHistError(result.message);
     setHistLoading(false);
-  }, [currentUser, pastEntries]);
+    console.log("USER ID:", currentUser?.userId);
+    console.log("FETCH RESULT:", result);
+  }, [currentUser]);
+
+  const loadTodayEntries = useCallback(async () => {
+    if (!currentUser?.userId) return;
+    const result = await historyController._safeCall(async () => {
+      return await import('../entity/FoodIntakeEntry')
+        .then(m => m.default.getTodayEntries(currentUser.userId));
+    });
+    if (result) {
+      setTodaysEntries(result);
+    }
+  }, [currentUser]);
+
+  const refreshUserData = useCallback(async () => {
+    if (!currentUser?.userId) return;
+  
+    try {
+      const result = await userController.getUser(currentUser.userId); // ✅ FIXED
+    
+      const userData = result?.data || result?.user;
+    
+      if (userData) {
+        setCurrentUser(userData);
+        setDailyGoal(userData.dailyCalorieLimit || 2000);
+      }
+    } catch (err) {
+      console.log("Failed to refresh user:", err);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    loadTodayEntries();
+  }, [loadTodayEntries]);  
+
+  useFocusEffect(
+    useCallback(() => {
+      loadTodayEntries();
+      refreshUserData();   // ✅ ADD THIS
+    }, [loadTodayEntries, refreshUserData])
+  );
 
   const handleTabSelect = useCallback((tab) => {
     setActiveTab(tab);
+
     if (tab === 'History') loadHistory();
-  }, [loadHistory]);
+    if (tab === "Today's Entries") loadTodayEntries(); // ✅ ADD THIS
+  }, [loadHistory, loadTodayEntries]);
 
   const handleEntryLogged = useCallback((message, entry) => {
     setShowManual(false);
     setShowCamera(false);
     setBanner(message);
-    setTodaysEntries((prev) => [...prev, entry]);
+    // ✅ reload from backend (source of truth)
+    loadTodayEntries();
     setActiveTab("Today's Entries");
     setTimeout(() => setBanner(''), 4000);
-  }, []);
+  }, [loadTodayEntries]);
 
   const handleGoalSaved = useCallback((message, updatedUser) => {
     setShowGoal(false);
@@ -748,7 +849,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
 
         <TabBar activeTab={activeTab} onSelect={handleTabSelect} />
 
-        {activeTab === 'Log Food'        && <LogFoodTab user={currentUser} allItems={allItems} dbLoading={dbLoading} dbError={dbError} onOpenManual={() => setShowManual(true)} onOpenCamera={() => setShowCamera(true)} />}
+        {activeTab === 'Log Food'        && <LogFoodTab user={currentUser} allItems={allItems} dbLoading={dbLoading} dbError={dbError} onOpenManual={() => setShowManual(true)} onOpenCamera={() => setShowCamera(true)} onEntryLogged={handleEntryLogged}/>}
         {activeTab === "Today's Entries" && <TodaysEntriesTab entries={todaysEntries} />}
         {activeTab === 'History'         && <HistoryTab pastEntries={pastEntries} isLoading={histLoading} errorMsg={histError} />}
 

@@ -7,6 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import LogExerciseController from '../controller/LogExerciseController';
 import { EXERCISE_TYPES }    from '../entity/ExerciseEntry';
+import { useFocusEffect } from '@react-navigation/native';
+import ExerciseEntry from '../entity/ExerciseEntry';
 
 const controller = new LogExerciseController();
 
@@ -386,6 +388,23 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
     setActiveTab('Exercise Log');
     setTimeout(() => setBanner(''), 4000);
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!user?.userId) return;
+    
+      const fetchEntries = async () => {
+        try {
+          const data = await ExerciseEntry.getTodayEntries(user.userId);
+          setExerciseEntries(data);
+        } catch (err) {
+          console.error('Failed to fetch exercise entries', err);
+        }
+      };
+    
+      fetchEntries();
+    }, [user])
+  );  
 
   return (
     <SafeAreaView style={styles.safe}>

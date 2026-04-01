@@ -1,6 +1,6 @@
 import axios from 'axios';
+import API_URL from './api_url.js';
 
-const API_URL = 'http://192.168.x.x:3000/api'; //change to your ip address
 
 // Example API calls
 export const getUserProfileFeatures = async () => {

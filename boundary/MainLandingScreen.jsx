@@ -1,8 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ViewReviewsController from '../controller/ViewReviewsController';
 
 const { width: SW } = Dimensions.get('window');
+const reviewController = new ViewReviewsController();
 
 // Design Tokens
 const C = {
@@ -411,7 +413,7 @@ const StarRow = ({ count }) => (
   </View>
 );
 
-const ReviewsSection = ({ navigation }) => (
+const ReviewsSection = ({ navigation, averageRating, totalReviews }) => (
   <SectionWrap>
     <SectionTitle
       title="Loved by Our Community"
@@ -420,8 +422,10 @@ const ReviewsSection = ({ navigation }) => (
 
     {/* Overall rating only — individual cards live on ReviewsScreen */}
     <View style={rv.ratingRow}>
-      <StarRow count={5} />
-      <Text style={rv.ratingText}>4.8 out of 5</Text>
+      <StarRow count={Math.round(averageRating)} />
+        <Text style={rv.ratingText}>
+          {averageRating.toFixed(1)} out of 5
+        </Text>
     </View>
 
     <OutlineBtn
@@ -557,22 +561,45 @@ const foot = StyleSheet.create({
 
 // MAIN SCREEN
 
-const MainLandingScreen = ({ navigation }) => (
-  <SafeAreaView style={{ flex: 1, backgroundColor: C.white }}>
-    <StatusBar barStyle="dark-content" backgroundColor={C.white} />
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      bounces={true}
-    >
-      <FeaturesSection />
-      <HowItWorksSection     navigation={navigation} />
-      <ProfilesSection       navigation={navigation} />
-      <PricingPreviewSection navigation={navigation} />
-      <ReviewsSection        navigation={navigation} />
-      <CTASection            navigation={navigation} />
-      <Footer                navigation={navigation} />
-    </ScrollView>
-  </SafeAreaView>
-);
+const MainLandingScreen = ({ navigation }) => {
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+
+  const reviewController = new ViewReviewsController();
+
+  useEffect(() => {
+    const loadReviews = async () => {
+      const result = await reviewController.fetchAllReviews();
+
+      if (result.success) {
+        setAverageRating(result.averageRating);
+        setTotalReviews(result.data.length);
+      }
+    };
+
+    loadReviews();
+  }, []);
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: C.white }}>
+      <StatusBar barStyle="dark-content" backgroundColor={C.white} />
+      <ScrollView showsVerticalScrollIndicator={false} bounces={true}>
+        <FeaturesSection />
+        <HowItWorksSection navigation={navigation} />
+        <ProfilesSection navigation={navigation} />
+        <PricingPreviewSection navigation={navigation} />
+
+        <ReviewsSection
+          navigation={navigation}
+          averageRating={averageRating}
+          totalReviews={totalReviews}
+        />
+
+        <CTASection navigation={navigation} />
+        <Footer navigation={navigation} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
 export default MainLandingScreen;

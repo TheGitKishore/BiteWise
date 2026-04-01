@@ -136,10 +136,16 @@ const LoginScreen = ({ navigation, route }) => {
 
     if (result.success) {
       // Navigate to dashboard, passing the user session as a route param
-      const dest = result.user?.role === 'PREMIUM' ? 'PremiumUserDashboardScreen' : 'FreeUserDashboardScreen';
-      navigation.navigate(dest, {
-        user:           result.user,
-        successMessage: result.message,
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: 'DashboardRouter',
+            params: {
+              user: result.user,
+            },
+          },
+        ],
       });
     } else {
       // Alt Flow 1a: incorrect credentials
