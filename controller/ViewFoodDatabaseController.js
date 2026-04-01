@@ -45,13 +45,16 @@ class ViewFoodDatabaseController {
     });
   }
 
-  // UC #15, #50 — filter already-loaded items by search query
-  // Called on every keystroke — no async needed
-  // @param  {FoodItem[]} items
+  // UC #15, #50 — search local first, fall back to API if nothing found
+  // Now async because it may call the API
+  // @param  {FoodItem[]} items   — the full hardcoded list from fetchFoodDatabase()
   // @param  {string}     query
-  // @return {FoodItem[]}
-  searchFoodItems(items, query) {
-    return FoodItem.filterBySearch(items, query);
+  // @return {Promise<{ data: FoodItem[], fromAPI: boolean, message: string }>}
+  async searchFoodItems(items, query) {
+    if (!query || query.trim().length === 0) {
+      return { data: items, fromAPI: false, message: '' };
+    }
+    return await FoodItem.searchWithFallback(items, query);
   }
 }
 
