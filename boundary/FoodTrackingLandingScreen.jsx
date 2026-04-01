@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Modal,
@@ -459,38 +459,45 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg }) => {
   const [search,        setSearch]        = useState('');
   const [expanded,      setExpanded]      = useState(null);
   const [quantities,    setQuantities]    = useState({});
+  const [displayItems,  setDisplayItems]  = useState([]);
+  const [isSearching,   setIsSearching]   = useState(false);
+  const [searchMsg,     setSearchMsg]     = useState('');
+  const [fromAPI,       setFromAPI]       = useState(false);
 
-  // ── NEW state for async search ──────────────────────────────
-  const [displayItems,  setDisplayItems]  = useState([]);   // what's shown in the list
-  const [isSearching,   setIsSearching]   = useState(false); // spinner while API call runs
-  const [searchMsg,     setSearchMsg]     = useState('');    // "no results" or error text
-  const [fromAPI,       setFromAPI]       = useState(false); // true when results came from Open Food Facts
-  // ───────────────────────────────────────────────────────────
+  // ── ADD THIS — ref to hold the debounce timer ──
+  const debounceTimer = useRef(null);
 
-  // On mount (or when allItems loads), show the full local list
   useEffect(() => {
     setDisplayItems(allItems);
   }, [allItems]);
 
-  // ── CHANGED: search handler is now async ───────────────────
-  const handleSearch = useCallback(async (query) => {
+  // ── UPDATED handleSearch with debounce ──
+  const handleSearch = useCallback((query) => {
     setSearch(query);
     setSearchMsg('');
     setFromAPI(false);
 
-    // Empty query → restore full local list, no API call
+    // Empty query → restore full local list immediately
     if (!query || query.trim().length === 0) {
       setDisplayItems(allItems);
+      setIsSearching(false);
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
       return;
     }
 
-    setIsSearching(true);
-    const result = await dbController.searchFoodItems(allItems, query);
-    setIsSearching(false);
+    // Clear previous timer
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
-    setDisplayItems(result.data);
-    setFromAPI(result.fromAPI);
-    setSearchMsg(result.message);
+    // Wait 500ms after user stops typing before searching
+    debounceTimer.current = setTimeout(async () => {
+      setIsSearching(true);
+      const result = await dbController.searchFoodItems(allItems, query);
+      setIsSearching(false);
+      setDisplayItems(result.data);
+      setFromAPI(result.fromAPI);
+      setSearchMsg(result.message);
+    }, 500);
+
   }, [allItems]);
   // ───────────────────────────────────────────────────────────
 

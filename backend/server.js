@@ -5,7 +5,7 @@ import userRoute from './routes/usersroute.js'; // <-- note the .js extension (a
 import reviewRoute from './routes/reviewroute.js';
 import membershipplanRoute from './routes/membershipplanroute.js';
 import userprofiletypeRoute from './routes/userprofiletyperoute.js';
-
+import foodRoute from './routes/foodroute.js';
 
 // ✅ ADD THIS
 import { initializeDatabases } from './backend_services/api.js';
@@ -20,11 +20,12 @@ app.use('/api/users', userRoute);
 app.use('/api/reviews', reviewRoute);
 app.use('/api/membership-plans', membershipplanRoute);
 app.use('/api/user-profile-types', userprofiletypeRoute);
+app.use('/api/food', foodRoute);
 
 // ✅ Initialize DB before server starts
 const startServer = async () => {
   try {
-    await initializeDatabases();   // 🔥 THIS IS WHAT YOU WERE MISSING
+    //await initializeDatabases();   // 🔥 THIS IS WHAT YOU WERE MISSING
 
     app.listen(3000, () => {
       console.log('Server running on port 3000');
@@ -34,5 +35,6 @@ const startServer = async () => {
     console.error('Failed to start server:', error);
   }
 };
+
 
 startServer();

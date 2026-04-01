@@ -1,5 +1,5 @@
 import axios from 'axios';
-const API_URL = 'http://192.168.x.x:3000/api'; // ⚠️ same IP as other entities
+const API_URL = 'http://192.168.1.36:3000/api'; // ⚠️ same IP as other entities
 
 class FoodItem {
   constructor({
