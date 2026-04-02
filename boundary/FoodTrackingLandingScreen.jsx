@@ -546,8 +546,8 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg }) => {
   };
   const handleInc = (id) => setQuantities((p) => ({ ...p, [id]: (p[id] || 1) + 1 }));
   const handleDec = (id) => setQuantities((p) => ({ ...p, [id]: Math.max(1, (p[id] || 1) - 1) }));
-  const handleLog = ()   => setExpanded(null);
-
+  const handleLog = async (item) => {
+    const result = await dbController.logFoodItem(item, quantities[item.foodItemId] || 1); 
     if (result.success) {
       setExpanded(null);
       onEntryLogged(result.message, result.data);
