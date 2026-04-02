@@ -4,11 +4,10 @@ import {
   StyleSheet, StatusBar, Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import LogExerciseController from '../controller/LogExerciseController';
 import { EXERCISE_TYPES }    from '../entity/ExerciseEntry';
-import { useFocusEffect } from '@react-navigation/native';
-import ExerciseEntry from '../entity/ExerciseEntry';
 
 const controller = new LogExerciseController();
 
@@ -16,27 +15,27 @@ const TABS = ['Overview', 'Exercise Log'];
 
 // Design Tokens
 const C = {
-  purple:      '#7C3AED',
-  purpleLight: '#EDE9FE',
-  dark:        '#111827',
-  mid:         '#374151',
-  body:        '#4B5563',
-  subtle:      '#6B7280',
-  white:       '#FFFFFF',
-  border:      '#E5E7EB',
-  bg:          '#F9FAFB',
-  errorText:   '#DC2626',
-  successBg:   '#F0FDF4',
-  successBorder:'#BBF7D0',
-  successText: '#15803D',
-  greenLight:  '#DCFCE7',
-  greenMid:    '#16A34A',
-  orangeLight: '#FEF3C7',
-  orangeMid:   '#D97706',
+  purple:        '#7C3AED',
+  purpleLight:   '#EDE9FE',
+  dark:          '#111827',
+  mid:           '#374151',
+  body:          '#4B5563',
+  subtle:        '#6B7280',
+  white:         '#FFFFFF',
+  border:        '#E5E7EB',
+  bg:            '#F9FAFB',
+  errorText:     '#DC2626',
+  successBg:     '#F0FDF4',
+  successBorder: '#BBF7D0',
+  successText:   '#15803D',
+  greenLight:    '#DCFCE7',
+  greenMid:      '#16A34A',
+  orangeLight:   '#FEF3C7',
+  orangeMid:     '#D97706',
 };
 
 
-// SUB-COMPONENTS
+// ─── SUB-COMPONENTS ──────────────────────────────────────────────────────────
 
 // NavBar
 const NavBar = ({ onMenuPress }) => (
@@ -53,12 +52,12 @@ const NavBar = ({ onMenuPress }) => (
   </View>
 );
 const nav = StyleSheet.create({
-  bar:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
-  brand:    { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  icon:     { fontSize: 20 },
-  brandName:{ fontSize: 20, fontWeight: '800', color: C.dark, letterSpacing: -0.3 },
-  menuBtn:  { padding: 6, gap: 4, alignItems: 'flex-end' },
-  menuLine: { width: 22, height: 2.5, backgroundColor: C.dark, borderRadius: 2 },
+  bar:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
+  brand:     { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  icon:      { fontSize: 20 },
+  brandName: { fontSize: 20, fontWeight: '800', color: C.dark, letterSpacing: -0.3 },
+  menuBtn:   { padding: 6, gap: 4, alignItems: 'flex-end' },
+  menuLine:  { width: 22, height: 2.5, backgroundColor: C.dark, borderRadius: 2 },
 });
 
 // Success banner
@@ -104,7 +103,7 @@ const tb = StyleSheet.create({
   tabTextActive: { color: C.purple, fontWeight: '700' },
 });
 
-// Stat card for Overview — icon circle + label + value
+// Stat card — icon circle + label + value
 const StatCard = ({ iconBg, icon, label, value, extra }) => (
   <View style={sc.card}>
     <View style={[sc.iconCircle, { backgroundColor: iconBg }]}>
@@ -143,28 +142,37 @@ const ModalSheet = ({ visible, title, subtitle, onClose, children }) => (
   </Modal>
 );
 const ms = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', paddingHorizontal: 16 },
-  sheet:   { backgroundColor: C.white, borderRadius: 16, padding: 22, paddingTop: 36 },
-  closeBtn:{ position: 'absolute', top: 12, right: 16, padding: 4 },
+  overlay:  { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', paddingHorizontal: 16 },
+  sheet:    { backgroundColor: C.white, borderRadius: 16, padding: 22, paddingTop: 36 },
+  closeBtn: { position: 'absolute', top: 12, right: 16, padding: 4 },
   closeIcon:{ fontSize: 16, color: C.subtle },
-  title:   { fontSize: 16, fontWeight: '700', color: C.dark, textAlign: 'center', marginBottom: 4 },
-  subtitle:{ fontSize: 13, color: C.subtle, textAlign: 'center', marginBottom: 18 },
+  title:    { fontSize: 16, fontWeight: '700', color: C.dark, textAlign: 'center', marginBottom: 4 },
+  subtitle: { fontSize: 13, color: C.subtle, textAlign: 'center', marginBottom: 18 },
 });
 
 // Shared field
 const Field = ({ label, value, onChangeText, placeholder, keyboardType, error }) => (
   <View style={fl.wrap}>
     <Text style={fl.label}>{label}</Text>
-    <TextInput style={[fl.input, error && fl.inputError]} value={value} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={C.subtle} keyboardType={keyboardType || 'default'} autoCapitalize="none" autoCorrect={false} />
+    <TextInput
+      style={[fl.input, error && fl.inputError]}
+      value={value}
+      onChangeText={onChangeText}
+      placeholder={placeholder}
+      placeholderTextColor={C.subtle}
+      keyboardType={keyboardType || 'default'}
+      autoCapitalize="none"
+      autoCorrect={false}
+    />
     {error ? <Text style={fl.error}>{error}</Text> : null}
   </View>
 );
 const fl = StyleSheet.create({
-  wrap:      { marginBottom: 12 },
-  label:     { fontSize: 13, fontWeight: '600', color: C.dark, marginBottom: 4 },
-  input:     { backgroundColor: C.bg, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: C.dark, borderWidth: 1, borderColor: C.border },
-  inputError:{ borderColor: '#FECACA' },
-  error:     { fontSize: 12, color: C.errorText, marginTop: 3 },
+  wrap:       { marginBottom: 12 },
+  label:      { fontSize: 13, fontWeight: '600', color: C.dark, marginBottom: 4 },
+  input:      { backgroundColor: C.bg, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: C.dark, borderWidth: 1, borderColor: C.border },
+  inputError: { borderColor: '#FECACA' },
+  error:      { fontSize: 12, color: C.errorText, marginTop: 3 },
 });
 
 // Exercise type picker chips
@@ -191,66 +199,116 @@ const ep = StyleSheet.create({
 });
 
 
-// UC #58 — LOG EXERCISE MODAL
+// ─── UC #58 — LOG EXERCISE MODAL ─────────────────────────────────────────────
 
 const LogExerciseModal = ({ visible, userId, onClose, onSuccess }) => {
-  const [exerciseType,    setExerciseType]    = useState('Running');
-  const [durationMins,    setDurationMins]    = useState('');
-  const [caloriesBurned,  setCaloriesBurned]  = useState('');
-  const [notes,           setNotes]           = useState('');
-  const [fieldErrors,     setFieldErrors]     = useState({});
-  const [isLoading,       setIsLoading]       = useState(false);
+  const [exerciseType,   setExerciseType]   = useState('Running');
+  const [durationMins,   setDurationMins]   = useState('');
+  const [caloriesBurned, setCaloriesBurned] = useState('');
+  const [notes,          setNotes]          = useState('');
+  const [fieldErrors,    setFieldErrors]    = useState({});
+  const [isLoading,      setIsLoading]      = useState(false);
 
-  const reset = () => { setExerciseType('Running'); setDurationMins(''); setCaloriesBurned(''); setNotes(''); setFieldErrors({}); };
+  const reset = () => {
+    setExerciseType('Running');
+    setDurationMins('');
+    setCaloriesBurned('');
+    setNotes('');
+    setFieldErrors({});
+  };
+
   const handleClose = () => { reset(); onClose(); };
 
+  // FIX 2: onSuccess added to dependency array to prevent stale closure
   const handleSubmit = useCallback(async () => {
     setFieldErrors({});
     setIsLoading(true);
-    const result = await controller.logExercise(userId, { exerciseType, durationMins, caloriesBurned, notes });
+
+    const result = await controller.logExercise(userId, {
+      exerciseType,
+      durationMins,
+      caloriesBurned,
+      notes,
+    });
+
     setIsLoading(false);
-    if (result.success) { reset(); onSuccess(result.message, result.data); }
-    else if (result.field) setFieldErrors({ [result.field]: result.message });
-  }, [exerciseType, durationMins, caloriesBurned, notes, userId]);
+
+    if (result.success) {
+      reset();
+      onSuccess(result.message, result.data);
+    } else if (result.field) {
+      setFieldErrors({ [result.field]: result.message });
+    }
+  }, [exerciseType, durationMins, caloriesBurned, notes, userId, onSuccess]);  // FIX 2
 
   return (
-    <ModalSheet visible={visible} title="Log Exercise Session" subtitle="Record your workout or physical activity" onClose={handleClose}>
+    <ModalSheet
+      visible={visible}
+      title="Log Exercise Session"
+      subtitle="Record your workout or physical activity"
+      onClose={handleClose}
+    >
       <ExerciseTypePicker value={exerciseType} onSelect={setExerciseType} />
-      <Field label="Duration (minutes) *" value={durationMins} onChangeText={setDurationMins} placeholder="30" keyboardType="numeric" error={fieldErrors.durationMins} />
-      <Field label="Calories Burned (optional)" value={caloriesBurned} onChangeText={setCaloriesBurned} placeholder="Auto-calculated if left empty" keyboardType="numeric" />
-      <Field label="Notes (optional)" value={notes} onChangeText={setNotes} placeholder="Great workout!" />
-      <TouchableOpacity style={[le.btn, isLoading && le.btnDisabled]} onPress={handleSubmit} activeOpacity={0.85} disabled={isLoading}>
+      <Field
+        label="Duration (minutes) *"
+        value={durationMins}
+        onChangeText={setDurationMins}
+        placeholder="30"
+        keyboardType="numeric"
+        error={fieldErrors.durationMins}
+      />
+      <Field
+        label="Calories Burned (optional)"
+        value={caloriesBurned}
+        onChangeText={setCaloriesBurned}
+        placeholder="Auto-calculated if left empty"
+        keyboardType="numeric"
+      />
+      <Field
+        label="Notes (optional)"
+        value={notes}
+        onChangeText={setNotes}
+        placeholder="Great workout!"
+      />
+      <TouchableOpacity
+        style={[le.btn, isLoading && le.btnDisabled]}
+        onPress={handleSubmit}
+        activeOpacity={0.85}
+        disabled={isLoading}
+      >
         <Text style={le.btnText}>{isLoading ? 'Logging...' : 'Log Exercise'}</Text>
       </TouchableOpacity>
     </ModalSheet>
   );
 };
 const le = StyleSheet.create({
-  btn:         { backgroundColor: C.purple, borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
-  btnDisabled: { opacity: 0.6 },
-  btnText:     { fontSize: 15, fontWeight: '700', color: C.white },
+  btn:        { backgroundColor: C.purple, borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
+  btnDisabled:{ opacity: 0.6 },
+  btnText:    { fontSize: 15, fontWeight: '700', color: C.white },
 });
 
 
-// OVERVIEW TAB
+// ─── OVERVIEW TAB ─────────────────────────────────────────────────────────────
 
 const OverviewTab = ({ exerciseEntries }) => {
-  const totalBurned   = exerciseEntries.reduce((s, e) => s + e.caloriesBurned, 0);
+  const totalBurned = exerciseEntries.reduce((s, e) => s + e.caloriesBurned, 0);
 
   return (
     <View>
       <StatCard iconBg="#EDE9FE" icon="🏋️" label="Today's Exercises" value={String(exerciseEntries.length)} />
-      <StatCard iconBg="#FEF3C7" icon="⚡" label="Calories Burned"   value={String(totalBurned)} />
+      <StatCard iconBg="#FEF3C7" icon="⚡"  label="Calories Burned"   value={String(totalBurned)} />
     </View>
   );
 };
-const ov = StyleSheet.create({
+// FIX 1: removed the unclosed `const ov = StyleSheet.create({` that was here.
+// It was opened but never closed, causing every subsequent component and StyleSheet
+// to be parsed as part of the broken object literal — a fatal compile error.
+// `ov` was also never referenced anywhere in the file.
 
 
-// EXERCISE LOG TAB
+// ─── EXERCISE LOG TAB ────────────────────────────────────────────────────────
 
 const ExerciseLogTab = ({ exerciseEntries, onOpenLog }) => {
-  // 7-day total
   const total7Day = exerciseEntries.reduce((s, e) => s + e.caloriesBurned, 0);
 
   return (
@@ -273,7 +331,7 @@ const ExerciseLogTab = ({ exerciseEntries, onOpenLog }) => {
           <Text style={el.empty}>No exercises logged yet. Start tracking your workouts!</Text>
         ) : (
           exerciseEntries.map((e, i) => (
-            <View key={i} style={el.row}>
+            <View key={e.entryId ?? i} style={el.row}>
               <View style={el.rowLeft}>
                 <Text style={el.rowType}>{e.exerciseType}</Text>
                 <Text style={el.rowMeta}>{e.durationMins} minutes • {e.caloriesBurned} calories burned</Text>
@@ -312,8 +370,7 @@ const el = StyleSheet.create({
 });
 
 
-
-// MAIN SCREEN
+// ─── MAIN SCREEN ─────────────────────────────────────────────────────────────
 
 const ActivityTrackingScreen = ({ navigation, route }) => {
   const user = route?.params?.user || null;
@@ -331,22 +388,24 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
     setTimeout(() => setBanner(''), 4000);
   }, []);
 
+  // FIX 3: dependency changed from [user] → [user?.userId] so the fetch only
+  // re-runs when the user ID actually changes, not on every parent re-render.
   useFocusEffect(
     useCallback(() => {
       if (!user?.userId) return;
-    
+
       const fetchEntries = async () => {
         try {
-          const data = await ExerciseEntry.getTodayEntries(user.userId);
+          const data = await controller.fetchTodayEntries(user.userId);
           setExerciseEntries(data);
         } catch (err) {
           console.error('Failed to fetch exercise entries', err);
         }
       };
-    
+
       fetchEntries();
-    }, [user])
-  );  
+    }, [user?.userId])  // FIX 3
+  );
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -374,15 +433,16 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
 
         <TabBar activeTab={activeTab} onSelect={setActiveTab} />
 
-        {activeTab === 'Overview'          && <OverviewTab    exerciseEntries={exerciseEntries} />}
-        {activeTab === 'Exercise Log'      && <ExerciseLogTab exerciseEntries={exerciseEntries} onOpenLog={() => setShowLogModal(true)} />}
+        {activeTab === 'Overview'     && <OverviewTab     exerciseEntries={exerciseEntries} />}
+        {activeTab === 'Exercise Log' && <ExerciseLogTab  exerciseEntries={exerciseEntries} onOpenLog={() => setShowLogModal(true)} />}
 
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-// Styles
+// ─── STYLES ──────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   safe:         { flex: 1, backgroundColor: C.bg },
   list:         { paddingHorizontal: 16, paddingBottom: 32 },

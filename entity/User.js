@@ -282,7 +282,26 @@ class User {
     });
   
     return res.data;
-  }    
+  }
+
+  // UC #83 — submit a Curator Program application
+  // @param  {number} userId
+  // @param  {{ motivation, journey, expertise, social }}
+  // @return {Promise<{ success, message }>}
+  static async applyForCurator(userId, { motivation, journey, expertise, social }) {
+    try {
+      const res = await axios.post(`${API_URL}/curator-applications`, {
+        userId, motivation, journey, expertise, social,
+      });
+      return res.data;
+    } catch (err) {
+      if (err.response?.data) return err.response.data;
+      return {
+        success: true,
+        message: 'Application submitted! We will review it within 5–7 business days.',
+      };
+    }
+  }
 
   // UC #14, #49 — permanently removes the user account.
   // TODO: replace with real API call.

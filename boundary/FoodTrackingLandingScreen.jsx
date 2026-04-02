@@ -745,14 +745,11 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
 
   const loadTodayEntries = useCallback(async () => {
     if (!currentUser?.userId) return;
-    const result = await historyController._safeCall(async () => {
-      return await import('../entity/FoodIntakeEntry')
-        .then(m => m.default.getTodayEntries(currentUser.userId));
-    });
-    if (result) {
-      setTodaysEntries(result);
+    const entries = await intakeController.fetchTodayEntries(currentUser.userId);
+    if (entries) {
+      setTodaysEntries(entries);
     }
-  }, [currentUser]);
+  }, [currentUser?.userId]);
 
   const refreshUserData = useCallback(async () => {
     if (!currentUser?.userId) return;

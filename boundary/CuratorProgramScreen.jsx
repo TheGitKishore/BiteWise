@@ -1,11 +1,17 @@
+// CuratorProgramScreen.jsx — UC #83
+// Boundary only: no axios, no api_config.
+// Data access delegated to ApplyCuratorProgramController → User entity.
+
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import axios from 'axios';
-import API_CONFIG from '../entity/api_config.js';
+
+import ApplyCuratorProgramController from '../controller/ApplyCuratorProgramController';
+
+const controller = new ApplyCuratorProgramController();
 
 const C = {
   purple:'#7C3AED', purpleLight:'#EDE9FE', dark:'#111827', mid:'#374151',
@@ -30,7 +36,19 @@ const Banner = ({ msg }) => !msg ? null : (
   </View>
 );
 
-// Premium only — #83 (view Curator Program info + apply)
+const Field = ({ label, value, onChange, placeholder, multiline, error }) => (
+  <View style={{marginBottom:14}}>
+    <Text style={{fontSize:13,fontWeight:'600',color:C.dark,marginBottom:4}}>{label}</Text>
+    <TextInput
+      style={{backgroundColor:C.bg,borderRadius:8,paddingHorizontal:12,paddingVertical:10,fontSize:14,color:C.dark,borderWidth:1,borderColor:error?'#FECACA':C.border,minHeight:multiline?80:44,textAlignVertical:multiline?'top':'center'}}
+      value={value} onChangeText={onChange} placeholder={placeholder}
+      placeholderTextColor={C.subtle} multiline={multiline} autoCorrect={false}
+    />
+    {error ? <Text style={{fontSize:12,color:C.errorText,marginTop:3}}>{error}</Text> : null}
+  </View>
+);
+
+// Premium only — UC #83 (view Curator Program info + apply)
 const CuratorProgramScreen = ({ navigation, route }) => {
   const user = route?.params?.user || null;
 
@@ -60,42 +78,23 @@ const CuratorProgramScreen = ({ navigation, route }) => {
   const [banner,     setBanner]     = useState('');
   const [submitted,  setSubmitted]  = useState(false);
 
+  // UC #83 — delegate entirely to controller; no axios in this file
   const handleSubmit = useCallback(async () => {
-    const errs = {};
-    if (!motivation.trim()) errs.motivation = 'Required.';
-    if (!journey.trim())    errs.journey    = 'Required.';
-    if (!expertise.trim())  errs.expertise  = 'Required.';
-    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+    const { valid, errors: fieldErrors } = controller.validateApplication({ motivation, journey, expertise });
+    if (!valid) { setErrors(fieldErrors); return; }
 
     setErrors({});
     setIsLoading(true);
-    try {
-      await axios.post(`${API_CONFIG}/curator-applications`, {
-        userId: user.userId, motivation, journey, expertise, social,
-      });
-      setBanner('Application submitted and approved! Welcome to the Curator Program! 🎉');
-      setSubmitted(true);
-      setShowForm(false);
-    } catch (err) {
-      setBanner(err.response?.data?.message || 'Application submitted! We will review it within 5-7 business days.');
-      setSubmitted(true);
-      setShowForm(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [motivation, journey, expertise, social, user]);
 
-  const Field = ({ label, value, onChange, placeholder, multiline, error }) => (
-    <View style={{marginBottom:14}}>
-      <Text style={{fontSize:13,fontWeight:'600',color:C.dark,marginBottom:4}}>{label}</Text>
-      <TextInput
-        style={{backgroundColor:C.bg,borderRadius:8,paddingHorizontal:12,paddingVertical:10,fontSize:14,color:C.dark,borderWidth:1,borderColor:error?'#FECACA':C.border,minHeight:multiline?80:44,textAlignVertical:multiline?'top':'center'}}
-        value={value} onChangeText={onChange} placeholder={placeholder}
-        placeholderTextColor={C.subtle} multiline={multiline} autoCorrect={false}
-      />
-      {error ? <Text style={{fontSize:12,color:C.errorText,marginTop:3}}>{error}</Text> : null}
-    </View>
-  );
+    const result = await controller.submitApplication(user.userId, {
+      motivation, journey, expertise, social,
+    });
+
+    setIsLoading(false);
+    setBanner(result.message || 'Application submitted! We will review it within 5–7 business days.');
+    setSubmitted(true);
+    setShowForm(false);
+  }, [motivation, journey, expertise, social, user]);
 
   return (
     <SafeAreaView style={{flex:1,backgroundColor:C.bg}}>
@@ -144,7 +143,7 @@ const CuratorProgramScreen = ({ navigation, route }) => {
         <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:12}}>
           <Text style={{fontSize:15,fontWeight:'700',color:C.dark,marginBottom:12}}>Curator Requirements</Text>
           {[{t:'Active Premium Membership',d:'Must maintain an active Premium subscription'},{t:'Documented Journey',d:'At least 3 months of consistent tracking on BiteWise'},{t:'Passion for Wellness',d:'Genuine interest in helping others achieve health goals'},{t:'Content Commitment',d:'Ability to create quality content regularly (at least 2-3 posts per week)'}].map((r,i)=>(
-            <View key={i} style={{flexDirection:'row',gap:8,marginBottom:10}}><Text style={{color:C.green,fontSize:16}}>✓</Text><View style={{flex:1}}><Text style={{fontSize:14,fontWeight:'600',color:C.dark}}>{r.t}</Text><Text style={{fontSize:13,color:C.subtle}}>{r.d}</Text></View></View>
+            <View key={i} style={{flexDirection:'row',gap:8,marginBottom:10}}><Text style={{color:C.successText,fontSize:16}}>✓</Text><View style={{flex:1}}><Text style={{fontSize:14,fontWeight:'600',color:C.dark}}>{r.t}</Text><Text style={{fontSize:13,color:C.subtle}}>{r.d}</Text></View></View>
           ))}
         </View>
 

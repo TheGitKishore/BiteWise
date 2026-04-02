@@ -6,9 +6,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useCallback, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import UserController from '../controller/UserController';
-import FoodIntakeEntry from '../entity/FoodIntakeEntry';
+import ViewCurrentCalorieIntakeController from '../controller/ViewCurrentCalorieIntakeController';
 
-const userController = new UserController();
+const userController   = new UserController();
+const intakeController = new ViewCurrentCalorieIntakeController();
 
 // Design Tokens
 const C = {
@@ -198,12 +199,12 @@ const PremiumUserDashboardScreen = ({ navigation, route }) => {
     try {
       if (!currentUser?.userId) return;
 
-      const entries = await FoodIntakeEntry.getTodayEntries(currentUser.userId);
+      const entries = await intakeController.fetchTodayEntries(currentUser.userId);
 
       setTodaysEntries(entries || []);
 
       const { calories } =
-        FoodIntakeEntry.getTodaySummary(entries || []);
+        intakeController.getCurrentIntake(entries || []);
 
       setConsumed(calories);
 

@@ -32,6 +32,16 @@ class LogExerciseController {
       return await ExerciseEntry.create(userId, fields);
     });
   }
+
+  // UC #58 — fetch today's exercise sessions for the Activity Tracking overview.
+  // Boundaries must not call ExerciseEntry.getTodayEntries() directly.
+  // @param  {number} userId
+  // @return {Promise<ExerciseEntry[]>}
+  async fetchTodayEntries(userId) {
+    return this._safeCall(async () => {
+      return await ExerciseEntry.getTodayEntries(userId);
+    });
+  }
 }
 
 export default LogExerciseController;

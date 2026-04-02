@@ -116,6 +116,15 @@ class Recipe {
     return recipes.filter((r) => r.prepTimeMins <= maxMins);
   }
 
+  // UC #27, #70 — client-side filter: only recipes created by this user
+  // @param  {Recipe[]} recipes
+  // @param  {number}   userId
+  // @return {Recipe[]}
+  static filterByUser(recipes, userId) {
+    if (!userId) return [];
+    return recipes.filter((r) => String(r.createdByUserId) === String(userId));
+  }
+
   // @param  {Recipe[]} recipes
   // @return {boolean}
   static hasRecipes(recipes) {
