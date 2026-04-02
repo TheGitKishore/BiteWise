@@ -12,7 +12,7 @@ import ExerciseEntry from '../entity/ExerciseEntry';
 
 const controller = new LogExerciseController();
 
-const TABS = ['Overview', 'Exercise Log', 'Connected Devices'];
+const TABS = ['Overview', 'Exercise Log'];
 
 // Design Tokens
 const C = {
@@ -236,54 +236,15 @@ const le = StyleSheet.create({
 
 const OverviewTab = ({ exerciseEntries }) => {
   const totalBurned   = exerciseEntries.reduce((s, e) => s + e.caloriesBurned, 0);
-  const stepsToday    = 0; // Sprint 4 wearable integration (#59)
-  const stepsGoal     = 10000;
-  const stepsPct      = Math.min(stepsToday / stepsGoal, 1);
 
   return (
     <View>
-      {/* Daily Steps card */}
-      <View style={ov.stepsCard}>
-        <View style={ov.stepsHeader}>
-          <Text style={ov.stepsIcon}>🦶</Text>
-          <Text style={ov.stepsTitle}>Daily Steps</Text>
-        </View>
-        <View style={ov.stepsRow}>
-          <View>
-            <Text style={ov.stepsCount}>{stepsToday}</Text>
-            <Text style={ov.stepsGoal}>of {stepsGoal.toLocaleString()} goal</Text>
-          </View>
-          <View style={ov.stepsRight}>
-            <Text style={ov.stepsPct}>{Math.round(stepsPct * 100)}%</Text>
-            <Text style={ov.stepsComplete}>Complete</Text>
-          </View>
-        </View>
-        <View style={ov.barTrack}>
-          <View style={[ov.barFill, { width: `${Math.round(stepsPct * 100)}%` }]} />
-        </View>
-        <Text style={ov.stepsRemaining}>{(stepsGoal - stepsToday).toLocaleString()} steps remaining</Text>
-      </View>
-
       <StatCard iconBg="#EDE9FE" icon="🏋️" label="Today's Exercises" value={String(exerciseEntries.length)} />
       <StatCard iconBg="#FEF3C7" icon="⚡" label="Calories Burned"   value={String(totalBurned)} />
     </View>
   );
 };
 const ov = StyleSheet.create({
-  stepsCard:      { backgroundColor: C.white, borderRadius: 14, padding: 18, marginBottom: 12, borderWidth: 1, borderColor: C.border },
-  stepsHeader:    { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 },
-  stepsIcon:      { fontSize: 16 },
-  stepsTitle:     { fontSize: 15, fontWeight: '700', color: C.dark },
-  stepsRow:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 10 },
-  stepsCount:     { fontSize: 36, fontWeight: '800', color: C.purple },
-  stepsGoal:      { fontSize: 12, color: C.subtle },
-  stepsRight:     { alignItems: 'flex-end' },
-  stepsPct:       { fontSize: 20, fontWeight: '800', color: C.dark },
-  stepsComplete:  { fontSize: 12, color: C.subtle },
-  barTrack:       { height: 6, backgroundColor: C.purpleLight, borderRadius: 3, marginBottom: 8, overflow: 'hidden' },
-  barFill:        { height: 6, backgroundColor: C.purple, borderRadius: 3 },
-  stepsRemaining: { fontSize: 12, color: C.subtle },
-});
 
 
 // EXERCISE LOG TAB
@@ -351,25 +312,6 @@ const el = StyleSheet.create({
 });
 
 
-// CONNECTED DEVICES TAB
-
-const ConnectedDevicesTab = () => (
-  <View style={cd.card}>
-    <Text style={cd.heading}>Connected Devices</Text>
-    <Text style={cd.empty}>No devices connected yet.{'\n'}Connect a wearable to sync your activity data.</Text>
-    <TouchableOpacity style={cd.connectBtn} activeOpacity={0.85}>
-      <Text style={cd.connectBtnText}>+ Connect Device</Text>
-    </TouchableOpacity>
-  </View>
-);
-const cd = StyleSheet.create({
-  card:          { backgroundColor: C.white, borderRadius: 14, padding: 20, borderWidth: 1, borderColor: C.border, alignItems: 'center' },
-  heading:       { fontSize: 15, fontWeight: '700', color: C.dark, marginBottom: 12 },
-  empty:         { fontSize: 14, color: C.subtle, textAlign: 'center', marginBottom: 20, lineHeight: 21 },
-  connectBtn:    { borderWidth: 1.5, borderColor: C.purple, borderRadius: 10, paddingVertical: 12, paddingHorizontal: 24 },
-  connectBtnText:{ fontSize: 14, fontWeight: '600', color: C.purple },
-});
-
 
 // MAIN SCREEN
 
@@ -434,7 +376,6 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
 
         {activeTab === 'Overview'          && <OverviewTab    exerciseEntries={exerciseEntries} />}
         {activeTab === 'Exercise Log'      && <ExerciseLogTab exerciseEntries={exerciseEntries} onOpenLog={() => setShowLogModal(true)} />}
-        {activeTab === 'Connected Devices' && <ConnectedDevicesTab />}
 
       </ScrollView>
     </SafeAreaView>
