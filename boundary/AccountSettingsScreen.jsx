@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import LogOutController              from '../controller/LogOutController';
 import ViewAccountDetailsController  from '../controller/ViewAccountDetailsController';
@@ -188,6 +189,8 @@ const AccountSettingsScreen = ({ navigation, route }) => {
 
   // UC #12, #47 — load account details on mount
   useEffect(() => {
+    if (!user?.userId) return;
+  
     viewDetailsCtrl.fetchAccountDetails(user).then((result) => {
       if (result.success) {
         setUsername(result.data.username);
@@ -196,20 +199,40 @@ const AccountSettingsScreen = ({ navigation, route }) => {
         setBanner({ message: result.message, type: 'error' });
       }
     });
-  }, []);
+  }, [user?.userId]);
 
   // UC #13, #48 — update account details
   const handleUpdate = useCallback(async () => {
     setFieldErrors({});
     setBanner({ message: '', type: '' });
     setIsUpdating(true);
-
-    const result = await updateDetailsCtrl.updateAccountDetails(user, { username, email });
-
+  
+  const result = await updateDetailsCtrl.updateAccountDetails(user, {
+    username,
+    email,
+    role: user?.role ?? 'USER',
+    membershipPlanId: user?.membershipPlanId ?? 1,
+  });
+  
     setIsUpdating(false);
-
+  
     if (result.success) {
-      setUser(result.user);
+      // 🔥 IMPORTANT: refresh user from backend OR merge safely
+      const refreshed = await viewDetailsCtrl.fetchAccountDetails(user);
+    
+      if (refreshed.success) {
+        setUser(prev => ({
+          ...prev,
+          ...refreshed.data,
+          role: refreshed.data.role ?? prev.role,
+          membershipPlanId: refreshed.data.membershipPlanId ?? prev.membershipPlanId,
+        }));
+        setUsername(refreshed.data.username);
+        setEmail(refreshed.data.email);
+      }
+      navigation.navigate('DashboardRouter', {
+        user: refreshed.data,
+      });    
       setBanner({ message: result.message, type: 'success' });
     } else {
       if (result.field) {
@@ -217,7 +240,6 @@ const AccountSettingsScreen = ({ navigation, route }) => {
       }
     }
   }, [user, username, email]);
-
   // UC #11, #46 — log out
   const handleLogOut = useCallback(async () => {
     setIsLoggingOut(true);
@@ -258,7 +280,38 @@ const AccountSettingsScreen = ({ navigation, route }) => {
     );
   }, [user, navigation]);
 
-  const planLabel = user?.membershipPlanId === 2 ? 'Premium' : 'Free';
+  const membershipPlanId = user?.membershipPlanId;
+  
+  const isPremium = parseInt(membershipPlanId ?? 1, 10) === 2;
+  const planLabel = isPremium ? 'Premium' : 'Free';
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!user?.userId) return;
+
+      const refresh = async () => {
+        const result = await viewDetailsCtrl.fetchAccountDetails(user);
+
+        if (result.success) {
+          setUser(prev => ({
+            ...prev,
+            ...result.data,
+          }));
+
+          setUsername(result.data.username);
+          setEmail(result.data.email);
+        }
+      };
+
+      refresh();
+    }, [user?.userId])
+  );  
+
+  useEffect(() => {
+    if (route?.params?.updatedUser) {
+      setUser(route.params.updatedUser);
+    }
+  }, [route?.params?.updatedUser]);  
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -312,13 +365,22 @@ const AccountSettingsScreen = ({ navigation, route }) => {
           />
           <Text style={styles.planLabel}>Current Plan</Text>
           <Text style={styles.planValue}>{planLabel}</Text>
+
           <TouchableOpacity
             style={styles.changePlanBtn}
-            onPress={() => navigation.navigate('ViewPricingPlansScreen')}
             activeOpacity={0.75}
+            onPress={() =>
+              navigation.navigate('ViewPricingPlansScreen', {
+                mode: 'update',
+                user,
+              })
+            }            
           >
-            <Text style={styles.changePlanText}>Change Plan</Text>
+            <Text style={styles.changePlanText}>
+              {isPremium ? 'Change Plan' : 'Change Plan'}
+            </Text>
           </TouchableOpacity>
+
         </Section>
 
         {/* UC #11, #46 — Log Out */}

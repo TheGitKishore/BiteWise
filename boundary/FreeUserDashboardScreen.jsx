@@ -3,7 +3,7 @@ import {
   StyleSheet, StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import UserController from '../controller/UserController';
 import FoodIntakeEntry from '../entity/FoodIntakeEntry';
@@ -334,7 +334,7 @@ const FreeUserDashboardScreen = ({ navigation, route }) => {
   const [currentUser, setCurrentUser] = useState(initialUser);
   const [goal, setGoal] = useState(initialUser?.dailyCalorieLimit ?? 2000);
   const successMessage = route?.params?.successMessage || '';
-  const isFree = currentUser?.role !== 'PREMIUM';
+  const isFree = currentUser?.role !== 'premium';
   const [todaysEntries, setTodaysEntries] = useState([]);
 
   // Sprint 2 will replace with real FoodIntakeEntry data
@@ -384,6 +384,12 @@ const FreeUserDashboardScreen = ({ navigation, route }) => {
       fetchTodayEntries();
     }, [currentUser?.userId])
   );
+
+  useEffect(() => {
+    if (route?.params?.user) {
+      setCurrentUser(route.params.user);
+    }
+  }, [route?.params?.user]);
 
   return (
     <SafeAreaView style={styles.safe}>

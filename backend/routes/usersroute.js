@@ -245,8 +245,8 @@ router.get('/:userId', async (req, res) => {
 // PUT /api/users/update   — UC #13 / #48
 // ─────────────────────────────────────────────
 router.put('/update', async (req, res) => {
-  const { userId, username, email } = req.body;
-
+  const { userId, username, email, membershipPlanId, role } = req.body;
+  console.log("REQ BODY:", req.body);
   try {
     // Check if username is taken by another user
     const [existingUsername] = await db.query(
@@ -279,9 +279,9 @@ router.put('/update', async (req, res) => {
     // Update user
     await db.query(
       `UPDATE users 
-       SET username = ?, email = ?, updated_at = NOW()
+       SET username = ?, email = ?, membership_plan_id = ?, role = ?, updated_at = NOW()
        WHERE user_id = ?`,
-      [username.trim(), email.trim(), userId]
+      [username.trim(), email.trim(), membershipPlanId, role, userId]
     );
 
     // Fetch updated user

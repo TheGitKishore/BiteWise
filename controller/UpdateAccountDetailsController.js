@@ -26,9 +26,14 @@ class UpdateAccountDetailsController {
   // @param  {User}   user
   // @param  {{ username: string, email: string }}
   // @return {Promise<{ success, field, message, user }>}
-  async updateAccountDetails(user, { username, email }) {
+  async updateAccountDetails(user, { username, email, role, membershipPlanId }) {
     return this._safeCall(async () => {
-      return await User.updateAccountDetails(user, { username, email });
+      return await User.updateAccountDetails(user, {
+        username,
+        email,
+        role,
+        membershipPlanId
+      });
     });
   }
 }

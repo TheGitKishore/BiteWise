@@ -23,6 +23,7 @@ import RecipesScreen                 from './boundary/RecipesScreen';
 import SavedRecipesScreen            from './boundary/SavedRecipesScreen';
 import MealPlansScreen               from './boundary/MealPlansScreen';
 import CreateRecipeScreen            from './boundary/CreateRecipeScreen';
+import DashboardRouter from './boundary/DashboardRouter';
 
 // ─── Sprint 4 ────────────────────────────────────────────────────────────────
 import ReportsScreen                 from './boundary/ReportsScreen';
@@ -48,6 +49,7 @@ export default function App() {
         <Stack.Screen name="ReviewsScreen"                component={ViewReviewsScreen} />
         <Stack.Screen name="SignUpScreen"                 component={CreateAccountScreen} />
         <Stack.Screen name="LoginScreen"                  component={LoginScreen} />
+        <Stack.Screen name="DashboardRouter" component={DashboardRouter}/>
         <Stack.Screen name="FreeUserDashboardScreen"      component={FreeUserDashboardScreen} />
         <Stack.Screen name="PremiumUserDashboardScreen"   component={PremiumUserDashboardScreen} />
         <Stack.Screen name="AccountSettingsScreen"        component={AccountSettingsScreen} />

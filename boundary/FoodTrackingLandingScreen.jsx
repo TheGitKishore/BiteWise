@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Modal,
@@ -496,36 +496,58 @@ const cm = StyleSheet.create({
 });
 
 
-// FOOD DATABASE SECTION — UC #15
+// ─────────────────────────────────────────────────────────────
+// FOOD DATABASE SECTION — UC #15, #50
+// CHANGED: search is now async with local-first + API fallback
+// ─────────────────────────────────────────────────────────────
 
-const FoodDatabaseSection = ({ 
-  allItems,
-  isLoading,
-  errorMsg,
-  userId,
-  onEntryLogged
-}) => {
-  const [search,     setSearch]     = useState('');
-  const [expanded,   setExpanded]   = useState(null);
-  const [quantities, setQuantities] = useState({});
+const FoodDatabaseSection = ({ allItems, isLoading, errorMsg }) => {
+  const [search,        setSearch]        = useState('');
+  const [expanded,      setExpanded]      = useState(null);
+  const [quantities,    setQuantities]    = useState({});
 
-  const filtered  = dbController.searchFoodItems(allItems, search);
-  const handleAdd = (item) => { setExpanded(item.foodItemId); setQuantities((p) => ({ ...p, [item.foodItemId]: p[item.foodItemId] || 1 })); };
-  const handleInc = (id)   => setQuantities((p) => ({ ...p, [id]: (p[id] || 1) + 1 }));
-  const handleDec = (id)   => setQuantities((p) => ({ ...p, [id]: Math.max(1, (p[id] || 1) - 1) }));
+  // ── NEW state for async search ──────────────────────────────
+  const [displayItems,  setDisplayItems]  = useState([]);   // what's shown in the list
+  const [isSearching,   setIsSearching]   = useState(false); // spinner while API call runs
+  const [searchMsg,     setSearchMsg]     = useState('');    // "no results" or error text
+  const [fromAPI,       setFromAPI]       = useState(false); // true when results came from Open Food Facts
+  // ───────────────────────────────────────────────────────────
+
+  // On mount (or when allItems loads), show the full local list
+  useEffect(() => {
+    setDisplayItems(allItems);
+  }, [allItems]);
+
+  // ── CHANGED: search handler is now async ───────────────────
+  const handleSearch = useCallback(async (query) => {
+    setSearch(query);
+    setSearchMsg('');
+    setFromAPI(false);
+
+    // Empty query → restore full local list, no API call
+    if (!query || query.trim().length === 0) {
+      setDisplayItems(allItems);
+      return;
+    }
+
+    setIsSearching(true);
+    const result = await dbController.searchFoodItems(allItems, query);
+    setIsSearching(false);
+
+    setDisplayItems(result.data);
+    setFromAPI(result.fromAPI);
+    setSearchMsg(result.message);
+  }, [allItems]);
+  // ───────────────────────────────────────────────────────────
+
+  const handleAdd = (item) => {
+    setExpanded(item.foodItemId);
+    setQuantities((p) => ({ ...p, [item.foodItemId]: p[item.foodItemId] || 1 }));
+  };
+  const handleInc = (id) => setQuantities((p) => ({ ...p, [id]: (p[id] || 1) + 1 }));
+  const handleDec = (id) => setQuantities((p) => ({ ...p, [id]: Math.max(1, (p[id] || 1) - 1) }));
   const handleLog = async (item) => {
-    if (!userId) return; // safety check
-    const qty = quantities[item.foodItemId] || 1;
-    console.log("Logging item:", item.name, "Qty:", qty);
-    const result = await manualController.createManualEntry(userId, {
-      foodName: item.name,
-      calories: item.calories * qty,
-      protein: item.protein * qty,
-      carbs: item.carbs * qty,
-      fat: item.fat * qty,
-      meal: 'Lunch', // or dynamic later
-    });
-
+    const result = await dbController.logFoodItem(item, quantities[item.foodItemId] || 1); 
     if (result.success) {
       setExpanded(null);
       onEntryLogged(result.message, result.data);
@@ -537,29 +559,66 @@ const FoodDatabaseSection = ({
   return (
     <View style={db.wrap}>
       <Text style={db.heading}>Food Database</Text>
-      <TextInput style={db.search} value={search} onChangeText={setSearch} placeholder="Search for food..." placeholderTextColor={C.subtle} autoCorrect={false} />
-      {filtered.length === 0
-        ? <Text style={db.empty}>No food items found.</Text>
-        : filtered.map((item) => (
-            <FoodRow key={item.foodItemId} item={item} qty={quantities[item.foodItemId] || 1}
-              isExpanded={expanded === item.foodItemId}
-              onAdd={() => handleAdd(item)} onIncrement={() => handleInc(item.foodItemId)}
-              onDecrement={() => handleDec(item.foodItemId)} onLog={() => handleLog(item)}
-            />
-          ))
-      }
+
+      {/* ── CHANGED: onChangeText now calls async handleSearch ── */}
+      <TextInput
+        style={db.search}
+        value={search}
+        onChangeText={handleSearch}
+        placeholder="Search for food..."
+        placeholderTextColor={C.subtle}
+        autoCorrect={false}
+      />
+
+      {/* Spinner while Open Food Facts API is being called */}
+      {isSearching && (
+        <ActivityIndicator size="small" color={C.purple} style={{ marginVertical: 8 }} />
+      )}
+
+      {/* Badge shown when results come from Open Food Facts */}
+      {fromAPI && displayItems.length > 0 && (
+        <View style={db.apiBadge}>
+          <Text style={db.apiBadgeText}>🌐 Results from Open Food Facts</Text>
+        </View>
+      )}
+
+      {/* No results message */}
+      {!isSearching && searchMsg !== '' && (
+        <Text style={db.empty}>{searchMsg}</Text>
+      )}
+
+      {/* Food list */}
+      {!isSearching && searchMsg === '' && displayItems.length === 0 && (
+        <Text style={db.empty}>No food items found.</Text>
+      )}
+
+      {!isSearching && displayItems.map((item) => (
+        <FoodRow
+          key={item.foodItemId}
+          item={item}
+          qty={quantities[item.foodItemId] || 1}
+          isExpanded={expanded === item.foodItemId}
+          onAdd={() => handleAdd(item)}
+          onIncrement={() => handleInc(item.foodItemId)}
+          onDecrement={() => handleDec(item.foodItemId)}
+          onLog={() => handleLog(item)}
+        />
+      ))}
     </View>
   );
 };
 const db = StyleSheet.create({
-  wrap:    { backgroundColor: C.white, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: C.border },
-  heading: { fontSize: 16, fontWeight: '700', color: C.dark, marginBottom: 12 },
-  search:  { backgroundColor: C.bg, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, color: C.dark, borderWidth: 1, borderColor: C.border, marginBottom: 8 },
-  empty:   { fontSize: 14, color: C.subtle, textAlign: 'center', paddingVertical: 24 },
+  wrap:         { backgroundColor: C.white, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: C.border },
+  heading:      { fontSize: 16, fontWeight: '700', color: C.dark, marginBottom: 12 },
+  search:       { backgroundColor: C.bg, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, color: C.dark, borderWidth: 1, borderColor: C.border, marginBottom: 8 },
+  empty:        { fontSize: 14, color: C.subtle, textAlign: 'center', paddingVertical: 24 },
+  // ── NEW styles for API badge ──
+  apiBadge:     { backgroundColor: C.purpleLight, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5, alignSelf: 'flex-start', marginBottom: 8 },
+  apiBadgeText: { fontSize: 12, color: C.purple, fontWeight: '600' },
 });
 
 
-// LOG FOOD TAB
+// LOG FOOD TAB — unchanged
 
 const LogFoodTab = ({ user, allItems, dbLoading, dbError, onOpenManual, onOpenCamera, onEntryLogged }) => (
   <View>
@@ -576,7 +635,7 @@ const LogFoodTab = ({ user, allItems, dbLoading, dbError, onOpenManual, onOpenCa
 );
 
 
-// TODAY'S ENTRIES TAB — UC #20
+// TODAY'S ENTRIES TAB — UC #20 — unchanged
 
 const TodaysEntriesTab = ({ entries }) =>
   entries.length === 0
@@ -597,14 +656,13 @@ const tet = StyleSheet.create({
 });
 
 
-// HISTORY TAB — UC #19
+// HISTORY TAB — UC #19 — unchanged
 
 const HistoryTab = ({ pastEntries, isLoading, errorMsg }) => {
   if (isLoading) return <ActivityIndicator size="small" color={C.purple} style={{ marginTop: 24 }} />;
   if (errorMsg)  return <View style={{ alignItems: 'center', paddingVertical: 40 }}><Text style={{ fontSize: 14, color: C.subtle }}>{errorMsg}</Text></View>;
   if (pastEntries.length === 0) return <View style={{ alignItems: 'center', paddingVertical: 40 }}><Text style={{ fontSize: 14, color: C.subtle }}>No past calorie entries available.</Text></View>;
 
-  // Group by date
   const grouped = pastEntries.reduce((acc, e) => {
     const date = e.loggedAt?.split('T')[0] || 'Unknown';
     if (!acc[date]) acc[date] = [];
@@ -642,7 +700,7 @@ const ht = StyleSheet.create({
 });
 
 
-// MAIN SCREEN
+// MAIN SCREEN — unchanged
 
 const FoodTrackingLandingScreen = ({ navigation, route }) => {
   const user = route?.params?.user || null;
@@ -662,11 +720,9 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
   const [showCamera,    setShowCamera]    = useState(false);
   const [showGoal,      setShowGoal]      = useState(false);
 
-  // UC #20, #21 — derive live totals and target check
   const intake = intakeController.getCurrentIntake(todaysEntries);
   const target = targetController.checkDailyTarget(todaysEntries, dailyGoal);
 
-  // UC #15 — load food database on mount
   useEffect(() => {
     dbController.fetchFoodDatabase().then((result) => {
       if (result.success) setAllItems(result.data);
@@ -675,7 +731,6 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
     });
   }, []);
 
-  // UC #19 — load history when History tab is first opened
   const loadHistory = useCallback(async () => {
     if (!currentUser?.userId) return; // ✅ wait for user
     setHistLoading(true);
@@ -734,7 +789,6 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
     if (tab === "Today's Entries") loadTodayEntries(); // ✅ ADD THIS
   }, [loadHistory, loadTodayEntries]);
 
-  // Called by Manual and Camera modals on success
   const handleEntryLogged = useCallback((message, entry) => {
     setShowManual(false);
     setShowCamera(false);
@@ -745,7 +799,6 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
     setTimeout(() => setBanner(''), 4000);
   }, [loadTodayEntries]);
 
-  // UC #18 — goal saved
   const handleGoalSaved = useCallback((message, updatedUser) => {
     setShowGoal(false);
     setDailyGoal(updatedUser.dailyCalorieLimit);
@@ -761,7 +814,6 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
       <NavBar onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user: currentUser })} />
       <Banner message={banner} />
 
-      {/* UC #18 modal */}
       <SetGoalModal
         visible={showGoal}
         currentGoal={dailyGoal}
@@ -770,7 +822,6 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
         onSuccess={handleGoalSaved}
       />
 
-      {/* UC #16 modal */}
       <ManualEntryModal
         visible={showManual}
         userId={currentUser?.userId}
@@ -778,7 +829,6 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
         onSuccess={handleEntryLogged}
       />
 
-      {/* UC #17 modal */}
       <CameraModal
         visible={showCamera}
         userId={currentUser?.userId}
@@ -788,7 +838,6 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
 
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
 
-        {/* Page title + UC #18 trigger */}
         <View style={styles.titleRow}>
           <Text style={styles.pageTitle}>Food Tracking</Text>
           <TouchableOpacity style={styles.goalBtn} onPress={() => setShowGoal(true)} activeOpacity={0.8}>
@@ -796,7 +845,6 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
 
-        {/* UC #20, #21 — Today's Progress with live target check */}
         <TodaysProgressCard target={target} />
 
         <TabBar activeTab={activeTab} onSelect={handleTabSelect} />
@@ -810,7 +858,6 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
   safe:        { flex: 1, backgroundColor: C.bg },
   list:        { paddingHorizontal: 16, paddingBottom: 32 },

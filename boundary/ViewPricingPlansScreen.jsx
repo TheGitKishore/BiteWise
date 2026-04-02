@@ -12,11 +12,13 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ViewPricingPlansController from '../controller/ViewPricingPlansController';
+import UpdateAccountDetailsController from '../controller/UpdateAccountDetailsController';
 
 const { width: SW } = Dimensions.get('window');
 
 // Controller (single instance per screen session) 
 const controller = new ViewPricingPlansController();
+const updateDetailsCtrl = new UpdateAccountDetailsController();
 
 // Design Tokens
 const C = {
@@ -282,10 +284,12 @@ const es = StyleSheet.create({
 
 // MAIN SCREEN
 
-const ViewPricingPlansScreen = ({ navigation }) => {
+const ViewPricingPlansScreen = ({ navigation, route }) => {
   const [plans,     setPlans]     = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg,  setErrorMsg]  = useState('');
+
+  const { mode, user } = route.params || {};
 
   // Normal Flow Step 1-2: load plans on mount
   const loadPlans = useCallback(async () => {
@@ -309,9 +313,45 @@ const ViewPricingPlansScreen = ({ navigation }) => {
 
   // UC #01 Step 3: user taps a plan → sign-up with plan
   // UC #09 (Choose a Subscription Plan) begins
-  const handleChoosePlan = useCallback((plan) => {
-    navigation.navigate('SignUpScreen', { selectedPlanId: plan.planId });
-  }, [navigation]);
+  const handleChoosePlan = useCallback(async (plan) => {
+  
+    // =========================
+    // MODE 1: ACCOUNT UPDATE
+    // =========================
+    if (mode === 'update') {
+    
+      const result = await updateDetailsCtrl.updateAccountDetails(user, {
+        membershipPlanId: plan.planId,
+        role: plan.planId === 2 ? 'premium' : 'free',
+        username: user.username,
+        email: user.email,
+      });
+      
+      console.log(result);
+
+      if (result.success) {
+        route.params?.onUpdated?.({
+          ...user,
+          membershipPlanId: plan.planId,
+          role: plan.planId === 2 ? 'premium' : 'free',
+        });
+      
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', result.message);
+      }
+    
+      return;
+    }
+  
+    // =========================
+    // MODE 2: SIGNUP FLOW (DEFAULT)
+    // =========================
+    navigation.navigate('SignUpScreen', {
+      selectedPlanId: plan.planId,
+    });
+  
+  }, [navigation, mode, user]);
 
   // Render 
   return (
