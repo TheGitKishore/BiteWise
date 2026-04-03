@@ -30,9 +30,21 @@ router.get('/active/:userId', async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      `SELECT * FROM health_goals 
-       WHERE user_id = ? AND is_active = TRUE 
-       LIMIT 1`,
+      `SELECT 
+      goal_id,
+      user_id,
+      goal_type,
+      custom_goal,
+      target_weight,
+      target_calories,
+      activity_level,
+      DATE_FORMAT(target_date, '%Y-%m-%d') AS target_date,
+      is_active,
+      created_at,
+      updated_at
+      FROM health_goals
+      WHERE user_id = ? AND is_active = TRUE
+      LIMIT 1`,
       [userId]
     );
 
@@ -109,13 +121,17 @@ router.put('/:goalId', async (req, res) => {
     targetDate
   } = req.body;
 
+  const formattedDate = targetDate
+    ? targetDate.substring(0, 10)
+    : null; 
+
   try {
     await db.query(
       `UPDATE health_goals
        SET goal_type = ?, custom_goal = ?, target_weight = ?, target_calories = ?, 
            activity_level = ?, target_date = ?
        WHERE goal_id = ?`,
-      [goalType, customGoal, targetWeight, targetCalories, activityLevel, targetDate, goalId]
+      [goalType, customGoal, targetWeight, targetCalories, activityLevel, formattedDate, goalId]
     );
 
     res.json({
@@ -128,7 +144,7 @@ router.put('/:goalId', async (req, res) => {
         targetWeight,
         targetCalories,
         activityLevel,
-        targetDate
+        targetDate: formattedDate
       }
     });
 
