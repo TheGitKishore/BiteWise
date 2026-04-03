@@ -25,7 +25,13 @@ class ViewHealthGoalController {
   // @return {Promise<{ success, data, message }>}
   async fetchGoal(userId) {
     return this._safeCall(async () => {
-      return await HealthGoal.fetchActive(userId);
+      const result = await HealthGoal.fetchActive(userId);
+    
+      return {
+        success: true,
+        data: result?.data ?? null,
+        message: result?.message ?? ''
+      };
     });
   }
 }

@@ -27,7 +27,13 @@ class SetHealthGoalController {
   // @return {Promise<{ success, field, message, data }>}
   async setGoal(userId, fields) {
     return this._safeCall(async () => {
-      return await HealthGoal.create(userId, fields);
+      const result = await HealthGoal.create(userId, fields);
+
+      return {
+        success: true,
+        data: result.data,   // <-- ALWAYS use data
+        message: result.message || 'Goal created'
+      };
     });
   }
 
@@ -37,9 +43,14 @@ class SetHealthGoalController {
   // @return {Promise<{ success, field, message, data }>}
   async updateGoal(goalId, fields) {
     return this._safeCall(async () => {
-      return await HealthGoal.update(goalId, fields);
+      const result = await HealthGoal.update(goalId, fields);
+    
+      return {
+        success: true,
+        data: result.data,
+        message: result.message || 'Goal updated'
+      };
     });
   }
 }
-
 export default SetHealthGoalController;

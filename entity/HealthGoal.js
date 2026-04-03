@@ -79,17 +79,45 @@ class HealthGoal {
   static async fetchActive(userId) {
     try {
       const res = await axios.get(`${API_URL}/active/${userId}`);
+    
+      const row = res.data?.data; // or res.data depending on backend
+    
+      if (!row) {
+        return {
+          success: true,
+          data: null,
+          message: ''
+        };
+      }
+    
+      // ✅ MAPPING HAPPENS HERE (IMPORTANT)
+      const goal = new HealthGoal({
+        goalId: row.goalId,
+        userId: row.userId,
+        goalType: row.goalType,
+        customGoal: row.customGoal,
+        targetWeight: row.targetWeight,
+        targetCalories: row.targetCalories,
+        activityLevel: row.activityLevel,
+        targetDate: row.targetDate,
+        isActive: row.isActive,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      });
+    
       return {
         success: true,
-        data:    res.data ? new HealthGoal(res.data) : null,
-        message: '',
+        data: goal,
+        message: ''
       };
+    
     } catch (err) {
       console.log('FETCH HEALTH GOAL ERROR:', err.response?.data || err.message);
+    
       return {
         success: false,
-        data:    null,
-        message: err.response?.data?.message || 'Failed to load health goal.',
+        data: null,
+        message: err.response?.data?.message || 'Failed to load health goal.'
       };
     }
   }

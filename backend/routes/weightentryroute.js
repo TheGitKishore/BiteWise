@@ -16,7 +16,7 @@ const mapWeightRow = (r) => ({
   entryId: r.entry_id,
   userId: r.user_id,
   weightKg: Number(r.weight_kg ?? r.weight_cm ?? 0),
-  loggedAt: r.loggedAt,
+  logged_at: r.logged_at,
 });
 
 // CREATE
@@ -37,13 +37,13 @@ router.post('/', async (req, res) => {
 
     const [result] = await db.execute(
       `INSERT INTO \`${TABLES.WEIGHT_HISTORIES}\`
-        (user_id, weight_kg, loggedAt)
+        (user_id, weight_kg, logged_at)
        VALUES (?, ?, CURRENT_TIMESTAMP)`,
       [numericUserId, Number(weightKg)]
     );
 
     const [rows] = await db.execute(
-      `SELECT entry_id, user_id, weight_kg, loggedAt
+      `SELECT entry_id, user_id, weight_kg, logged_at
        FROM \`${TABLES.WEIGHT_HISTORIES}\`
        WHERE entry_id = ? LIMIT 1`,
       [result.insertId]
@@ -55,7 +55,7 @@ router.post('/', async (req, res) => {
         entryId: result.insertId,
         userId: numericUserId,
         weightKg: Number(weightKg),
-        loggedAt: new Date().toISOString(),
+        logged_at: new Date().toISOString(),
       };
 
     return res.status(201).json({
@@ -81,10 +81,10 @@ router.get('/:userId', async (req, res) => {
     const userId = toNumber(req.params.userId);
 
     const [rows] = await db.execute(
-      `SELECT entry_id, user_id, weight_kg, loggedAt
+      `SELECT entry_id, user_id, weight_kg, logged_at
        FROM \`${TABLES.WEIGHT_HISTORIES}\`
        WHERE user_id = ?
-       ORDER BY loggedAt DESC, entry_id DESC`,
+       ORDER BY logged_at DESC, entry_id DESC`,
       [userId]
     );
 
@@ -135,7 +135,7 @@ router.put('/:entryId', async (req, res) => {
     }
 
     const [rows] = await db.execute(
-      `SELECT entry_id, user_id, weight_kg, loggedAt
+      `SELECT entry_id, user_id, weight_kg, logged_at
        FROM \`${TABLES.WEIGHT_HISTORIES}\`
        WHERE entry_id = ? LIMIT 1`,
       [entryId]

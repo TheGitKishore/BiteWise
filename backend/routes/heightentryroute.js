@@ -16,7 +16,7 @@ const mapHeightRow = (r) => ({
   entryId: r.entry_id,
   userId: r.user_id,
   heightCm: Number(r.height_cm),
-  loggedAt: r.loggedAt,
+  logged_at: r.logged_at,
 });
 
 // CREATE
@@ -37,13 +37,13 @@ router.post('/', async (req, res) => {
 
     const [result] = await db.execute(
       `INSERT INTO \`${TABLES.HEIGHT_HISTORIES}\`
-        (user_id, height_cm, loggedAt)
+        (user_id, height_cm, logged_at)
        VALUES (?, ?, CURRENT_TIMESTAMP)`,
       [numericUserId, Number(heightCm)]
     );
 
     const [rows] = await db.execute(
-      `SELECT entry_id, user_id, height_cm, loggedAt
+      `SELECT entry_id, user_id, height_cm, logged_at
        FROM \`${TABLES.HEIGHT_HISTORIES}\`
        WHERE entry_id = ? LIMIT 1`,
       [result.insertId]
@@ -55,7 +55,7 @@ router.post('/', async (req, res) => {
         entryId: result.insertId,
         userId: numericUserId,
         heightCm: Number(heightCm),
-        loggedAt: new Date().toISOString(),
+        logged_at: new Date().toISOString(),
       };
 
     return res.status(201).json({
@@ -81,10 +81,10 @@ router.get('/:userId', async (req, res) => {
     const userId = toNumber(req.params.userId);
 
     const [rows] = await db.execute(
-      `SELECT entry_id, user_id, height_cm, loggedAt
+      `SELECT entry_id, user_id, height_cm, logged_at
        FROM \`${TABLES.HEIGHT_HISTORIES}\`
        WHERE user_id = ?
-       ORDER BY loggedAt DESC, entry_id DESC`,
+       ORDER BY logged_at DESC, entry_id DESC`,
       [userId]
     );
 
@@ -135,7 +135,7 @@ router.put('/:entryId', async (req, res) => {
     }
 
     const [rows] = await db.execute(
-      `SELECT entry_id, user_id, height_cm, loggedAt
+      `SELECT entry_id, user_id, height_cm, logged_at
        FROM \`${TABLES.HEIGHT_HISTORIES}\`
        WHERE entry_id = ? LIMIT 1`,
       [entryId]
