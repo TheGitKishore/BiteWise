@@ -4,6 +4,7 @@ import {
   StyleSheet, StatusBar, ActivityIndicator, Modal, Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import ViewHealthReportController  from '../controller/ViewHealthReportController';
 import ViewWeightHistoryController from '../controller/ViewWeightHistoryController';
@@ -94,8 +95,9 @@ const BarChart = ({ data, label }) => {
 // ────────────────────────────────────────────────────────────────
 const HeightModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
   const [height, setHeight] = useState('');
-  const [notes,  setNotes]  = useState('');
-  const handleClose = () => { setHeight(''); setNotes(''); onClose(); };
+  // Notes removed for now (kept commented so it is easy to restore later if needed)
+  // const [notes,  setNotes]  = useState('');
+  const handleClose = () => { setHeight(''); onClose(); };
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
@@ -111,14 +113,16 @@ const HeightModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
             value={height} onChangeText={setHeight} placeholder="e.g., 170" keyboardType="numeric" placeholderTextColor={C.subtle}
           />
           {error ? <Text style={{fontSize:12,color:C.red,marginBottom:8}}>{error}</Text> : <View style={{marginBottom:12}}/>}
+          {/* Notes removed for now (kept commented so it is easy to restore later if needed)
           <Text style={{fontSize:13,fontWeight:'600',color:C.dark,marginBottom:4}}>Notes (optional)</Text>
           <TextInput
             style={{backgroundColor:C.bg,borderRadius:8,paddingHorizontal:12,paddingVertical:10,fontSize:14,color:C.dark,borderWidth:1,borderColor:C.border,marginBottom:16}}
             value={notes} onChangeText={setNotes} placeholder="e.g., Annual checkup" placeholderTextColor={C.subtle}
           />
+          */}
           <TouchableOpacity
             style={{backgroundColor:C.purple,borderRadius:10,paddingVertical:14,alignItems:'center',opacity:isLoading?0.6:1}}
-            onPress={() => onSubmit(height, notes)} disabled={isLoading} activeOpacity={0.85}>
+            onPress={() => onSubmit(height)} disabled={isLoading} activeOpacity={0.85}>
             <Text style={{fontSize:15,fontWeight:'700',color:C.white}}>{isLoading?'Saving...':'Update Height'}</Text>
           </TouchableOpacity>
         </View>
@@ -266,11 +270,23 @@ const BodyMetricsTab = ({ userId, navigation, user, onBanner }) => {
   const [goalLoading, setGoalLoading] = useState(false);
   const [goalErrors,  setGoalErrors]  = useState({});
 
-  useEffect(() => {
+  const loadBodyMetrics = useCallback(() => {
     weightCtrl.fetchWeightHistory(userId).then((r) => setWeightData({ latest: r.latest, loading: false }));
     heightCtrl.fetchHeightHistory(userId).then((r) => setHeightData({ latest: r.latest, loading: false }));
     viewGoalCtrl.fetchGoal(userId).then((r) => { if (r.success) setGoal(r.data); });
-  }, []);
+  }, [userId]);
+
+  useEffect(() => {
+    loadBodyMetrics();
+  }, [loadBodyMetrics]);
+
+  // Refresh metrics whenever Reports screen becomes active again
+  // (e.g. after returning from WeightTrackingScreen).
+  useFocusEffect(
+    useCallback(() => {
+      loadBodyMetrics();
+    }, [loadBodyMetrics])
+  );
 
   const weight = weightData.latest?.weightKg ?? null;
   const height = heightData.latest?.heightCm ?? null;
@@ -279,10 +295,10 @@ const BodyMetricsTab = ({ userId, navigation, user, onBanner }) => {
   const bmiColor = !bmi ? C.subtle : bmi < 18.5 ? C.orange : bmi < 25 ? C.green : bmi < 30 ? C.orange : C.red;
 
   // UC #36, #87, #89 — log/update height
-  const handleHeightSubmit = useCallback(async (ht, notes) => {
+  const handleHeightSubmit = useCallback(async (ht) => {
     setHtError('');
     setHtLoading(true);
-    const result = await logHtCtrl.logHeight(userId, { heightCm: ht, notes });
+    const result = await logHtCtrl.logHeight(userId, { heightCm: ht });
     setHtLoading(false);
     if (result.success) {
       setHeightData({ latest: result.data, loading: false });

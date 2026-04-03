@@ -44,9 +44,10 @@ const Banner = ({ msg }) => !msg ? null : (
 
 const UpdateModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
   const [weight, setWeight] = useState('');
-  const [notes,  setNotes]  = useState('');
-  const handleSubmit = () => { onSubmit(weight, notes); };
-  const handleClose  = () => { setWeight(''); setNotes(''); onClose(); };
+  // Notes removed for now (kept commented so it is easy to restore later if needed)
+  // const [notes,  setNotes]  = useState('');
+  const handleSubmit = () => { onSubmit(weight); };
+  const handleClose  = () => { setWeight(''); onClose(); };
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
@@ -60,11 +61,13 @@ const UpdateModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
             value={weight} onChangeText={setWeight} placeholder="e.g., 70.5" keyboardType="numeric" placeholderTextColor={C.subtle}
           />
           {error ? <Text style={{fontSize:12,color:C.errorText,marginBottom:8}}>{error}</Text> : <View style={{marginBottom:12}}/>}
+          {/* Notes removed for now (kept commented so it is easy to restore later if needed)
           <Text style={{fontSize:13,fontWeight:'600',color:C.dark,marginBottom:4}}>Notes (optional)</Text>
           <TextInput
             style={{backgroundColor:C.bg,borderRadius:8,paddingHorizontal:12,paddingVertical:10,fontSize:14,color:C.dark,borderWidth:1,borderColor:C.border,marginBottom:16}}
             value={notes} onChangeText={setNotes} placeholder="e.g., After morning workout" placeholderTextColor={C.subtle}
           />
+          */}
           <TouchableOpacity
             style={{backgroundColor:C.purple,borderRadius:10,paddingVertical:14,alignItems:'center',opacity:isLoading?0.6:1}}
             onPress={handleSubmit} disabled={isLoading}>
@@ -79,8 +82,10 @@ const UpdateModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
 // Premium only — #84, #85, #86
 const WeightTrackingScreen = ({ navigation, route }) => {
   const user = route?.params?.user || null;
+  // Role check uses lowercase to avoid PREMIUM/premium mismatch from different API flows.
+  const isPremium = String(user?.role || '').toLowerCase() === 'premium';
 
-  if (user?.role !== 'PREMIUM') {
+  if (!isPremium) {
     return (
       <SafeAreaView style={{flex:1,backgroundColor:C.bg}}>
         <NavBar onMenu={() => navigation.goBack()} />
@@ -117,10 +122,10 @@ const WeightTrackingScreen = ({ navigation, route }) => {
   const currentBMI  = latest && user?.heightCm
     ? WeightEntry.calculateBMI(latest.weightKg, user.heightCm) : null;
 
-  const handleSubmit = useCallback(async (weight, notes) => {
+  const handleSubmit = useCallback(async (weight) => {
     setFieldError('');
     setIsSaving(true);
-    const result = await logCtrl.logWeight(user.userId, { weightKg: weight, notes });
+    const result = await logCtrl.logWeight(user.userId, { weightKg: weight });
     setIsSaving(false);
     if (result.success) {
       const newEntry = result.data;
@@ -214,7 +219,9 @@ const WeightTrackingScreen = ({ navigation, route }) => {
                     <Text style={{fontSize:14,fontWeight:'600',color:C.dark}}>
                       {new Date(e.loggedAt).toLocaleDateString('en-SG',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}
                     </Text>
+                    {/* Notes removed for now (kept commented so it is easy to restore later if needed)
                     {e.notes ? <Text style={{fontSize:12,color:C.subtle}}>{e.notes}</Text> : null}
+                    */}
                     {change !== null && (
                       <View style={{alignSelf:'flex-start',backgroundColor:change<=0?'#DCFCE7':'#FEE2E2',borderRadius:20,paddingHorizontal:8,paddingVertical:2,marginTop:4}}>
                         <Text style={{fontSize:11,color:change<=0?C.green:C.red,fontWeight:'600'}}>{change>0?'+':''}{change} kg from previous</Text>
