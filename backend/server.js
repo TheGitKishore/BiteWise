@@ -1,10 +1,13 @@
 // server.js
+import { config } from 'dotenv';
+config();
 import express from 'express';
 import cors from 'cors';
 import userRoute from './routes/usersroute.js'; // <-- note the .js extension (add files from routes folder)
 import reviewRoute from './routes/reviewroute.js';
 import membershipplanRoute from './routes/membershipplanroute.js';
 import userprofiletypeRoute from './routes/userprofiletyperoute.js';
+import foodRoute from './routes/foodroute.js';
 import foodintakeentryRoute from './routes/foodintakeentryroute.js';
 import fooditemRoute from './routes/fooditemroute.js';
 import exerciseentryRoute from './routes/exerciseentryroute.js';
@@ -15,11 +18,14 @@ import heightentryRoute from './routes/heightentryroute.js';
 import healthgoalRoute from './routes/healthgoalroute.js';
 
 // ? ADD THIS
+import { initializeDatabases } from './backend_services/api.js';
 import { initializeDatabases } from './routes/apiroute.js';
 
 const app = express();
 
 app.use(cors());
+app.use(express.json({ limit: '50mb' }));        // ← add limit
+app.use(express.urlencoded({ limit: '50mb', extended: true })); // ← add this line
 app.use(express.json());
 
 // Routes
@@ -35,6 +41,7 @@ app.use('/api/recipes', recipeRoute);
 app.use('/api/weight-entries', weightentryRoute);
 app.use('/api/height-entries', heightentryRoute);
 app.use('/api/health-goals', healthgoalRoute);
+app.use('/api/food', foodRoute);
 
 // ? Initialize DB before server starts
 const startServer = async () => {
@@ -49,5 +56,6 @@ const startServer = async () => {
     console.error('Failed to start server:', error);
   }
 };
+
 
 startServer();

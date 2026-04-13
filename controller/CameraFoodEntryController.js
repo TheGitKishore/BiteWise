@@ -24,11 +24,11 @@ class CameraFoodEntryController {
     }
   }
 
-  // UC #17, #52 Step 2-3 — simulate capture and recognition
   // @return {Promise<{ success, data, message }>}
+  // UC #17, #52 Step 2-3 — capture and recognition
   async recogniseFood(photo) {
     return this._safeCall(async () => {
-      return await FoodIntakeEntry.recogniseFromCamera(photo);
+      return await FoodIntakeEntry.recogniseFromCamera(photo); // ← pass photo
     });
   }
 
