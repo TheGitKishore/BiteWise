@@ -173,27 +173,19 @@ export const deleteMySQLRow = async (table, filter) => {
 // Search for food product by name
 export const searchFoodProduct = async (productName) => {
   try {
-    const response = await axios.get(
-      'https://world.openfoodfacts.net/cgi/search.pl',
-      {
-        params: {
-          search_terms:  productName,
-          search_simple: 1,
-          action:        'process',
-          json:          1,
-          page_size:     20,
-          fields:        'id,code,product_name,brands,nutriments,serving_size,categories_tags',
-        },
-        headers: {
-          'User-Agent':  'BiteWise/1.0 (lee.xuanxuan1@gmail.com)', // ← your actual email
-          'Authorization': 'Basic ' + Buffer.from('off:off').toString('base64'),
-        },
-        timeout: 10000,
-      }
-    );
+    const response = await axios.get(`${OPENFOODFACTS_BASE_URL}/cgi/search.pl`, {
+      params: {
+        search_terms: productName,
+        action: 'process',
+        format: 'json',
+        page_size: 20,
+      },
+      timeout: 5000,
+    });
+
     return response.data;
   } catch (error) {
-    console.error('Error searching food product:', error.message);
+    console.error('Error searching food product:', error);
     throw error;
   }
 };

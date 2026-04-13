@@ -5,7 +5,6 @@ import userRoute from './routes/usersroute.js'; // <-- note the .js extension (a
 import reviewRoute from './routes/reviewroute.js';
 import membershipplanRoute from './routes/membershipplanroute.js';
 import userprofiletypeRoute from './routes/userprofiletyperoute.js';
-import foodRoute from './routes/foodroute.js';
 import foodintakeentryRoute from './routes/foodintakeentryroute.js';
 import fooditemRoute from './routes/fooditemroute.js';
 import exerciseentryRoute from './routes/exerciseentryroute.js';
@@ -16,7 +15,6 @@ import heightentryRoute from './routes/heightentryroute.js';
 import healthgoalRoute from './routes/healthgoalroute.js';
 
 // ? ADD THIS
-import { initializeDatabases } from './backend_services/api.js';
 import { initializeDatabases } from './routes/apiroute.js';
 
 const app = express();
@@ -37,7 +35,6 @@ app.use('/api/recipes', recipeRoute);
 app.use('/api/weight-entries', weightentryRoute);
 app.use('/api/height-entries', heightentryRoute);
 app.use('/api/health-goals', healthgoalRoute);
-app.use('/api/food', foodRoute);
 
 // ? Initialize DB before server starts
 const startServer = async () => {
@@ -52,6 +49,5 @@ const startServer = async () => {
     console.error('Failed to start server:', error);
   }
 };
-
 
 startServer();

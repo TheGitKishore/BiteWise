@@ -85,116 +85,75 @@ class FoodIntakeEntry {
       });
 
       return res.data;
-    }
-
-    static async recogniseFromCamera() {
-      const res = await axios.post(`${API_URL}/food-recognition`);
-      return res.data;
-    }
-
-    static async getTodayEntries(userId) {
-      const res = await axios.get(`${API_URL}/food-entries/today/${userId}`);
-      return res.data.map((r) => new FoodIntakeEntry(r));
-    }
-  */
-
-  // UC #16, #51 — create a manual food intake entry
-  // @param  {number} userId
-  // @param  {{ foodName, calories, protein, carbs, fat, meal }}
-  // @return {Promise<{ success, data, message }>}
-  static async createManual(userId, { foodName, calories, protein, carbs, fat, meal }) {
-    const validation = FoodIntakeEntry.validateManualEntry({ foodName, calories, protein, carbs, fat, meal });
-    if (!validation.valid) {
-      return { success: false, field: validation.field, message: validation.message, data: null };
-    }
-
-    const entry = new FoodIntakeEntry({
-      entryId:  Date.now(),
-      userId,
-      foodName: foodName.trim(),
-      calories: Number(calories),
-      protein:  Number(protein),
-      carbs:    Number(carbs),
-      fat:      Number(fat),
-      meal,
-      source:   'manual',
-      loggedAt: new Date().toISOString(),
-    });
-
-    return {
-      success: true,
-      field:   null,
-      message: `${entry.foodName} logged to ${meal.toLowerCase()}!`,
-      data:    entry,
-    };
+    } catch (err) {
+        console.log("CREATE MANUAL ERROR:", err.response?.data || err.message);
+          
+        return {
+          success: false,
+          message: err.response?.data?.message || 'Failed to log food entry',
+        };
+      }
   }
 
-  // UC #17, #52 — simulate camera recognition; returns a detected food item
-  // In production this calls the AI recognition API
-  // @return {Promise<{ success, data, message }>}
-  // UC #17, #52
+  // ✅ Camera recognition
   static async recogniseFromCamera(photo) {
     try {
-      // Detect media type from URI
-      const uri = photo.uri || '';
-      let mediaType = 'image/jpeg'; // default
-      if (uri.includes('.webp')) mediaType = 'image/webp';
-      else if (uri.includes('.png')) mediaType = 'image/png';
-      else if (uri.includes('.gif')) mediaType = 'image/gif';
-
-      const res = await axios.post(`${API_URL}/food/recognise`, {
-        base64Image: photo.base64,
-        mediaType,
+      const formData = new FormData();
+    
+      formData.append('image', {
+        uri: photo.uri,
+        name: 'food.jpg',
+        type: 'image/jpeg',
       });
+    
+      const res = await axios.post(`${API_URL}/food-recognition`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    
       return res.data;
     } catch (err) {
-      console.error('[FoodIntakeEntry.recogniseFromCamera]', err);
       return {
         success: false,
-        message: 'Error in estimating nutrients. Please add manually instead.',
-        data:    null,
+        message: 'Food recognition failed',
       };
     }
   }
 
-  // UC #17, #52 — log the confirmed camera-recognised entry
-  // @param  {number} userId
-  // @param  {{ foodName, calories, protein, carbs, fat, meal }}
-  // @return {Promise<{ success, data, message }>}
-  static async createFromCamera(userId, { foodName, calories, protein, carbs, fat, meal }) {
-    const entry = new FoodIntakeEntry({
-      entryId:  Date.now(),
-      userId,
-      foodName: foodName.trim(),
-      calories: Number(calories),
-      protein:  Number(protein),
-      carbs:    Number(carbs),
-      fat:      Number(fat),
-      meal,
-      source:   'camera',
-      loggedAt: new Date().toISOString(),
-    });
+  // ✅ Create from camera
+  static async createFromCamera(userId, data) {
+    try {
+      const res = await axios.post(`${API_URL}/camera`, {
+        userId,
+        ...data,
+      });
 
-    return {
-      success: true,
-      field:   null,
-      message: `${entry.foodName} logged to ${meal.toLowerCase()}!`,
-      data:    entry,
-    };
+      return res.data;
+    } catch (err) {
+      return {
+        success: false,
+        message: 'Failed to log camera entry',
+      };
+    }
   }
 
-
-  // UC #19, #55 — fetch past entries grouped by date
-  // Replace w API calls
-  /*
-    static async getPastEntries(userId) {
-      const res = await axios.get(`${API_URL}/food-entries/history/${userId}`);
-      return res.data.map((r) => new FoodIntakeEntry(r));
+  // ✅ Get today entries
+  static async getTodayEntries(userId) {
+    try {
+      const res = await axios.get(`${API_URL}/today/${userId}`);
+      return res.data.data.map(e =>
+        new FoodIntakeEntry({
+          entryId: e._id,   // 🔥 FIX HERE
+          ...e,
+        })
+      );
+    } catch (err) {
+      return [];
     }
-  */
+  }
 
-  // @param  {number} userId
-  // @return {Promise<{ success, data, message }>}
+  // ✅ Get past entries
   static async getPastEntries(userId) {
     try {
       const res = await axios.get(`${API_URL}/history/${userId}`);

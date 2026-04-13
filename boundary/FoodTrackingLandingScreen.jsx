@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Modal,
@@ -381,13 +380,36 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
   const handleClose = () => { reset(); onClose(); };
 
   const handleCapture = useCallback(async () => {
-    setIsLoading(true);
-    setErrorMsg('');
-    const result = await cameraController.recogniseFood();
-    setIsLoading(false);
-    if (result.success) { setDetected(result.data); setFoodName(result.data.foodName); setStep('confirm'); }
-    else setErrorMsg(result.message || 'Could not recognise food. Please try again or enter manually.');
-  }, []);
+    if (!cameraRef) return;
+
+    try {
+      setIsLoading(true);
+      setErrorMsg('');
+
+      const photo = await cameraRef.takePictureAsync({
+        base64: true,
+        quality: 0.5,
+      });
+
+      console.log("PHOTO:", photo.uri);
+
+      // 🔥 Send to backend for recognition
+      const result = await cameraController.recogniseFood(photo);
+
+      setIsLoading(false);
+
+      if (result.success) {
+        setDetected(result.data);
+        setFoodName(result.data.foodName);
+        setStep('confirm');
+      } else {
+        setErrorMsg(result.message || 'Recognition failed');
+      }
+    } catch (err) {
+      setIsLoading(false);
+      setErrorMsg('Camera error occurred');
+    }
+  }, [cameraRef]);
 
   const handleConfirmLog = useCallback(async () => {
     if (!detected) return;
@@ -419,33 +441,35 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
       subtitle={step === 'capture' ? 'Simulate taking a photo to automatically recognize food' : 'Verify the details and select a meal category'}
       onClose={handleClose}
     >
-      {step === 'capture' ? (
+      {step === 'capture' && (
         <>
-          <View style={cm.viewfinder}><Text style={cm.cameraIcon}>📷</Text></View>
-          {errorMsg ? <Text style={cm.errorText}>{errorMsg}</Text> : null}
-          <TouchableOpacity style={[cm.captureBtn, isLoading && cm.btnDisabled]} onPress={handleCapture} activeOpacity={0.85} disabled={isLoading}>
-            <Text style={cm.captureBtnText}>{isLoading ? 'Recognising...' : 'Capture & Recognize Food'}</Text>
-          </TouchableOpacity>
-          <Text style={cm.demoNote}>This is a demo feature. In production, this would use the device camera.</Text>
-        </>
-      ) : (
-        <>
-          {detected && (
-            <View style={cm.pillRow}>
-              {[{ value: detected.calories, label: 'kcal' }, { value: `${detected.protein}g`, label: 'Protein' }, { value: `${detected.carbs}g`, label: 'Carbs' }, { value: `${detected.fat}g`, label: 'Fat' }].map((p) => (
-                <View key={p.label} style={cm.pill}><Text style={cm.pillValue}>{p.value}</Text><Text style={cm.pillLabel}>{p.label}</Text></View>
-              ))}
-            </View>
+          {!permission ? (
+            <Text>Requesting camera permission...</Text>
+          ) : !permission.granted ? (
+            <>
+              <Text>No access to camera</Text>
+              <TouchableOpacity onPress={requestPermission}>
+                <Text>Grant Permission</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <CameraView
+              style={cm.viewfinder}
+              ref={(ref) => setCameraRef(ref)}
+            />
           )}
-          <Text style={cm.detectedLabel}>Detected food item</Text>
-          <Field label="Food Name (Edit if incorrect)" value={foodName} onChangeText={setFoodName} placeholder="" />
-          <MealPicker value={meal} onSelect={setMeal} />
-          <View style={cm.confirmRow}>
-            <TouchableOpacity style={cm.tryAgainBtn} onPress={() => setStep('capture')}><Text style={cm.tryAgainText}>Try Again</Text></TouchableOpacity>
-            <TouchableOpacity style={[cm.confirmBtn, isLoading && cm.btnDisabled]} onPress={handleConfirmLog} activeOpacity={0.85} disabled={isLoading}>
-              <Text style={cm.confirmBtnText}>{isLoading ? 'Logging...' : 'Confirm & Log'}</Text>
-            </TouchableOpacity>
-          </View>
+
+          {errorMsg ? <Text style={cm.errorText}>{errorMsg}</Text> : null}
+        
+          <TouchableOpacity
+            style={[cm.captureBtn, isLoading && cm.btnDisabled]}
+            onPress={handleCapture}
+            disabled={isLoading}
+          >
+            <Text style={cm.captureBtnText}>
+              {isLoading ? 'Recognising...' : 'Capture & Recognize Food'}
+            </Text>
+          </TouchableOpacity>
         </>
       )}
     </ModalSheet>
@@ -481,45 +505,38 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg }) => {
   const [search,        setSearch]        = useState('');
   const [expanded,      setExpanded]      = useState(null);
   const [quantities,    setQuantities]    = useState({});
-  const [displayItems,  setDisplayItems]  = useState([]);
-  const [isSearching,   setIsSearching]   = useState(false);
-  const [searchMsg,     setSearchMsg]     = useState('');
-  const [fromAPI,       setFromAPI]       = useState(false);
 
-  // ── ADD THIS — ref to hold the debounce timer ──
-  const debounceTimer = useRef(null);
+  // ── NEW state for async search ──────────────────────────────
+  const [displayItems,  setDisplayItems]  = useState([]);   // what's shown in the list
+  const [isSearching,   setIsSearching]   = useState(false); // spinner while API call runs
+  const [searchMsg,     setSearchMsg]     = useState('');    // "no results" or error text
+  const [fromAPI,       setFromAPI]       = useState(false); // true when results came from Open Food Facts
+  // ───────────────────────────────────────────────────────────
 
+  // On mount (or when allItems loads), show the full local list
   useEffect(() => {
     setDisplayItems(allItems);
   }, [allItems]);
 
-  // ── UPDATED handleSearch with debounce ──
-  const handleSearch = useCallback((query) => {
+  // ── CHANGED: search handler is now async ───────────────────
+  const handleSearch = useCallback(async (query) => {
     setSearch(query);
     setSearchMsg('');
     setFromAPI(false);
 
-    // Empty query → restore full local list immediately
+    // Empty query → restore full local list, no API call
     if (!query || query.trim().length === 0) {
       setDisplayItems(allItems);
-      setIsSearching(false);
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
       return;
     }
 
-    // Clear previous timer
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    setIsSearching(true);
+    const result = await dbController.searchFoodItems(allItems, query);
+    setIsSearching(false);
 
-    // Wait 500ms after user stops typing before searching
-    debounceTimer.current = setTimeout(async () => {
-      setIsSearching(true);
-      const result = await dbController.searchFoodItems(allItems, query);
-      setIsSearching(false);
-      setDisplayItems(result.data);
-      setFromAPI(result.fromAPI);
-      setSearchMsg(result.message);
-    }, 500);
-
+    setDisplayItems(result.data);
+    setFromAPI(result.fromAPI);
+    setSearchMsg(result.message);
   }, [allItems]);
   // ───────────────────────────────────────────────────────────
 
