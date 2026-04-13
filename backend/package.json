@@ -1,13 +1,9 @@
 {
   "type": "module",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.82.0",
-    "@tensorflow/tfjs-node": "^4.22.0",
     "axios": "^1.13.6",
     "bcrypt": "^6.0.0",
-    "canvas": "^3.2.3",
     "cors": "^2.8.6",
-    "dotenv": "^17.4.0",
     "expo": "^55.0.8",
     "express": "^5.2.1",
     "mongodb": "^7.1.0",

@@ -80,8 +80,6 @@ class FoodItem {
 
       const products = res.data?.data?.products || [];
 
-      const queryWords = query.trim().toLowerCase().split(' ').filter(w => w.length > 0);
-
       const apiItems = products
         .filter((p) => p.product_name)
         .map((p) => new FoodItem({
@@ -100,32 +98,7 @@ class FoodItem {
         return { data: [], fromAPI: true, message: 'No food items found. Try a different search.' };
       }
 
-      // Sort by relevance — factors in:
-      // 1. How many query words match
-      // 2. What % of the item name words are query words (shorter precise matches rank higher)
-      const sorted = apiItems.sort((a, b) => {
-        const aName  = a.name.toLowerCase().split(' ').filter(w => w.length > 0);
-        const bName  = b.name.toLowerCase().split(' ').filter(w => w.length > 0);
-
-        const aMatches = queryWords.filter(w => a.name.toLowerCase().includes(w)).length;
-        const bMatches = queryWords.filter(w => b.name.toLowerCase().includes(w)).length;
-
-        // % of query words matched
-        const aQueryCoverage = aMatches / queryWords.length;
-        const bQueryCoverage = bMatches / queryWords.length;
-
-        // % of item name words that are query words (rewards concise matches)
-        const aNameCoverage = aMatches / aName.length;
-        const bNameCoverage = bMatches / bName.length;
-
-        // Combined score — query coverage weighted more heavily
-        const aScore = (aQueryCoverage * 0.7) + (aNameCoverage * 0.3);
-        const bScore = (bQueryCoverage * 0.7) + (bNameCoverage * 0.3);
-
-        return bScore - aScore;
-      });
-
-      return { data: sorted, fromAPI: true, message: '' };
+      return { data: apiItems, fromAPI: true, message: '' };
 
     } catch (err) {
       console.error('[FoodItem.searchWithFallback]', err);
@@ -133,5 +106,6 @@ class FoodItem {
     }
   }
 
-} // ← class closes here
+} // ← class closes here, after ALL methods
+
 export default FoodItem;

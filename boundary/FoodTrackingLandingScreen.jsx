@@ -8,7 +8,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 
-import * as ImagePicker from 'expo-image-picker';
 import ViewFoodDatabaseController          from '../controller/ViewFoodDatabaseController';
 import CreateManualFoodEntryController     from '../controller/CreateManualFoodEntryController';
 import CameraFoodEntryController           from '../controller/CameraFoodEntryController';
@@ -368,7 +367,6 @@ const me = StyleSheet.create({
 
 // UC #17 — CAMERA FOOD RECOGNITION MODAL
 
-// UC #17 — CAMERA FOOD RECOGNITION MODAL
 const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
   const [step,      setStep]      = useState('capture');
   const [detected,  setDetected]  = useState(null);
@@ -382,110 +380,19 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
   const reset = () => { setStep('capture'); setDetected(null); setFoodName(''); setMeal('Lunch'); setErrorMsg(''); };
   const handleClose = () => { reset(); onClose(); };
 
-  // Take photo with camera
   const handleCapture = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setErrorMsg('');
-
-      const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
-      console.log('Camera permission:', cameraPermission); // ← add this
-      
-      if (!cameraPermission.granted) {
-        setIsLoading(false);
-        setErrorMsg('Camera permission denied.');
-        return;
-      }
-
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: 'images',
-        base64:     true,
-        quality:    0.2,
-      });
-
-      console.log('Camera result canceled:', result.canceled); // ← add this
-
-      if (result.canceled) { setIsLoading(false); return; }
-
-      const photo = result.assets[0];
-      console.log('Photo base64 length:', photo.base64?.length); // ← add this
-
-      const recognition = await cameraController.recogniseFood(photo);
-      console.log('Recognition result:', recognition); // ← add this
-      
-      setIsLoading(false);
-
-      if (recognition.success) {
-        setDetected(recognition.data);
-        setFoodName(recognition.data.foodName);
-        setStep('confirm');
-      } else {
-        setErrorMsg(recognition.message || 'Could not recognise food.');
-      }
-    } catch (err) {
-      console.error('Camera error:', err); // ← add this
-      setIsLoading(false);
-      setErrorMsg('Camera error occurred. Please try again.');
-    }
-  }, []);
-
-  const handleUploadFromLibrary = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setErrorMsg('');
-
-      const libraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      console.log('Library permission:', libraryPermission); // ← add this
-
-      if (!libraryPermission.granted) {
-        setIsLoading(false);
-        setErrorMsg('Permission to access photo library was denied.');
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: 'images',
-        base64:     true,
-        quality:    0.5,
-      });
-
-      console.log('Library result canceled:', result.canceled); // ← add this
-
-      if (result.canceled) { setIsLoading(false); return; }
-
-      const photo = result.assets[0];
-      console.log('Photo base64 length:', photo.base64?.length); // ← add this
-
-      const recognition = await cameraController.recogniseFood(photo);
-      console.log('Recognition result:', recognition); // ← add this
-
-      setIsLoading(false);
-
-      if (recognition.success) {
-        setDetected(recognition.data);
-        setFoodName(recognition.data.foodName);
-        setStep('confirm');
-      } else {
-        setErrorMsg(recognition.message || 'Could not recognise food.');
-      }
-    } catch (err) {
-      console.error('Library error:', err); // ← add this
-      setIsLoading(false);
-      setErrorMsg('Failed to upload image. Please try again.');
-    }
+    setIsLoading(true);
+    setErrorMsg('');
+    const result = await cameraController.recogniseFood();
+    setIsLoading(false);
+    if (result.success) { setDetected(result.data); setFoodName(result.data.foodName); setStep('confirm'); }
+    else setErrorMsg(result.message || 'Could not recognise food. Please try again or enter manually.');
   }, []);
 
   const handleConfirmLog = useCallback(async () => {
     if (!detected) return;
     setIsLoading(true);
-    const result = await cameraController.logCameraEntry(userId, {
-      foodName,
-      calories: detected.calories,
-      protein:  detected.protein,
-      carbs:    detected.carbs,
-      fat:      detected.fat,
-      meal,
-    });
+    const result = await cameraController.logCameraEntry(userId, { foodName, calories: detected.calories, protein: detected.protein, carbs: detected.carbs, fat: detected.fat, meal });
     setIsLoading(false);
     if (result.success) { reset(); onSuccess(result.message, result.data); }
   }, [detected, foodName, meal, userId]);
@@ -508,99 +415,34 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
   return (
     <ModalSheet
       visible={visible}
-      title={step === 'capture' ? 'Camera Food Recognition' : 'Confirm Food Recognition'}
-      subtitle={step === 'capture' ? 'Take a photo or upload from your library' : 'Verify the details and select a meal category'}
+      title={step === 'capture' ? 'Camera Food Recognition' : '📷 Confirm Food Recognition'}
+      subtitle={step === 'capture' ? 'Simulate taking a photo to automatically recognize food' : 'Verify the details and select a meal category'}
       onClose={handleClose}
     >
-      {step === 'capture' && (
+      {step === 'capture' ? (
         <>
-          {/* Camera icon placeholder */}
-          <View style={cm.viewfinder}>
-            <Text style={cm.cameraIcon}>📷</Text>
-            <Text style={{ fontSize: 12, color: C.subtle, marginTop: 8 }}>
-              Take a photo or upload from library
-            </Text>
-          </View>
-
+          <View style={cm.viewfinder}><Text style={cm.cameraIcon}>📷</Text></View>
           {errorMsg ? <Text style={cm.errorText}>{errorMsg}</Text> : null}
-
-          {/* Take photo button */}
-          <TouchableOpacity
-            style={[cm.captureBtn, isLoading && cm.btnDisabled]}
-            onPress={handleCapture}
-            disabled={isLoading}
-            activeOpacity={0.85}
-          >
-            <Text style={cm.captureBtnText}>
-              {isLoading ? 'Recognising...' : 'Capture Photo'}
-            </Text>
+          <TouchableOpacity style={[cm.captureBtn, isLoading && cm.btnDisabled]} onPress={handleCapture} activeOpacity={0.85} disabled={isLoading}>
+            <Text style={cm.captureBtnText}>{isLoading ? 'Recognising...' : 'Capture & Recognize Food'}</Text>
           </TouchableOpacity>
-
-          {/* Divider */}
-          <View style={cm.dividerRow}>
-            <View style={cm.dividerLine} />
-            <Text style={cm.dividerText}>or</Text>
-            <View style={cm.dividerLine} />
-          </View>
-
-          {/* Upload from library button */}
-          <TouchableOpacity
-            style={[cm.uploadBtn, isLoading && cm.btnDisabled]}
-            onPress={handleUploadFromLibrary}
-            disabled={isLoading}
-            activeOpacity={0.85}
-          >
-            <Text style={cm.uploadBtnText}>Upload from Library</Text>
-          </TouchableOpacity>
+          <Text style={cm.demoNote}>This is a demo feature. In production, this would use the device camera.</Text>
         </>
-      )}
-
-      {step === 'confirm' && detected && (
+      ) : (
         <>
-          {/* Confidence badge */}
-          {detected.confidence && (
-            <View style={[
-              cm.confidenceBadge,
-              detected.confidence === 'high' ? cm.confidenceHigh :
-              detected.confidence === 'medium' ? cm.confidenceMed : cm.confidenceLow
-            ]}>
-              <Text style={cm.confidenceText}>
-                {detected.confidence === 'high'   ? 'High confidence' :
-                 detected.confidence === 'medium' ? '⚠️ Medium confidence' :
-                 '⚠️ Low confidence — please verify'}
-              </Text>
+          {detected && (
+            <View style={cm.pillRow}>
+              {[{ value: detected.calories, label: 'kcal' }, { value: `${detected.protein}g`, label: 'Protein' }, { value: `${detected.carbs}g`, label: 'Carbs' }, { value: `${detected.fat}g`, label: 'Fat' }].map((p) => (
+                <View key={p.label} style={cm.pill}><Text style={cm.pillValue}>{p.value}</Text><Text style={cm.pillLabel}>{p.label}</Text></View>
+              ))}
             </View>
           )}
-
-          {/* Nutrition pills */}
-          <View style={cm.pillRow}>
-            {[
-              { value: detected.calories,      label: 'kcal'    },
-              { value: `${detected.protein}g`, label: 'Protein' },
-              { value: `${detected.carbs}g`,   label: 'Carbs'   },
-              { value: `${detected.fat}g`,     label: 'Fat'     },
-            ].map((p) => (
-              <View key={p.label} style={cm.pill}>
-                <Text style={cm.pillValue}>{p.value}</Text>
-                <Text style={cm.pillLabel}>{p.label}</Text>
-              </View>
-            ))}
-          </View>
-
           <Text style={cm.detectedLabel}>Detected food item</Text>
           <Field label="Food Name (Edit if incorrect)" value={foodName} onChangeText={setFoodName} placeholder="" />
           <MealPicker value={meal} onSelect={setMeal} />
-
           <View style={cm.confirmRow}>
-            <TouchableOpacity style={cm.tryAgainBtn} onPress={() => setStep('capture')}>
-              <Text style={cm.tryAgainText}>Try Again</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[cm.confirmBtn, isLoading && cm.btnDisabled]}
-              onPress={handleConfirmLog}
-              disabled={isLoading}
-              activeOpacity={0.85}
-            >
+            <TouchableOpacity style={cm.tryAgainBtn} onPress={() => setStep('capture')}><Text style={cm.tryAgainText}>Try Again</Text></TouchableOpacity>
+            <TouchableOpacity style={[cm.confirmBtn, isLoading && cm.btnDisabled]} onPress={handleConfirmLog} activeOpacity={0.85} disabled={isLoading}>
               <Text style={cm.confirmBtnText}>{isLoading ? 'Logging...' : 'Confirm & Log'}</Text>
             </TouchableOpacity>
           </View>
@@ -610,33 +452,25 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
   );
 };
 const cm = StyleSheet.create({
-  viewfinder:       { height: 160, backgroundColor: C.bg, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 12, borderWidth: 1, borderColor: C.border },
-  cameraIcon:       { fontSize: 40, opacity: 0.4 },
-  captureBtn:       { backgroundColor: C.purple, borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginBottom: 8 },
-  captureBtnText:   { fontSize: 15, fontWeight: '700', color: C.white },
-  uploadBtn:        { backgroundColor: C.white, borderRadius: 10, paddingVertical: 13, alignItems: 'center', borderWidth: 1.5, borderColor: C.purple },
-  uploadBtnText:    { fontSize: 15, fontWeight: '600', color: C.purple },
-  dividerRow:       { flexDirection: 'row', alignItems: 'center', marginVertical: 10 },
-  dividerLine:      { flex: 1, height: 1, backgroundColor: C.border },
-  dividerText:      { marginHorizontal: 10, fontSize: 13, color: C.subtle },
-  errorText:        { fontSize: 13, color: C.errorText, textAlign: 'center', marginBottom: 10 },
-  btnDisabled:      { opacity: 0.6 },
-  confidenceBadge:  { borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5, alignSelf: 'center', marginBottom: 12 },
-  confidenceHigh:   { backgroundColor: C.successBg },
-  confidenceMed:    { backgroundColor: C.warnBg },
-  confidenceLow:    { backgroundColor: C.warnBg },
-  confidenceText:   { fontSize: 12, fontWeight: '600', color: C.dark },
-  pillRow:          { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
-  pill:             { flex: 1, alignItems: 'center', backgroundColor: C.purpleLight, borderRadius: 10, paddingVertical: 10, marginHorizontal: 3 },
-  pillValue:        { fontSize: 16, fontWeight: '800', color: C.purple },
-  pillLabel:        { fontSize: 11, color: C.purple, marginTop: 2 },
-  detectedLabel:    { fontSize: 12, color: C.subtle, marginBottom: 10 },
-  confirmRow:       { flexDirection: 'row', gap: 10, marginTop: 4 },
-  tryAgainBtn:      { flex: 1, borderWidth: 1.5, borderColor: C.border, borderRadius: 10, paddingVertical: 13, alignItems: 'center' },
-  tryAgainText:     { fontSize: 14, fontWeight: '600', color: C.mid },
-  confirmBtn:       { flex: 1.5, backgroundColor: C.purple, borderRadius: 10, paddingVertical: 13, alignItems: 'center' },
-  confirmBtnText:   { fontSize: 14, fontWeight: '700', color: C.white },
+  viewfinder:     { height: 180, backgroundColor: C.bg, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 16, borderWidth: 1, borderColor: C.border },
+  cameraIcon:     { fontSize: 40, opacity: 0.4 },
+  captureBtn:     { backgroundColor: C.purple, borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginBottom: 10 },
+  captureBtnText: { fontSize: 15, fontWeight: '700', color: C.white },
+  demoNote:       { fontSize: 12, color: C.subtle, textAlign: 'center' },
+  errorText:      { fontSize: 13, color: C.errorText, textAlign: 'center', marginBottom: 10 },
+  btnDisabled:    { opacity: 0.6 },
+  pillRow:        { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
+  pill:           { flex: 1, alignItems: 'center', backgroundColor: C.purpleLight, borderRadius: 10, paddingVertical: 10, marginHorizontal: 3 },
+  pillValue:      { fontSize: 16, fontWeight: '800', color: C.purple },
+  pillLabel:      { fontSize: 11, color: C.purple, marginTop: 2 },
+  detectedLabel:  { fontSize: 12, color: C.subtle, marginBottom: 10 },
+  confirmRow:     { flexDirection: 'row', gap: 10, marginTop: 4 },
+  tryAgainBtn:    { flex: 1, borderWidth: 1.5, borderColor: C.border, borderRadius: 10, paddingVertical: 13, alignItems: 'center' },
+  tryAgainText:   { fontSize: 14, fontWeight: '600', color: C.mid },
+  confirmBtn:     { flex: 1.5, backgroundColor: C.purple, borderRadius: 10, paddingVertical: 13, alignItems: 'center' },
+  confirmBtnText: { fontSize: 14, fontWeight: '700', color: C.white },
 });
+
 
 // ─────────────────────────────────────────────────────────────
 // FOOD DATABASE SECTION — UC #15, #50

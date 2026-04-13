@@ -157,39 +157,44 @@ class FoodIntakeEntry {
     }
   }
 
-  // ✅ Create from camera
-  static async createFromCamera(userId, data) {
-    try {
-      const res = await axios.post(`${API_URL}/camera`, {
-        userId,
-        ...data,
-      });
+  // UC #17, #52 — log the confirmed camera-recognised entry
+  // @param  {number} userId
+  // @param  {{ foodName, calories, protein, carbs, fat, meal }}
+  // @return {Promise<{ success, data, message }>}
+  static async createFromCamera(userId, { foodName, calories, protein, carbs, fat, meal }) {
+    const entry = new FoodIntakeEntry({
+      entryId:  Date.now(),
+      userId,
+      foodName: foodName.trim(),
+      calories: Number(calories),
+      protein:  Number(protein),
+      carbs:    Number(carbs),
+      fat:      Number(fat),
+      meal,
+      source:   'camera',
+      loggedAt: new Date().toISOString(),
+    });
 
-      return res.data;
-    } catch (err) {
-      return {
-        success: false,
-        message: 'Failed to log camera entry',
-      };
-    }
+    return {
+      success: true,
+      field:   null,
+      message: `${entry.foodName} logged to ${meal.toLowerCase()}!`,
+      data:    entry,
+    };
   }
 
-  // ✅ Get today entries
-  static async getTodayEntries(userId) {
-    try {
-      const res = await axios.get(`${API_URL}/today/${userId}`);
-      return res.data.data.map(e =>
-        new FoodIntakeEntry({
-          entryId: e._id,   // 🔥 FIX HERE
-          ...e,
-        })
-      );
-    } catch (err) {
-      return [];
-    }
-  }
 
-  // ✅ Get past entries
+  // UC #19, #55 — fetch past entries grouped by date
+  // Replace w API calls
+  /*
+    static async getPastEntries(userId) {
+      const res = await axios.get(`${API_URL}/food-entries/history/${userId}`);
+      return res.data.map((r) => new FoodIntakeEntry(r));
+    }
+  */
+
+  // @param  {number} userId
+  // @return {Promise<{ success, data, message }>}
   static async getPastEntries(userId) {
     try {
       const res = await axios.get(`${API_URL}/history/${userId}`);
