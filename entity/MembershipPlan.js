@@ -1,5 +1,5 @@
 import axios from 'axios'; //everything entity file needs this two lines of code
-const API_URL = 'http://192.168.1.36:3000/api/membership-plans';
+const API_URL = 'http://192.168.1.30:3000/api/membership-plans';
 
 class MembershipPlan {
 

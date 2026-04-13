@@ -1,4 +1,6 @@
 // server.js
+import { config } from 'dotenv';
+config();
 import express from 'express';
 import cors from 'cors';
 import userRoute from './routes/usersroute.js'; // <-- note the .js extension (add files from routes folder)
@@ -13,6 +15,8 @@ import { initializeDatabases } from './backend_services/api.js';
 const app = express();
 
 app.use(cors());
+app.use(express.json({ limit: '50mb' }));        // ← add limit
+app.use(express.urlencoded({ limit: '50mb', extended: true })); // ← add this line
 app.use(express.json());
 
 // Routes

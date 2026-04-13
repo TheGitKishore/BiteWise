@@ -1,3 +1,7 @@
+import axios from 'axios';
+const API_URL = 'http://192.168.1.30:3000/api'; // ⚠️ same IP as other entities
+
+
 class FoodIntakeEntry {
   constructor({
     entryId    = null,
@@ -133,16 +137,29 @@ class FoodIntakeEntry {
   // UC #17, #52 — simulate camera recognition; returns a detected food item
   // In production this calls the AI recognition API
   // @return {Promise<{ success, data, message }>}
-  static async recogniseFromCamera() {
-    const detected = {
-      foodName: 'Grilled Chicken Breast',
-      calories: 165,
-      protein:  31,
-      carbs:    0,
-      fat:      3.6,
-    };
+  // UC #17, #52
+  static async recogniseFromCamera(photo) {
+    try {
+      // Detect media type from URI
+      const uri = photo.uri || '';
+      let mediaType = 'image/jpeg'; // default
+      if (uri.includes('.webp')) mediaType = 'image/webp';
+      else if (uri.includes('.png')) mediaType = 'image/png';
+      else if (uri.includes('.gif')) mediaType = 'image/gif';
 
-    return { success: true, data: detected, message: '' };
+      const res = await axios.post(`${API_URL}/food/recognise`, {
+        base64Image: photo.base64,
+        mediaType,
+      });
+      return res.data;
+    } catch (err) {
+      console.error('[FoodIntakeEntry.recogniseFromCamera]', err);
+      return {
+        success: false,
+        message: 'Error in estimating nutrients. Please add manually instead.',
+        data:    null,
+      };
+    }
   }
 
   // UC #17, #52 — log the confirmed camera-recognised entry
