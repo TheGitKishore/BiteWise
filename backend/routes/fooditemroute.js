@@ -22,7 +22,17 @@ router.get('/', async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: items,
+      data: items.map(item => ({
+          _id: item._id,
+          name: item.name,
+          calories: item.calories ?? item.energy ?? item.nutrients?.calories ?? 0,
+          protein: item.protein ?? item.nutrients?.protein ?? 0,
+          carbs: item.carbs ?? item.nutrients?.carbs ?? 0,
+          fat: item.fat ?? item.nutrients?.fat ?? 0,
+          serving: item.serving ?? '',
+          category: item.category ?? '',
+          isCustom: item.isCustom ?? false,
+        })),
       message: 'Food items fetched successfully',
     });
   } catch (err) {

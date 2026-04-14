@@ -501,7 +501,7 @@ const cm = StyleSheet.create({
 // CHANGED: search is now async with local-first + API fallback
 // ─────────────────────────────────────────────────────────────
 
-const FoodDatabaseSection = ({ allItems, isLoading, errorMsg }) => {
+const FoodDatabaseSection = ({ allItems, isLoading, errorMsg, onEntryLogged, userId }) => {
   const [search,        setSearch]        = useState('');
   const [expanded,      setExpanded]      = useState(null);
   const [quantities,    setQuantities]    = useState({});
@@ -547,7 +547,11 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg }) => {
   const handleInc = (id) => setQuantities((p) => ({ ...p, [id]: (p[id] || 1) + 1 }));
   const handleDec = (id) => setQuantities((p) => ({ ...p, [id]: Math.max(1, (p[id] || 1) - 1) }));
   const handleLog = async (item) => {
-    const result = await dbController.logFoodItem(item, quantities[item.foodItemId] || 1); 
+    const result = await dbController.logFoodItem(
+      item,
+      quantities[item.foodItemId] || 1,
+      userId   // ✅ REQUIRED
+    ); 
     if (result.success) {
       setExpanded(null);
       onEntryLogged(result.message, result.data);
@@ -592,9 +596,9 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg }) => {
         <Text style={db.empty}>No food items found.</Text>
       )}
 
-      {!isSearching && displayItems.map((item) => (
+      {!isSearching && displayItems.map((item, index) => (
         <FoodRow
-          key={item.foodItemId}
+          key={`${item.foodItemId}-${index}`}
           item={item}
           qty={quantities[item.foodItemId] || 1}
           isExpanded={expanded === item.foodItemId}

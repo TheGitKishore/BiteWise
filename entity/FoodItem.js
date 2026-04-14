@@ -5,24 +5,25 @@ const API_URL = `${API_CONFIG}/food-items`;
 class FoodItem {
   constructor({
     foodItemId = null,
-    name       = '',
-    calories   = 0,
-    protein    = 0,
-    carbs      = 0,
-    fat        = 0,
-    serving    = '',
-    category   = '',
-    isCustom   = false,
+    _id = null,
+    name = '',
+    calories = 0,
+    protein = 0,
+    carbs = 0,
+    fat = 0,
+    serving = '',
+    category = '',
+    isCustom = false,
   } = {}) {
-    this.foodItemId = foodItemId;
-    this.name       = name;
-    this.calories   = calories;
-    this.protein    = protein;
-    this.carbs      = carbs;
-    this.fat        = fat;
-    this.serving    = serving;
-    this.category   = category;
-    this.isCustom   = isCustom;
+    this.foodItemId = foodItemId ?? _id ?? `${name}-${Date.now()}`;
+    this.name = name;
+    this.calories = calories;
+    this.protein = protein;
+    this.carbs = carbs;
+    this.fat = fat;
+    this.serving = serving;
+    this.category = category;
+    this.isCustom = isCustom;
   }
 
   getDisplayMeta() {
@@ -51,7 +52,19 @@ class FoodItem {
 
       return {
         success: true,
-        data: res.data.data.map((r) => new FoodItem(r)),
+        data: res.data.data.map((r) =>
+          new FoodItem({
+            foodItemId: r._id,
+            name: r.name,
+            calories: r.calories ?? 0,
+            protein: r.protein ?? 0,
+            carbs: r.carbs ?? 0,
+            fat: r.fat ?? 0,
+            serving: r.serving ?? '',
+            category: r.category ?? '',
+            isCustom: r.isCustom ?? false,
+          })
+        ),
         message: res.data.message || '',
       };
     } catch (err) {
@@ -83,7 +96,8 @@ class FoodItem {
       const apiItems = products
         .filter((p) => p.product_name)
         .map((p) => new FoodItem({
-          foodItemId: p.id || p.code || null,
+          //foodItemId: p.id || p.code || null,
+          foodItemId: p.code || p._id || p.product_name || Math.random().toString(),
           name:       p.product_name || 'Unknown',
           calories:   Math.round(p.nutriments?.['energy-kcal_100g'] || 0),
           protein:    +(p.nutriments?.proteins_100g      || 0).toFixed(1),
@@ -103,6 +117,44 @@ class FoodItem {
     } catch (err) {
       console.error('[FoodItem.searchWithFallback]', err);
       return { data: [], fromAPI: true, message: 'Unable to search food database. Please try again.' };
+    }
+  }
+
+  static async logFoodItem(item, quantity, userId, meal = 'Lunch') {
+    if (!item || !quantity || !userId) {
+      return {
+        success: false,
+        message: 'Invalid food item, quantity, or user',
+      };
+    }
+
+    try {
+      const res = await axios.post(
+        `${API_CONFIG}/food-entries/manual`,
+        {
+          userId,
+          foodName: item.name,
+          calories: item.calories * quantity,
+          protein: item.protein * quantity,
+          carbs: item.carbs * quantity,
+          fat: item.fat * quantity,
+          meal,
+        }
+      );
+
+      return {
+        success: true,
+        data: res.data.data,
+        message: res.data.message || 'Food logged successfully',
+      };
+
+    } catch (err) {
+      console.error('[FoodItem.logFoodItem]', err.response?.data || err.message);
+
+      return {
+        success: false,
+        message: err.response?.data?.message || 'Failed to log food',
+      };
     }
   }
 

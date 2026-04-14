@@ -56,6 +56,17 @@ class ViewFoodDatabaseController {
     }
     return await FoodItem.searchWithFallback(items, query);
   }
+
+  async logFoodItem(item, quantity, userId, meal = 'Lunch') {
+    if (!item || !quantity || !userId) {
+      return {
+        success: false,
+        message: 'Invalid food item, quantity, or user',
+      };
+    }
+  
+    return await FoodItem.logFoodItem(item, quantity, userId, meal);
+  }
 }
 
 export default ViewFoodDatabaseController;
