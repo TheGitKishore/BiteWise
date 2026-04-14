@@ -1,4 +1,5 @@
 // server.js
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import userRoute from './routes/usersroute.js'; // <-- note the .js extension (add files from routes folder)
@@ -13,6 +14,7 @@ import recipeRoute from './routes/reciperoute.js';
 import weightentryRoute from './routes/weightentryroute.js';
 import heightentryRoute from './routes/heightentryroute.js';
 import healthgoalRoute from './routes/healthgoalroute.js';
+import diaryentryRoute from './routes/diaryentryroute.js';
 
 // ? ADD THIS
 import { initializeDatabases } from './routes/apiroute.js';
@@ -35,6 +37,7 @@ app.use('/api/recipes', recipeRoute);
 app.use('/api/weight-entries', weightentryRoute);
 app.use('/api/height-entries', heightentryRoute);
 app.use('/api/health-goals', healthgoalRoute);
+app.use('/api/diary-entries', diaryentryRoute);
 
 // ? Initialize DB before server starts
 const startServer = async () => {
