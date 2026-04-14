@@ -1,5 +1,5 @@
 import express from 'express';
-import { searchFoodProduct, getNutritionInfo } from '../backend/apiroute.js';
+import { searchFoodProduct, getNutritionInfo } from './apiroute.js';
 
 const router = express.Router();
 
@@ -29,3 +29,4 @@ router.get('/barcode/:barcode', async (req, res) => {
 });
 
 export default router;
+
