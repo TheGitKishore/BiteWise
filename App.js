@@ -10,6 +10,7 @@ import ViewReviewsScreen             from './boundary/ViewReviewsScreen';
 import CreateAccountScreen           from './boundary/CreateAccountScreen';
 import LoginScreen                   from './boundary/LoginScreen';
 import FreeUserDashboardScreen       from './boundary/FreeUserDashboardScreen';
+import UserDashboardScreen           from './boundary/UserDashboardScreen';
 import PremiumUserDashboardScreen    from './boundary/PremiumUserDashboardScreen';
 import AccountSettingsScreen         from './boundary/AccountSettingsScreen';
 
@@ -23,7 +24,7 @@ import RecipesScreen                 from './boundary/RecipesScreen';
 import SavedRecipesScreen            from './boundary/SavedRecipesScreen';
 import MealPlansScreen               from './boundary/MealPlansScreen';
 import CreateRecipeScreen            from './boundary/CreateRecipeScreen';
-import DashboardRouter from './boundary/DashboardRouter';
+import DashboardRouter               from './boundary/DashboardRouter';
 
 // ─── Sprint 4 ────────────────────────────────────────────────────────────────
 import ReportsScreen                 from './boundary/ReportsScreen';
@@ -31,6 +32,14 @@ import WeightTrackingScreen          from './boundary/WeightTrackingScreen';
 import CuratorProgramScreen          from './boundary/CuratorProgramScreen';
 import WriteReviewScreen             from './boundary/WriteReviewScreen';
 import MyRecipesScreen               from './boundary/MyRecipesScreen';
+
+// ─── Sprint 5 ────────────────────────────────────────────────────────────────
+import DiaryScreen                   from './boundary/DiaryScreen';
+import GroceryListScreen             from './boundary/GroceryListScreen';
+import CuratorDashboardScreen        from './boundary/CuratorDashboardScreen';
+import EditCuratorRecipeScreen       from './boundary/EditCuratorRecipeScreen';
+import AdminLoginScreen              from './boundary/AdminLoginScreen';
+import AdminDashboardScreen          from './boundary/AdminDashboardScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -49,8 +58,9 @@ export default function App() {
         <Stack.Screen name="ReviewsScreen"                component={ViewReviewsScreen} />
         <Stack.Screen name="SignUpScreen"                 component={CreateAccountScreen} />
         <Stack.Screen name="LoginScreen"                  component={LoginScreen} />
-        <Stack.Screen name="DashboardRouter" component={DashboardRouter}/>
+        <Stack.Screen name="DashboardRouter"              component={DashboardRouter} />
         <Stack.Screen name="FreeUserDashboardScreen"      component={FreeUserDashboardScreen} />
+        <Stack.Screen name="UserDashboardScreen"          component={UserDashboardScreen} />
         <Stack.Screen name="PremiumUserDashboardScreen"   component={PremiumUserDashboardScreen} />
         <Stack.Screen name="AccountSettingsScreen"        component={AccountSettingsScreen} />
 
@@ -71,6 +81,14 @@ export default function App() {
         <Stack.Screen name="CuratorProgramScreen"         component={CuratorProgramScreen} />
         <Stack.Screen name="WriteReviewScreen"            component={WriteReviewScreen} />
         <Stack.Screen name="MyRecipesScreen"              component={MyRecipesScreen} />
+
+        {/* ── Sprint 5 ─────────────────────────────────────────────────── */}
+        <Stack.Screen name="DiaryScreen"                  component={DiaryScreen} />
+        <Stack.Screen name="GroceryListScreen"            component={GroceryListScreen} />
+        <Stack.Screen name="CuratorDashboardScreen"       component={CuratorDashboardScreen} />
+        <Stack.Screen name="EditCuratorRecipeScreen"      component={EditCuratorRecipeScreen} />
+        <Stack.Screen name="AdminLoginScreen"             component={AdminLoginScreen} />
+        <Stack.Screen name="AdminDashboardScreen"         component={AdminDashboardScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
