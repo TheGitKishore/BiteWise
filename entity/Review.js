@@ -130,6 +130,17 @@ class Review {
       };
     }
   }
+
+  // ─── SPRINT 5 ADDITIONS ────────────────────────────────────────────────────
+
+  // UC #104 — admin: remove a user review
+  // Seeded stub: confirms removal without mutating server data.
+  // @param  {string} reviewId
+  // @return {Promise<{ success, message }>}
+  static async remove(reviewId) {
+    return { success: true, message: 'Review removed.' };
+  }
+
 }
 
 export default Review;
