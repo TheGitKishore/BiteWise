@@ -1,19 +1,46 @@
 import express from 'express';
-import { searchFoodProduct, getNutritionInfo } from '../backend/apiroute.js';
+import { searchFoodProduct, getNutritionInfo, mapProduct } from './apiroute.js';
 
 const router = express.Router();
 
 router.get('/search', async (req, res) => {
   try {
-    const { q } = req.query;
+    const q = req.query.searchTerm || req.query.q;
+
     if (!q || q.trim().length < 2) {
-      return res.status(400).json({ success: false, message: 'Search term too short.' });
+      return res.status(400).json({
+        success: false,
+        message: 'Search term too short.'
+      });
     }
+
     const data = await searchFoodProduct(q.trim());
-    return res.status(200).json({ success: true, data });
+
+    console.log("Query:", q);
+    console.log("Products count:", data.products?.length);
+
+    if (!data || !data.products) {
+      return res.status(200).json({
+        success: true,
+        data: []
+      });
+    }
+
+    const products = (data.products || [])
+      .map(mapProduct)
+      .filter(p => p?.name?.toLowerCase().includes(q.toLowerCase()));
+
+    // 🚨 THIS IS CRITICAL
+    return res.status(200).json({
+      success: true,
+      data: products
+    });
+
   } catch (err) {
-    console.error('[GET /food/search]', err);
-    return res.status(500).json({ success: false, message: 'Food search failed.' });
+    return res.status(500).json({
+      success: false,
+      message: 'Food search failed.',
+    });
   }
 });
 

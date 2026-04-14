@@ -3,7 +3,7 @@ import { connectDB, getDB } from '../db_mongodb/db.js';
 import db from '../db_sql/db.js';
 
 // ===================== CONFIGURATION =====================
-const OPENFOODFACTS_BASE_URL = 'https://world.openfoodfacts.org/api/v0';
+const OPENFOODFACTS_BASE_URL = 'https://world.openfoodfacts.org';
 
 // ===================== MONGODB OPERATIONS =====================
 
@@ -168,6 +168,29 @@ export const deleteMySQLRow = async (table, filter) => {
   return await executeMySQLQuery(sql, whereValues);
 };
 
+// ===================== OPENFOODFACTS MAPPER =====================
+
+export const mapProduct = (p) => {
+  if (!p) return null;
+
+  return {
+    barcode: p.code || null,
+    name: p.product_name || p.generic_name || "Unknown product",
+    brand: p.brands || "Unknown brand",
+    image: p.image_front_url || null,
+
+    nutrition: {
+      energy: p.nutriments?.energy_100g || null,
+      protein: p.nutriments?.proteins_100g || null,
+      fat: p.nutriments?.fat_100g || null,
+      carbs: p.nutriments?.carbohydrates_100g || null,
+      sugar: p.nutriments?.sugars_100g || null,
+    },
+
+    nutriscore: p.nutriscore_grade || null,
+  };
+};
+
 // ===================== OPENFOODFACTS API =====================
 
 // Search for food product by name
@@ -177,16 +200,42 @@ export const searchFoodProduct = async (productName) => {
       params: {
         search_terms: productName,
         action: 'process',
-        format: 'json',
+        json: 1,
         page_size: 20,
       },
-      timeout: 5000,
+      headers: {
+        'User-Agent': 'food-app/1.0',
+      },
+      timeout: 8000,
     });
 
     return response.data;
+
   } catch (error) {
-    console.error('Error searching food product:', error);
-    throw error;
+    console.error('OFF ERROR STATUS:', error.response?.status);
+
+    // 🔥 retry once for 503
+    if (error.response?.status === 503) {
+      console.log("Retrying OpenFoodFacts...");
+
+      try {
+        const retry = await axios.get(`${OPENFOODFACTS_BASE_URL}/cgi/search.pl`, {
+          params: {
+            search_terms: productName,
+            action: 'process',
+            json: 1,
+            page_size: 20,
+          },
+          timeout: 8000,
+        });
+
+        return retry.data;
+      } catch (retryErr) {
+        console.error("Retry failed:", retryErr.message);
+      }
+    }
+
+    return { products: [] };
   }
 };
 
@@ -194,13 +243,18 @@ export const searchFoodProduct = async (productName) => {
 export const getProductByBarcode = async (barcode) => {
   try {
     const response = await axios.get(
-      `${OPENFOODFACTS_BASE_URL}/product/${barcode}.json`,
-      {
-        timeout: 5000,
-      }
+      `${OPENFOODFACTS_BASE_URL}/api/v0/product/${barcode}.json`,
+      { timeout: 5000 }
     );
 
-    return response.data;
+    const product = response.data.product;
+
+    if (!product) {
+      throw new Error('Barcode not found in OpenFoodFacts');
+    }
+
+return mapProduct(product);
+
   } catch (error) {
     console.error('Error fetching product by barcode:', error);
     throw error;
@@ -235,34 +289,26 @@ export const searchFoodProductsAdvanced = async (filters) => {
 export const getNutritionInfo = async (barcode) => {
   try {
     const productData = await getProductByBarcode(barcode);
-
-    if (!productData.product) {
+      
+    if (!productData) {
       throw new Error('Product not found');
     }
-
+    
     const nutrition = {
       barcode,
-      productName: productData.product.product_name,
-      brands: productData.product.brands,
-      category: productData.product.categories,
-      nutriScore: productData.product.nutriscore_grade,
-      energy: productData.product.nutriments?.energy_100g,
-      fat: productData.product.nutriments?.fat_100g,
-      saturatedFat: productData.product.nutriments?.saturated_fat_100g,
-      carbohydrates: productData.product.nutriments?.carbohydrates_100g,
-      sugars: productData.product.nutriments?.sugars_100g,
-      fiber: productData.product.nutriments?.fiber_100g,
-      protein: productData.product.nutriments?.protein_100g,
-      salt: productData.product.nutriments?.salt_100g,
-      sodium: productData.product.nutriments?.sodium_100g,
+      productName: productData.name,
+      brands: productData.brand,
+      energy: productData.nutrition?.energy,
+      fat: productData.nutrition?.fat,
+      protein: productData.nutrition?.protein,
     };
-
-    return nutrition;
-  } catch (error) {
-    console.error('Error extracting nutrition info:', error);
-    throw error;
-  }
-};
+    
+        return nutrition;
+      } catch (error) {
+        console.error('Error extracting nutrition info:', error);
+        throw error;
+      }
+    };
 
 // ===================== HELPER FUNCTIONS =====================
 

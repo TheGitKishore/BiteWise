@@ -1,5 +1,6 @@
 import axios from 'axios';
-import API_URL from './api_url.js';
+import API_CONFIG from './api_config.js';
+const API_URL = `${API_CONFIG}/food-api`;
 
 
 // Example API calls

@@ -505,6 +505,7 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg, onEntryLogged, use
   const [search,        setSearch]        = useState('');
   const [expanded,      setExpanded]      = useState(null);
   const [quantities,    setQuantities]    = useState({});
+  const debounceRef = useRef(null);
 
   // ── NEW state for async search ──────────────────────────────
   const [displayItems,  setDisplayItems]  = useState([]);   // what's shown in the list
@@ -520,7 +521,6 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg, onEntryLogged, use
 
   // ── CHANGED: search handler is now async ───────────────────
   const handleSearch = useCallback(async (query) => {
-    setSearch(query);
     setSearchMsg('');
     setFromAPI(false);
 
@@ -568,7 +568,17 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg, onEntryLogged, use
       <TextInput
         style={db.search}
         value={search}
-        onChangeText={handleSearch}
+        onChangeText={(text) => {
+          setSearch(text);
+
+          if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+          }
+        
+          debounceRef.current = setTimeout(() => {
+            handleSearch(text);
+          }, 500); // 500ms delay
+        }}
         placeholder="Search for food..."
         placeholderTextColor={C.subtle}
         autoCorrect={false}
