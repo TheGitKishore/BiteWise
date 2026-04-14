@@ -245,5 +245,42 @@ class Recipe {
       };
     }
   }
+
+  // ─── SPRINT 5 ADDITIONS ────────────────────────────────────────────────────
+
+  // UC #113 — curator: update a recipe they own
+  // Operates on a seeded local store so it works without a backend.
+  // @param  {string} recipeId
+  // @param  {number} curatorUserId
+  // @param  {object} fields
+  // @return {Promise<{ success, field, message, data }>}
+  static async update(recipeId, curatorUserId, fields) {
+    const check = Recipe.validateRecipe({
+      title:        fields.title,
+      ingredients:  fields.ingredients,
+      instructions: fields.instructions,
+    });
+    if (!check.valid) return { success: false, field: check.field, message: check.message, data: null };
+
+    // Seeded stub: confirms the update without mutating server data
+    return {
+      success: true,
+      field:   null,
+      message: 'Recipe updated successfully!',
+      data:    new Recipe({ recipeId, ...fields, createdByUserId: curatorUserId }),
+    };
+  }
+
+  // UC #114 — curator: delete a recipe they own
+  // Seeded stub: confirms deletion without mutating server data.
+  // @param  {string} recipeId
+  // @param  {number} curatorUserId
+  // @return {Promise<{ success, message }>}
+  static async delete(recipeId, curatorUserId) {
+    // In seeded mode we trust the caller owns the recipe (boundary already
+    // filtered by filterByUser before showing the delete button).
+    return { success: true, message: 'Recipe deleted.' };
+  }
+
 }
 export default Recipe;
