@@ -14,7 +14,6 @@ import recipeRoute from './routes/reciperoute.js';
 import weightentryRoute from './routes/weightentryroute.js';
 import heightentryRoute from './routes/heightentryroute.js';
 import healthgoalRoute from './routes/healthgoalroute.js';
-import diaryentryRoute from './routes/diaryentryroute.js';
 import foodRoute from './routes/foodroute.js';
 
 // ? ADD THIS
@@ -38,7 +37,6 @@ app.use('/api/recipes', recipeRoute);
 app.use('/api/weight-entries', weightentryRoute);
 app.use('/api/height-entries', heightentryRoute);
 app.use('/api/health-goals', healthgoalRoute);
-app.use('/api/diary-entries', diaryentryRoute);
 app.use('/api/food-api', foodRoute);
 
 // ? Initialize DB before server starts

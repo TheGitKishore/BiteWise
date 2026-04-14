@@ -6,7 +6,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import * as ImagePicker from 'expo-image-picker';
 
 import ViewFoodDatabaseController          from '../controller/ViewFoodDatabaseController';
 import CreateManualFoodEntryController     from '../controller/CreateManualFoodEntryController';
@@ -368,33 +367,35 @@ const me = StyleSheet.create({
 // UC #17 — CAMERA FOOD RECOGNITION MODAL
 
 const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
-  const [step, setStep] = useState('capture');
-  const [detected, setDetected] = useState(null);
-  const [foodName, setFoodName] = useState('');
-  const [meal, setMeal] = useState('Lunch');
+  const [step,      setStep]      = useState('capture');
+  const [detected,  setDetected]  = useState(null);
+  const [foodName,  setFoodName]  = useState('');
+  const [meal,      setMeal]      = useState('Lunch');
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg,  setErrorMsg]  = useState('');
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraRef, setCameraRef] = useState(null);
 
-  const reset = () => {
-    setStep('capture');
-    setDetected(null);
-    setFoodName('');
-    setMeal('Lunch');
-    setErrorMsg('');
-  };
+  const reset = () => { setStep('capture'); setDetected(null); setFoodName(''); setMeal('Lunch'); setErrorMsg(''); };
+  const handleClose = () => { reset(); onClose(); };
 
-  const handleClose = () => {
-    reset();
-    onClose();
-  };
+  const handleCapture = useCallback(async () => {
+    if (!cameraRef) return;
 
-  const recognise = useCallback(async (photo) => {
     try {
       setIsLoading(true);
       setErrorMsg('');
+
+      const photo = await cameraRef.takePictureAsync({
+        base64: true,
+        quality: 0.5,
+      });
+
+      console.log("PHOTO:", photo.uri);
+
+      // 🔥 Send to backend for recognition
       const result = await cameraController.recogniseFood(photo);
+
       setIsLoading(false);
 
       if (result.success) {
@@ -406,249 +407,91 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
       }
     } catch (err) {
       setIsLoading(false);
-      setErrorMsg('Recognition failed');
+      setErrorMsg('Camera error occurred');
     }
-  }, []);
-
-  const handleCapture = useCallback(async () => {
-    if (!cameraRef) {
-      setErrorMsg('Camera is not ready yet');
-      return;
-    }
-
-    if (!permission?.granted) {
-      const granted = await requestPermission();
-      if (!granted?.granted) {
-        setErrorMsg('Camera permission is required');
-        return;
-      }
-    }
-
-    const photo = await cameraRef.takePictureAsync({ quality: 0.7 });
-    await recognise({
-      uri: photo.uri,
-      type: 'image/jpeg',
-      name: 'camera-capture.jpg',
-    });
-  }, [cameraRef, permission, requestPermission, recognise]);
-
-  const handlePickFromGallery = useCallback(async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      setErrorMsg('Gallery permission is required');
-      return;
-    }
-
-    const selected = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      quality: 0.8,
-    });
-
-    if (selected.canceled || !selected.assets?.length) return;
-
-    const asset = selected.assets[0];
-    await recognise({
-      uri: asset.uri,
-      type: asset.mimeType || 'image/jpeg',
-      name: asset.fileName || 'gallery-image.jpg',
-    });
-  }, [recognise]);
+  }, [cameraRef]);
 
   const handleConfirmLog = useCallback(async () => {
     if (!detected) return;
-
     setIsLoading(true);
-    const result = await cameraController.logCameraEntry(userId, {
-      foodName,
-      calories: detected.calories,
-      protein: detected.protein,
-      carbs: detected.carbs,
-      fat: detected.fat,
-      meal,
-      recognitionMeta: {
-        confidence: detected.confidence,
-        confidencePercentage: detected.confidencePercentage,
-        threshold: detected.threshold,
-        modelLayer: detected.modelLayer,
-        modelName: detected.modelName,
-        fallbackUsed: detected.fallbackUsed,
-        nutritionSource: detected.nutritionSource,
-      },
-    });
+    const result = await cameraController.logCameraEntry(userId, { foodName, calories: detected.calories, protein: detected.protein, carbs: detected.carbs, fat: detected.fat, meal });
     setIsLoading(false);
+    if (result.success) { reset(); onSuccess(result.message, result.data); }
+  }, [detected, foodName, meal, userId]);
 
-    if (result.success) {
-      reset();
-      onSuccess(result.message, result.data);
-    }
-  }, [detected, foodName, meal, userId, onSuccess]);
+  if (!permission) {
+    return <View />;
+  }
+
+  if (!permission.granted) {
+    return (
+      <View>
+        <Text>No access to camera</Text>
+        <TouchableOpacity onPress={requestPermission}>
+          <Text>Grant Permission</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }  
 
   return (
     <ModalSheet
       visible={visible}
-      title={step === 'capture' ? 'Photo Food Recognition' : 'Confirm Recognition'}
-      subtitle={
-        step === 'capture'
-          ? 'Take a photo or choose from gallery'
-          : 'Review food name and nutrients before logging'
-      }
+      title={step === 'capture' ? 'Camera Food Recognition' : '📷 Confirm Food Recognition'}
+      subtitle={step === 'capture' ? 'Simulate taking a photo to automatically recognize food' : 'Verify the details and select a meal category'}
       onClose={handleClose}
     >
       {step === 'capture' && (
         <>
-          <View style={cm.viewfinderWrap}>
-            {permission?.granted ? (
-              <CameraView style={cm.viewfinder} ref={(ref) => setCameraRef(ref)} />
-            ) : (
-              <View style={cm.cameraPlaceholder}>
-                <Text style={cm.placeholderText}>Grant camera access to capture photos</Text>
-              </View>
-            )}
-          </View>
+          {!permission ? (
+            <Text>Requesting camera permission...</Text>
+          ) : !permission.granted ? (
+            <>
+              <Text>No access to camera</Text>
+              <TouchableOpacity onPress={requestPermission}>
+                <Text>Grant Permission</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <CameraView
+              style={cm.viewfinder}
+              ref={(ref) => setCameraRef(ref)}
+            />
+          )}
 
           {errorMsg ? <Text style={cm.errorText}>{errorMsg}</Text> : null}
-
+        
           <TouchableOpacity
             style={[cm.captureBtn, isLoading && cm.btnDisabled]}
             onPress={handleCapture}
             disabled={isLoading}
           >
-            <Text style={cm.captureBtnText}>{isLoading ? 'Recognising...' : 'Take Photo'}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[cm.secondaryBtn, isLoading && cm.btnDisabled]}
-            onPress={handlePickFromGallery}
-            disabled={isLoading}
-          >
-            <Text style={cm.secondaryBtnText}>Choose From Gallery</Text>
-          </TouchableOpacity>
-        </>
-      )}
-
-      {step === 'confirm' && detected && (
-        <>
-          <Field
-            label="Detected Food"
-            value={foodName}
-            onChangeText={setFoodName}
-            placeholder="Food name"
-          />
-
-          <View style={cm.metaCard}>
-            <Text style={cm.metaTitle}>Model Output</Text>
-            <Text style={cm.metaText}>
-              Layer: {detected.modelLayer === 'local' ? 'Local (.tflite)' : 'Online fallback'}
+            <Text style={cm.captureBtnText}>
+              {isLoading ? 'Recognising...' : 'Capture & Recognize Food'}
             </Text>
-            <Text style={cm.metaText}>Confidence: {detected.confidencePercentage || 0}%</Text>
-            <Text style={cm.metaText}>Threshold: {Math.round((detected.threshold || 0.7) * 100)}%</Text>
-          </View>
-
-          <View style={cm.pillRow}>
-            <View style={cm.pill}><Text style={cm.pillValue}>{detected.calories}</Text><Text style={cm.pillLabel}>kcal</Text></View>
-            <View style={cm.pill}><Text style={cm.pillValue}>{detected.protein}g</Text><Text style={cm.pillLabel}>Protein</Text></View>
-            <View style={cm.pill}><Text style={cm.pillValue}>{detected.carbs}g</Text><Text style={cm.pillLabel}>Carbs</Text></View>
-            <View style={cm.pill}><Text style={cm.pillValue}>{detected.fat}g</Text><Text style={cm.pillLabel}>Fat</Text></View>
-          </View>
-
-          <MealPicker value={meal} onSelect={setMeal} />
-
-          <View style={cm.confirmRow}>
-            <TouchableOpacity
-              style={cm.tryAgainBtn}
-              onPress={() => {
-                setStep('capture');
-                setErrorMsg('');
-              }}
-            >
-              <Text style={cm.tryAgainText}>Try Again</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[cm.confirmBtn, isLoading && cm.btnDisabled]}
-              onPress={handleConfirmLog}
-              disabled={isLoading}
-            >
-              <Text style={cm.confirmBtnText}>{isLoading ? 'Logging...' : 'Confirm & Log'}</Text>
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         </>
       )}
     </ModalSheet>
   );
 };
 const cm = StyleSheet.create({
-  viewfinderWrap: { marginBottom: 12 },
-  viewfinder: { height: 180, borderRadius: 12, overflow: 'hidden' },
-  cameraPlaceholder: {
-    height: 180,
-    backgroundColor: C.bg,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: C.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-  },
-  placeholderText: { fontSize: 13, color: C.subtle, textAlign: 'center' },
-  captureBtn: {
-    backgroundColor: C.purple,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginBottom: 10,
-  },
+  viewfinder:     { height: 180, backgroundColor: C.bg, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 16, borderWidth: 1, borderColor: C.border },
+  cameraIcon:     { fontSize: 40, opacity: 0.4 },
+  captureBtn:     { backgroundColor: C.purple, borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginBottom: 10 },
   captureBtnText: { fontSize: 15, fontWeight: '700', color: C.white },
-  secondaryBtn: {
-    backgroundColor: C.white,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: C.border,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  secondaryBtnText: { fontSize: 14, fontWeight: '700', color: C.mid },
-  errorText: { fontSize: 13, color: C.errorText, textAlign: 'center', marginBottom: 10 },
-  btnDisabled: { opacity: 0.6 },
-  metaCard: {
-    borderRadius: 10,
-    backgroundColor: C.bg,
-    borderWidth: 1,
-    borderColor: C.border,
-    padding: 10,
-    marginBottom: 12,
-  },
-  metaTitle: { fontSize: 13, fontWeight: '700', color: C.dark, marginBottom: 4 },
-  metaText: { fontSize: 12, color: C.mid },
-  pillRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
-  pill: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: C.purpleLight,
-    borderRadius: 10,
-    paddingVertical: 10,
-    marginHorizontal: 3,
-  },
-  pillValue: { fontSize: 14, fontWeight: '800', color: C.purple },
-  pillLabel: { fontSize: 11, color: C.purple, marginTop: 2 },
-  confirmRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
-  tryAgainBtn: {
-    flex: 1,
-    borderWidth: 1.5,
-    borderColor: C.border,
-    borderRadius: 10,
-    paddingVertical: 13,
-    alignItems: 'center',
-  },
-  tryAgainText: { fontSize: 14, fontWeight: '600', color: C.mid },
-  confirmBtn: {
-    flex: 1.5,
-    backgroundColor: C.purple,
-    borderRadius: 10,
-    paddingVertical: 13,
-    alignItems: 'center',
-  },
+  demoNote:       { fontSize: 12, color: C.subtle, textAlign: 'center' },
+  errorText:      { fontSize: 13, color: C.errorText, textAlign: 'center', marginBottom: 10 },
+  btnDisabled:    { opacity: 0.6 },
+  pillRow:        { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
+  pill:           { flex: 1, alignItems: 'center', backgroundColor: C.purpleLight, borderRadius: 10, paddingVertical: 10, marginHorizontal: 3 },
+  pillValue:      { fontSize: 16, fontWeight: '800', color: C.purple },
+  pillLabel:      { fontSize: 11, color: C.purple, marginTop: 2 },
+  detectedLabel:  { fontSize: 12, color: C.subtle, marginBottom: 10 },
+  confirmRow:     { flexDirection: 'row', gap: 10, marginTop: 4 },
+  tryAgainBtn:    { flex: 1, borderWidth: 1.5, borderColor: C.border, borderRadius: 10, paddingVertical: 13, alignItems: 'center' },
+  tryAgainText:   { fontSize: 14, fontWeight: '600', color: C.mid },
+  confirmBtn:     { flex: 1.5, backgroundColor: C.purple, borderRadius: 10, paddingVertical: 13, alignItems: 'center' },
   confirmBtnText: { fontSize: 14, fontWeight: '700', color: C.white },
 });
 
@@ -678,7 +521,6 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg, onEntryLogged, use
 
   // ── CHANGED: search handler is now async ───────────────────
   const handleSearch = useCallback(async (query) => {
-    setSearch(query);
     setSearchMsg('');
     setFromAPI(false);
 
@@ -795,7 +637,7 @@ const db = StyleSheet.create({
 const LogFoodTab = ({ user, allItems, dbLoading, dbError, onOpenManual, onOpenCamera, onEntryLogged }) => (
   <View>
     <ActionTile icon="➕"  title="Manual Entry"   subtitle="Manually log food details"      onPress={onOpenManual} />
-    <ActionTile icon="📷" title="Photo Recognition" subtitle="Take photo or choose from gallery" onPress={onOpenCamera} />
+    <ActionTile icon="📷" title="Camera Capture" subtitle="Take a photo to recognize food" onPress={onOpenCamera} />
     <FoodDatabaseSection
       allItems={allItems}
       isLoading={dbLoading}
@@ -1037,5 +879,3 @@ const styles = StyleSheet.create({
 });
 
 export default FoodTrackingLandingScreen;
-
-

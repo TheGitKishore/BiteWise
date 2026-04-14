@@ -87,26 +87,23 @@ class FoodItem {
 
     // Step 2 — nothing found locally, try Open Food Facts
     try {
-      const res = await axios.get(`${API_URL}/food/search`, {
-        params: { q: query },
+      const res = await axios.get(`${API_CONFIG}/food-api/search`, {
+        params: { searchTerm: query },
       });
 
-      const products = res.data?.data?.products || [];
+      const products = res.data?.data || [];
 
-      const apiItems = products
-        .filter((p) => p.product_name)
-        .map((p) => new FoodItem({
-          //foodItemId: p.id || p.code || null,
-          foodItemId: p.code || p._id || p.product_name || Math.random().toString(),
-          name:       p.product_name || 'Unknown',
-          calories:   Math.round(p.nutriments?.['energy-kcal_100g'] || 0),
-          protein:    +(p.nutriments?.proteins_100g      || 0).toFixed(1),
-          carbs:      +(p.nutriments?.carbohydrates_100g || 0).toFixed(1),
-          fat:        +(p.nutriments?.fat_100g           || 0).toFixed(1),
-          serving:    p.serving_size || '100g',
-          category:   p.categories_tags?.[0]?.replace('en:', '') || '',
-          isCustom:   false,
-        }));
+      const apiItems = products.map((p) => new FoodItem({
+        foodItemId: p.barcode || Math.random().toString(),
+        name: p.name || 'Unknown',
+        calories: Math.round(p.nutrition?.energy || 0),
+        protein: +(p.nutrition?.protein || 0).toFixed(1),
+        carbs: +(p.nutrition?.carbs || 0).toFixed(1),
+        fat: +(p.nutrition?.fat || 0).toFixed(1),
+        serving: '100g',
+        category: '',
+        isCustom: false,
+      }));
 
       if (apiItems.length === 0) {
         return { data: [], fromAPI: true, message: 'No food items found. Try a different search.' };
