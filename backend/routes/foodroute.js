@@ -1,5 +1,5 @@
 import express from 'express';
-import { searchFoodProduct, getNutritionInfo } from './apiroute.js';
+import { searchFoodProduct, getNutritionInfo, mapProduct } from './apiroute.js';
 
 const router = express.Router();
 
