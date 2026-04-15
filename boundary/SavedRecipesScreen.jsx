@@ -114,7 +114,7 @@ const SavedRecipesScreen = ({ navigation, route }) => {
   const user = route?.params?.user || null;
 
   // ROLE GATE — redirect Free users immediately
-  if (user?.role !== 'PREMIUM') {
+  if (user?.role !== 'premium') {
     return (
       <SafeAreaView style={styles.safe}>
         <NavBar onMenuPress={() => navigation.goBack()} />

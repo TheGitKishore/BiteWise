@@ -7,42 +7,24 @@
 // Alt Flow 1a: required fields missing → { success: false, field, message }
 // Premium User only (#83)
 
-import User from '../entity/User';
+import CuratorApplication from '../entity/CuratorApplication';
 
 class ApplyCuratorProgramController {
-  constructor() {}
-
-  // UC #83 — validate application fields (client-side guard before API call)
-  // @param  {{ motivation, journey, expertise }}
-  // @return {{ valid: boolean, errors: object }}
   validateApplication({ motivation, journey, expertise }) {
     const errors = {};
     if (!motivation?.trim()) errors.motivation = 'Required.';
-    if (!journey?.trim())    errors.journey    = 'Required.';
-    if (!expertise?.trim())  errors.expertise  = 'Required.';
+    if (!journey?.trim()) errors.journey = 'Required.';
+    if (!expertise?.trim()) errors.expertise = 'Required.';
     return { valid: Object.keys(errors).length === 0, errors };
   }
 
-  // UC #83 — submit a Curator Program application
-  // @param  {number} userId
-  // @param  {{ motivation, journey, expertise, social }}
-  // @return {Promise<{ success, message }>}
-  async submitApplication(userId, { motivation, journey, expertise, social }) {
-    const { valid, errors } = this.validateApplication({ motivation, journey, expertise });
+  async submitApplication(userId, username, data) {
+    const { valid, errors } = this.validateApplication(data);
     if (!valid) {
       return { success: false, errors, message: 'Please fill in all required fields.' };
     }
 
-    try {
-      return await User.applyForCurator(userId, { motivation, journey, expertise, social });
-    } catch (error) {
-      console.error('[ApplyCuratorProgramController]', error);
-      // Soft fallback — application still shows as submitted to the user
-      return {
-        success: true,
-        message: 'Application submitted! We will review it within 5–7 business days.',
-      };
-    }
+    return await CuratorApplication.create(userId, username, data);
   }
 }
 

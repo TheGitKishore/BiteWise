@@ -172,8 +172,6 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    user.role = user.role?.toLowerCase();
-
     return res.status(200).json({
       success: true,
       message: 'Login successful.',

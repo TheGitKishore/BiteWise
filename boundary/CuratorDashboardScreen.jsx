@@ -156,7 +156,7 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState('My Recipes');
 
   // Role guard
-  if (user?.role !== 'CURATOR') {
+  if (user?.role !== 'curator') {
     return (
       <SafeAreaView style={s.safe}>
         <View style={s.gateWrap}><Text style={s.gateTitle}>Curator Access Only</Text><Text style={s.gateBody}>This dashboard is for approved Curators only.</Text></View>

@@ -15,6 +15,7 @@ import weightentryRoute from './routes/weightentryroute.js';
 import heightentryRoute from './routes/heightentryroute.js';
 import healthgoalRoute from './routes/healthgoalroute.js';
 import foodRoute from './routes/foodroute.js';
+import curatorapplicationRoute from './routes/curatorapplicationroute.js';
 
 // ? ADD THIS
 import { initializeDatabases } from './routes/apiroute.js';
@@ -38,6 +39,7 @@ app.use('/api/weight-entries', weightentryRoute);
 app.use('/api/height-entries', heightentryRoute);
 app.use('/api/health-goals', healthgoalRoute);
 app.use('/api/food-api', foodRoute);
+app.use('/api/curator-applications', curatorapplicationRoute);
 
 // ? Initialize DB before server starts
 const startServer = async () => {

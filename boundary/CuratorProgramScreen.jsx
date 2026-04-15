@@ -52,7 +52,7 @@ const Field = ({ label, value, onChange, placeholder, multiline, error }) => (
 const CuratorProgramScreen = ({ navigation, route }) => {
   const user = route?.params?.user || null;
 
-  if (user?.role !== 'PREMIUM') {
+  if (user?.role !== 'premium') {
     return (
       <SafeAreaView style={{flex:1,backgroundColor:C.bg}}>
         <NavBar onMenu={() => navigation.goBack()}/>
@@ -86,9 +86,16 @@ const CuratorProgramScreen = ({ navigation, route }) => {
     setErrors({});
     setIsLoading(true);
 
-    const result = await controller.submitApplication(user.userId, {
-      motivation, journey, expertise, social,
-    });
+    const result = await controller.submitApplication(
+      user.userId,
+      user.username,   // ✅ ADD THIS
+      {
+        motivation,
+        journey,
+        expertise,
+        social,
+      }
+    );
 
     setIsLoading(false);
     setBanner(result.message || 'Application submitted! We will review it within 5–7 business days.');

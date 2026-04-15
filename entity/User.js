@@ -28,7 +28,7 @@ class User {
     dateOfBirth      = null,
     gender           = '',      // 'male' | 'female' | 'other'
     profileType      = null,    // 'MEAL_PLANNER' | 'ATHLETE' | 'HEALTH_ORIENTED'
-    role             = 'FREE',  // 'FREE' | 'PREMIUM' | 'CURATOR' | 'ADMIN'
+    role             = 'free',  // 'FREE' | 'PREMIUM' | 'CURATOR' | 'ADMIN'
     membershipPlanId = null,
     isActive         = true,
     createdAt        = null,
