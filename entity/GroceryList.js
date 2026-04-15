@@ -1,89 +1,148 @@
-// GroceryList.js — SEEDED (no axios)
-// UC #94 generate, #95 add item, #96 delete item
-// One active list per user — generate replaces previous list
-// Premium User only
+import axios from 'axios';
+import API_CONFIG from './api_config.js';
 
-function parseIngredient(raw, idx) {
-  const match = raw.match(/^([\d.]+)\s*([a-zA-Z]*)\s+(.+)$/);
-  if (match) return { itemId: 'i_gen_' + idx, name: match[3].trim(), quantity: Number(match[1]), unit: match[2] || 'unit', checked: false };
-  return { itemId: 'i_gen_' + idx, name: raw.trim(), quantity: 1, unit: 'unit', checked: false };
-}
-
-const SEED_LISTS = {
-  2: {
-    listId: 'gl1', userId: 2, sourceRecipeId: 'r1', sourceRecipeTitle: 'High-Protein Chicken & Rice Bowl',
-    items: [
-      { itemId: 'i1', name: 'Chicken breast', quantity: 150, unit: 'g',     checked: false },
-      { itemId: 'i2', name: 'Brown rice',      quantity: 1,   unit: 'cup',   checked: false },
-      { itemId: 'i3', name: 'Broccoli',        quantity: 1,   unit: 'cup',   checked: true  },
-      { itemId: 'i4', name: 'Olive oil',       quantity: 1,   unit: 'tbsp',  checked: false },
-      { itemId: 'i5', name: 'Salt',            quantity: 1,   unit: 'pinch', checked: false },
-      { itemId: 'i6', name: 'Black pepper',    quantity: 1,   unit: 'pinch', checked: false },
-      { itemId: 'i7', name: 'Garlic powder',   quantity: 1,   unit: 'tsp',   checked: false },
-    ],
-    generatedAt: '2026-03-30T10:00:00Z', updatedAt: '2026-03-30T10:00:00Z',
-  },
-};
-
-let _lists      = { 2: { ...SEED_LISTS[2], items: [...SEED_LISTS[2].items] } };
-let _nextItemId = 20;
+const API_URL = `${API_CONFIG}/grocery-lists`;
 
 class GroceryList {
-  constructor({ listId=null, userId=null, sourceRecipeId=null, sourceRecipeTitle='', items=[], generatedAt=null, updatedAt=null } = {}) {
-    Object.assign(this, { listId, userId, sourceRecipeId, sourceRecipeTitle, items, generatedAt, updatedAt });
+  constructor({
+    listId = null,
+    userId = null,
+    sourceRecipeId = null,
+    sourceRecipeTitle = '',
+    items = [],
+    generatedAt = null,
+    updatedAt = null,
+  } = {}) {
+    this.listId = listId;
+    this.userId = userId;
+    this.sourceRecipeId = sourceRecipeId;
+    this.sourceRecipeTitle = sourceRecipeTitle;
+    this.items = items;
+    this.generatedAt = generatedAt;
+    this.updatedAt = updatedAt;
   }
 
-  getCheckedCount() { return this.items.filter((i) => i.checked).length; }
-  getPendingItems() { return this.items.filter((i) => !i.checked); }
+  getCheckedCount() {
+    return this.items.filter((item) => item.checked).length;
+  }
+
+  getPendingItems() {
+    return this.items.filter((item) => !item.checked);
+  }
 
   static validateItem({ name }) {
-    if (!name || name.trim().length === 0) return { valid: false, field: 'name', message: 'Item name is required.' };
+    if (!name || name.trim().length === 0) {
+      return { valid: false, field: 'name', message: 'Item name is required.' };
+    }
     return { valid: true, field: null, message: '' };
   }
 
-  // UC #94 — generate a new list from a saved recipe
-  static async generateFromRecipe(userId, recipe) {
-    const now  = new Date().toISOString();
-    const list = { listId: 'gl_' + userId + '_' + Date.now(), userId, sourceRecipeId: recipe.recipeId, sourceRecipeTitle: recipe.title, items: recipe.ingredients.map(parseIngredient), generatedAt: now, updatedAt: now };
-    _lists[userId] = { ...list };
-    return { success: true, message: 'Grocery list generated!', data: new GroceryList(_lists[userId]) };
+  static fromApi(raw) {
+    return new GroceryList({
+      listId: raw?.listId || null,
+      userId: raw?.userId ?? null,
+      sourceRecipeId: raw?.sourceRecipeId || null,
+      sourceRecipeTitle: raw?.sourceRecipeTitle || '',
+      items: Array.isArray(raw?.items) ? raw.items : [],
+      generatedAt: raw?.generatedAt || null,
+      updatedAt: raw?.updatedAt || null,
+    });
   }
 
-  // UC #95 — add a custom item to the active list
+  // UC #94
+  static async generateFromRecipe(userId, recipe) {
+    try {
+      const res = await axios.post(`${API_URL}/generate-from-recipe`, { userId, recipe });
+      return {
+        success: Boolean(res.data?.success),
+        message: res.data?.message || 'Grocery list generated!',
+        data: res.data?.data ? GroceryList.fromApi(res.data.data) : null,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || 'Failed to generate grocery list.',
+        data: null,
+      };
+    }
+  }
+
+  // UC #95
   static async addItem(userId, { name, quantity, unit }) {
     const check = GroceryList.validateItem({ name });
-    if (!check.valid) return { success: false, field: check.field, message: check.message, data: null };
-    if (!_lists[userId]) return { success: false, field: null, message: 'No active grocery list. Generate one first.', data: null };
-    _lists[userId].items.push({ itemId: 'i_' + _nextItemId++, name: name.trim(), quantity: Number(quantity) || 1, unit: unit || 'unit', checked: false });
-    _lists[userId].updatedAt = new Date().toISOString();
-    return { success: true, message: 'Item added.', data: new GroceryList(_lists[userId]) };
+    if (!check.valid) {
+      return { success: false, field: check.field, message: check.message, data: null };
+    }
+
+    try {
+      const res = await axios.post(`${API_URL}/${userId}/items`, { name, quantity, unit });
+      return {
+        success: Boolean(res.data?.success),
+        message: res.data?.message || 'Item added.',
+        data: res.data?.data ? GroceryList.fromApi(res.data.data) : null,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        field: err.response?.data?.field ?? null,
+        message: err.response?.data?.message || 'Failed to add item.',
+        data: null,
+      };
+    }
   }
 
-  // UC #96 — delete an item from the active list
+  // UC #96
   static async deleteItem(userId, itemId) {
-    if (!_lists[userId]) return { success: false, message: 'No active grocery list.', data: null };
-    const before = _lists[userId].items.length;
-    _lists[userId].items    = _lists[userId].items.filter((i) => i.itemId !== itemId);
-    _lists[userId].updatedAt = new Date().toISOString();
-    if (_lists[userId].items.length === before) return { success: false, message: 'Item not found.', data: null };
-    return { success: true, message: 'Item removed.', data: new GroceryList(_lists[userId]) };
+    try {
+      const res = await axios.delete(`${API_URL}/${userId}/items/${itemId}`);
+      return {
+        success: Boolean(res.data?.success),
+        message: res.data?.message || 'Item removed.',
+        data: res.data?.data ? GroceryList.fromApi(res.data.data) : null,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || 'Failed to remove item.',
+        data: null,
+      };
+    }
   }
 
-  // Toggle checked state
   static async toggleItem(userId, itemId) {
-    if (!_lists[userId]) return { success: false, message: 'No active grocery list.', data: null };
-    const item = _lists[userId].items.find((i) => i.itemId === itemId);
-    if (!item) return { success: false, message: 'Item not found.', data: null };
-    item.checked = !item.checked;
-    _lists[userId].updatedAt = new Date().toISOString();
-    return { success: true, message: '', data: new GroceryList(_lists[userId]) };
+    try {
+      const res = await axios.put(`${API_URL}/${userId}/items/${itemId}/toggle`);
+      return {
+        success: Boolean(res.data?.success),
+        message: res.data?.message || '',
+        data: res.data?.data ? GroceryList.fromApi(res.data.data) : null,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || 'Failed to update item.',
+        data: null,
+      };
+    }
   }
 
-  // Fetch active list for screen mount
   static async fetchCurrent(userId) {
-    const raw = _lists[userId] ?? null;
-    return { success: true, data: raw ? new GroceryList(raw) : null, message: raw ? '' : 'No grocery list yet.' };
+    try {
+      const res = await axios.get(`${API_URL}/${userId}`);
+      return {
+        success: Boolean(res.data?.success),
+        data: res.data?.data ? GroceryList.fromApi(res.data.data) : null,
+        message: res.data?.message || '',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        data: null,
+        message: err.response?.data?.message || 'Failed to fetch grocery list.',
+      };
+    }
   }
 }
 
 export default GroceryList;
+

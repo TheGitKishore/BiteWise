@@ -301,7 +301,7 @@ const PremiumUserDashboardScreen = ({ navigation, route }) => {
           title="Health Diary"
           subtitle="Document your journey"
           isPremium
-          onPress={() => navigation.navigate('HealthDiaryScreen', { user: currentUser })}
+          onPress={() => navigation.navigate('DiaryScreen', { user: currentUser })}
         />
         <FeatureTile
           icon="⚖️"

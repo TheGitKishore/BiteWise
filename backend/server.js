@@ -1,5 +1,4 @@
 // server.js
-import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import userRoute from './routes/usersroute.js'; // <-- note the .js extension (add files from routes folder)
@@ -15,6 +14,9 @@ import weightentryRoute from './routes/weightentryroute.js';
 import heightentryRoute from './routes/heightentryroute.js';
 import healthgoalRoute from './routes/healthgoalroute.js';
 import foodRoute from './routes/foodroute.js';
+import diaryentryRoute from './routes/diaryentryroute.js';
+import uploadRoute from './routes/uploadroute.js';
+import grocerylistRoute from './routes/grocerylistroute.js';
 import curatorapplicationRoute from './routes/curatorapplicationroute.js';
 
 // ? ADD THIS
@@ -39,6 +41,9 @@ app.use('/api/weight-entries', weightentryRoute);
 app.use('/api/height-entries', heightentryRoute);
 app.use('/api/health-goals', healthgoalRoute);
 app.use('/api/food-api', foodRoute);
+app.use('/api/diary-entries', diaryentryRoute);
+app.use('/api/uploads', uploadRoute);
+app.use('/api/grocery-lists', grocerylistRoute);
 app.use('/api/curator-applications', curatorapplicationRoute);
 
 // ? Initialize DB before server starts
