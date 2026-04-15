@@ -1,23 +1,11 @@
-// DiaryEntry.js — SEEDED (no axios)
-// UC #76 (implied create), #77 add photo, #78 view, #79 delete
-// Premium User only
+import axios from 'axios';
+import API_CONFIG from './api_config.js';
 
-const TODAY = new Date().toISOString().slice(0, 10);
-
-const SEED_ENTRIES = {
-  2: [
-    { entryId: 'de1', userId: 2, title: 'First week check-in', content: 'Feeling strong after the first week on the new meal plan. Energy levels are noticeably higher and workouts are more productive.', mood: 'Great', photoUri: null, createdAt: '2026-03-01T08:00:00Z', updatedAt: '2026-03-01T08:00:00Z' },
-    { entryId: 'de2', userId: 2, title: 'Post leg day', content: 'Legs are destroyed but in a good way. Hit a new squat PR today. Nutrition has been spot on.', mood: 'Good', photoUri: 'file://diary-photo-de2.jpg', createdAt: '2026-03-15T20:00:00Z', updatedAt: '2026-03-15T20:30:00Z' },
-    { entryId: 'de3', userId: 2, title: 'Halfway milestone', content: 'Hit the halfway point of my bulk phase. Weight is up 1.8kg and strength is up across all lifts.', mood: 'Great', photoUri: null, createdAt: TODAY + 'T07:00:00Z', updatedAt: TODAY + 'T07:00:00Z' },
-  ],
-};
-
-let _entries = { 2: [...SEED_ENTRIES[2]] };
-let _nextId  = 10;
+const API_URL = `${API_CONFIG}/diary-entries`;
 
 class DiaryEntry {
-  constructor({ entryId=null, userId=null, title='', content='', mood='', photoUri=null, createdAt=null, updatedAt=null } = {}) {
-    Object.assign(this, { entryId, userId, title, content, mood, photoUri, createdAt, updatedAt });
+  constructor({ entryId=null, userId=null, title='', content='', mood='', weight=null, photoUri=null, createdAt=null, updatedAt=null } = {}) {
+    Object.assign(this, { entryId, userId, title, content, mood, weight, photoUri, createdAt, updatedAt });
   }
 
   static validateEntry({ title, content }) {
@@ -26,46 +14,110 @@ class DiaryEntry {
     return { valid: true, field: null, message: '' };
   }
 
-  static sortByDate(entries) { return [...entries].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); }
+  static fromApi(raw) {
+    return new DiaryEntry({
+      entryId: raw.entryId || raw._id?.toString?.() || null,
+      userId: Number(raw.userId) || null,
+      title: raw.title || '',
+      content: raw.content || '',
+      mood: raw.mood || '',
+      weight: raw.weight ?? null,
+      photoUri: raw.photoUri || null,
+      createdAt: raw.createdAt || null,
+      updatedAt: raw.updatedAt || null,
+    });
+  }
+
+  static sortByDate(entries) { return [...entries].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)); }
   static hasEntries(entries) { return Array.isArray(entries) && entries.length > 0; }
 
   // UC #76
-  static async create(userId, { title, content, mood }) {
+  static async create(userId, { title, content, mood, weight }) {
     const check = DiaryEntry.validateEntry({ title, content });
-    if (!check.valid) return { success: false, field: check.field, message: check.message, data: null };
-    const now   = new Date().toISOString();
-    const entry = new DiaryEntry({ entryId: 'de_' + _nextId++, userId, title: title.trim(), content: content.trim(), mood: mood || 'Okay', photoUri: null, createdAt: now, updatedAt: now });
-    if (!_entries[userId]) _entries[userId] = [];
-    _entries[userId].push({ ...entry });
-    return { success: true, field: null, message: 'Diary entry created!', data: entry };
+    if (!check.valid) {
+      return { success: false, field: check.field, message: check.message, data: null };
+    }
+
+    try {
+      const res = await axios.post(`${API_URL}`, {
+        userId,
+        title: title.trim(),
+        content: content.trim(),
+        mood: String(mood || '').trim(),
+        weight: String(weight ?? '').trim(),
+      });
+
+      return {
+        success: Boolean(res.data?.success),
+        field: res.data?.field ?? null,
+        message: res.data?.message || 'Diary entry created!',
+        data: res.data?.data ? DiaryEntry.fromApi(res.data.data) : null,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        field: err.response?.data?.field ?? null,
+        message: err.response?.data?.message || 'Unable to create diary entry. Please try again.',
+        data: null,
+      };
+    }
   }
 
   // UC #77
   static async addPhoto(entryId, photoUri) {
-    for (const uid of Object.keys(_entries)) {
-      const idx = _entries[uid].findIndex((e) => e.entryId === entryId);
-      if (idx !== -1) {
-        _entries[uid][idx].photoUri  = photoUri;
-        _entries[uid][idx].updatedAt = new Date().toISOString();
-        return { success: true, message: 'Photo added to diary entry.', data: new DiaryEntry(_entries[uid][idx]) };
-      }
+    if (!photoUri || !String(photoUri).trim()) {
+      return { success: false, message: 'No photo URL provided.', data: null };
     }
-    return { success: false, message: 'Diary entry not found.', data: null };
+
+    try {
+      const res = await axios.put(`${API_URL}/${entryId}/photo`, { photoUri: String(photoUri).trim() });
+      return {
+        success: Boolean(res.data?.success),
+        message: res.data?.message || 'Photo added to diary entry.',
+        data: res.data?.data ? DiaryEntry.fromApi(res.data.data) : null,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || 'Unable to add photo to diary entry.',
+        data: null,
+      };
+    }
   }
 
   // UC #78
   static async fetchAll(userId) {
-    return { success: true, data: DiaryEntry.sortByDate((_entries[userId] || []).map((e) => new DiaryEntry(e))), message: '' };
+    try {
+      const res = await axios.get(`${API_URL}/${userId}`);
+      const mapped = Array.isArray(res.data?.data) ? res.data.data.map(DiaryEntry.fromApi) : [];
+      return {
+        success: Boolean(res.data?.success),
+        data: DiaryEntry.sortByDate(mapped),
+        message: res.data?.message || '',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        data: [],
+        message: err.response?.data?.message || 'Unable to load diary entries.',
+      };
+    }
   }
 
   // UC #79
   static async delete(entryId) {
-    for (const uid of Object.keys(_entries)) {
-      const before = _entries[uid].length;
-      _entries[uid] = _entries[uid].filter((e) => e.entryId !== entryId);
-      if (_entries[uid].length < before) return { success: true, message: 'Diary entry deleted.' };
+    try {
+      const res = await axios.delete(`${API_URL}/${entryId}`);
+      return {
+        success: Boolean(res.data?.success),
+        message: res.data?.message || 'Diary entry deleted.',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || 'Unable to delete diary entry.',
+      };
     }
-    return { success: false, message: 'Diary entry not found.' };
   }
 }
 
