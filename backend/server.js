@@ -16,6 +16,7 @@ import healthgoalRoute from './routes/healthgoalroute.js';
 import foodRoute from './routes/foodroute.js';
 import diaryentryRoute from './routes/diaryentryroute.js';
 import uploadRoute from './routes/uploadroute.js';
+import grocerylistRoute from './routes/grocerylistroute.js';
 
 // ? ADD THIS
 import { initializeDatabases } from './routes/apiroute.js';
@@ -41,6 +42,7 @@ app.use('/api/health-goals', healthgoalRoute);
 app.use('/api/food-api', foodRoute);
 app.use('/api/diary-entries', diaryentryRoute);
 app.use('/api/uploads', uploadRoute);
+app.use('/api/grocery-lists', grocerylistRoute);
 
 // ? Initialize DB before server starts
 const startServer = async () => {
