@@ -28,7 +28,7 @@ router.get('/search', async (req, res) => {
 
     const products = (data.products || [])
       .map(mapProduct)
-      .filter(p => p?.name?.toLowerCase().includes(q.toLowerCase()));
+      .filter(Boolean);
 
     // 🚨 THIS IS CRITICAL
     return res.status(200).json({

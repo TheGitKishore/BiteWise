@@ -33,6 +33,22 @@ export const getMongoDocuments = async (collectionName, filter = {}, options = {
   }
 };
 
+// ===================== FOOD SEARCH IN MONGO =====================
+
+export const searchMongoFoodProducts = async (productName) => {
+  try {
+    const db = await getDB();
+
+    return await db.collection('foodItems').find({
+      name: { $regex: productName, $options: 'i' }
+    }).toArray();
+
+  } catch (error) {
+    console.error('Mongo food search error:', error);
+    return [];
+  }
+};
+
 export const createMongoDocument = async (collectionName, data) => {
   try {
     const db = await getDB();
@@ -309,6 +325,49 @@ export const getNutritionInfo = async (barcode) => {
         throw error;
       }
     };
+
+// ===================== UNIFIED FOOD SEARCH =====================
+
+export const searchFoodUnified = async (productName) => {
+  try {
+    const [mongoResults, offResults] = await Promise.all([
+      searchMongoFoodProducts(productName),
+      searchFoodProduct(productName),
+    ]);
+
+    // Map MongoDB results
+    const dbMapped = mongoResults.map(item => ({
+      source: 'database',
+      barcode: item.barcode || null,
+      name: item.name,
+      brand: item.brand || null,
+      image: item.image || null,
+      nutrition: item.nutrition || null,
+    }));
+
+    // Map OpenFoodFacts results
+    const offMapped = (offResults.products || [])
+      .map(mapProduct)
+      .filter(Boolean)
+      .map(item => ({
+        ...item,
+        source: 'openfoodfacts'
+      }));
+
+    // Merge
+    const merged = [...dbMapped, ...offMapped];
+
+    return {
+      query: productName,
+      total: merged.length,
+      results: merged,
+    };
+
+  } catch (error) {
+    console.error('Unified search error:', error);
+    return { query: productName, total: 0, results: [] };
+  }
+};
 
 // ===================== HELPER FUNCTIONS =====================
 

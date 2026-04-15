@@ -79,21 +79,20 @@ class FoodItem {
   // UC #15, #50 — search local first, fall back to Open Food Facts if empty
   // Called by ViewFoodDatabaseController.searchFoodItems()
   static async searchWithFallback(localItems, query) {
-    // Step 1 — filter local hardcoded items first
+    // Step 1 — local search
     const localResults = FoodItem.filterBySearch(localItems, query);
-    if (localResults.length > 0) {
-      return { data: localResults, fromAPI: false, message: '' };
-    }
-
-    // Step 2 — nothing found locally, try Open Food Facts
+  
+    // Step 2 — API search (ALWAYS run if query exists)
+    let apiItems = [];
+  
     try {
       const res = await axios.get(`${API_CONFIG}/food-api/search`, {
         params: { searchTerm: query },
       });
-
+    
       const products = res.data?.data || [];
-
-      const apiItems = products.map((p) => new FoodItem({
+    
+      apiItems = products.map((p) => new FoodItem({
         foodItemId: p.barcode || Math.random().toString(),
         name: p.name || 'Unknown',
         calories: Math.round(p.nutrition?.energy || 0),
@@ -104,17 +103,30 @@ class FoodItem {
         category: '',
         isCustom: false,
       }));
-
-      if (apiItems.length === 0) {
-        return { data: [], fromAPI: true, message: 'No food items found. Try a different search.' };
-      }
-
-      return { data: apiItems, fromAPI: true, message: '' };
-
+    
     } catch (err) {
       console.error('[FoodItem.searchWithFallback]', err);
-      return { data: [], fromAPI: true, message: 'Unable to search food database. Please try again.' };
     }
+  
+    // Step 3 — merge BOTH results
+    const merged = [...localResults, ...apiItems];
+  
+    // Step 4 — optional dedup (recommended)
+    const seen = new Set();
+    const deduped = merged.filter((item) => {
+      const key = item.foodItemId || item.name.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  
+    return {
+      data: deduped,
+      fromAPI: apiItems.length > 0,
+      message: deduped.length === 0
+        ? 'No food items found'
+        : '',
+    };
   }
 
   static async logFoodItem(item, quantity, userId, meal = 'Lunch') {
