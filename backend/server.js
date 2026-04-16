@@ -21,6 +21,7 @@ import grocerylistRoute from './routes/grocerylistroute.js';
 import curatorapplicationRoute from './routes/curatorapplicationroute.js';
 import adminRoutes from './routes/adminroute.js';
 import healthReportRoute from './routes/healthreportroute.js';
+import blogPostRoute from './routes/blogpostroute.js';
 
 // ? ADD THIS
 import { initializeDatabases } from './routes/apiroute.js';
@@ -51,6 +52,7 @@ app.use('/api/grocery-lists', grocerylistRoute);
 app.use('/api/curator-applications', curatorapplicationRoute);
 app.use('/api/admin', adminRoutes);
 app.use('/api/health-reports', healthReportRoute);
+app.use('/api/blog-posts', blogPostRoute);
 
 // ? Initialize DB before server starts
 const startServer = async () => {

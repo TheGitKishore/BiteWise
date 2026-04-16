@@ -34,6 +34,7 @@ const EditBlogPostScreen = ({ navigation, route }) => {
   const [title,   setTitle]   = useState(post?.title   || '');
   const [content, setContent] = useState(post?.content || '');
   const [tags,    setTags]    = useState((post?.tags || []).join(', '));
+  const [bannerImageUrl, setBannerImageUrl] = useState(post?.bannerImageUrl || '');
   const [errors,  setErrors]  = useState({});
   const [saving,  setSaving]  = useState(false);
   const [banner,  setBanner]  = useState('');
@@ -49,10 +50,20 @@ const EditBlogPostScreen = ({ navigation, route }) => {
     setSaving(true);
     let result;
     if (isEdit) {
-      result = await editCtrl.updatePost(post.blogPostId, user.userId, { title, content, tags: buildTags() });
+      result = await editCtrl.updatePost(post.blogPostId, user.userId, {
+        title,
+        content,
+        tags: buildTags(),
+        bannerImageUrl,
+      });
     } else {
       const curatorName = user?.firstName ? `${user.firstName} ${user.lastName}`.trim() : user?.username || 'Curator';
-      result = await createCtrl.createPost(user.userId, curatorName, { title, content, tags: buildTags() });
+      result = await createCtrl.createPost(user.userId, curatorName, {
+        title,
+        content,
+        tags: buildTags(),
+        bannerImageUrl,
+      });
     }
     setSaving(false);
     if (result.success) {
@@ -61,7 +72,7 @@ const EditBlogPostScreen = ({ navigation, route }) => {
     } else if (result.field) {
       setErrors({ [result.field]: result.message });
     }
-  }, [title, content, tags, user, isEdit]);
+  }, [title, content, tags, bannerImageUrl, user, isEdit]);
 
   // UC #122 delete
   const handleDelete = useCallback(() => {
@@ -137,6 +148,18 @@ const EditBlogPostScreen = ({ navigation, route }) => {
           placeholder="e.g. nutrition, meal-prep, health"
           placeholderTextColor={C.subtle}
           autoCapitalize="none"
+        />
+
+        {/* Banner image */}        
+        <Text style={[s.label, { marginTop: 14 }]}>Banner Image URL</Text>
+        <TextInput
+          style={s.input}
+          value={bannerImageUrl}
+          onChangeText={setBannerImageUrl}
+          placeholder="https://example.com/banner.jpg"
+          placeholderTextColor={C.subtle}
+          autoCapitalize="none"
+          autoCorrect={false}
         />
 
         {isEdit && (

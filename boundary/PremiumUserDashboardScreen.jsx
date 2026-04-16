@@ -318,18 +318,18 @@ const PremiumUserDashboardScreen = ({ navigation, route }) => {
           onPress={() => navigation.navigate('CuratorProgramScreen', { user: currentUser })}
         />
         <FeatureTile
+          icon="📰"
+          title="Blogs"
+          subtitle="Read published curator posts"
+          isPremium
+          onPress={() => navigation.navigate('CuratorBlogsScreen', { user: currentUser })}
+        />
+        <FeatureTile
           icon="🛒"
           title="Grocery List"
           subtitle="Auto-generate from recipes"
           isPremium
-          onPress={() => navigation.navigate('CuratorBlogsScreen', { user: currentUser })}
-          />
-          <FeatureTile
-            icon="🛒"
-            title="Grocery List"
-            subtitle="Auto-generate from recipes"
-            isPremium={true}
-            onPress={() => navigation.navigate('GroceryListScreen', { user: currentUser })}
+          onPress={() => navigation.navigate('GroceryListScreen', { user: currentUser })}
         />
 
         {/* Regular tiles */}
