@@ -14,13 +14,19 @@ import ViewCuratorRecipesController from '../controller/ViewCuratorRecipesContro
 import ViewCuratorProfileController  from '../controller/ViewCuratorProfileController';
 import DeleteCuratorRecipeController from '../controller/DeleteCuratorRecipeController';
 import LogOutController              from '../controller/LogOutController';
+import ViewBlogPostsController      from '../controller/ViewBlogPostsController';
+import PublishCuratorRecipeController   from '../controller/PublishCuratorRecipeController';
+import UnpublishCuratorRecipeController from '../controller/UnpublishCuratorRecipeController';
+
 
 const recipesCtrl = new ViewCuratorRecipesController();
 const profileCtrl = new ViewCuratorProfileController();
 const deleteCtrl  = new DeleteCuratorRecipeController();
-const logoutCtrl  = new LogOutController();
+const logoutCtrl    = new LogOutController();
+const publishRecipeCtrl   = new PublishCuratorRecipeController();
+const unpublishRecipeCtrl = new UnpublishCuratorRecipeController();
 
-const TABS = ['My Recipes', 'Profile'];
+const TABS = ['My Recipes', 'My Blog Posts', 'Profile'];
 const C = { purple: '#7C3AED', purpleLight: '#EDE9FE', dark: '#111827', mid: '#374151', subtle: '#6B7280', white: '#FFFFFF', border: '#E5E7EB', bg: '#F9FAFB', errorText: '#DC2626', errorBg: '#FEF2F2' };
 
 const TabBar = ({ active, onSelect }) => (
@@ -50,6 +56,28 @@ const MyRecipesTab = ({ userId, navigation, user }) => {
       { text: 'Delete', style: 'destructive', onPress: async () => {
           const r = await deleteCtrl.deleteRecipe(recipeId, userId);
           if (r.success) setRecipes((p) => p.filter((rec) => rec.recipeId !== recipeId));
+        }},
+    ]);
+  }, [userId]);
+
+  // UC #111 — publish a draft recipe
+  const handlePublishRecipe = useCallback((recipeId) => {
+    Alert.alert('Publish Recipe', 'Make this recipe visible to all users?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Publish', onPress: async () => {
+          const r = await publishRecipeCtrl.publishRecipe(recipeId, userId);
+          if (r.success) setRecipes((p) => p.map((rec) => rec.recipeId === recipeId ? { ...rec, isPublished: true } : rec));
+        }},
+    ]);
+  }, [userId]);
+
+  // UC #112 — unpublish a published recipe
+  const handleUnpublishRecipe = useCallback((recipeId) => {
+    Alert.alert('Unpublish Recipe', 'Remove this recipe from public listing?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Unpublish', onPress: async () => {
+          const r = await unpublishRecipeCtrl.unpublishRecipe(recipeId, userId);
+          if (r.success) setRecipes((p) => p.map((rec) => rec.recipeId === recipeId ? { ...rec, isPublished: false } : rec));
         }},
     ]);
   }, [userId]);
@@ -98,6 +126,11 @@ const rs = StyleSheet.create({
   editBtnTxt:    { fontSize: 12, fontWeight: '600', color: C.purple },
   delBtn:        { backgroundColor: C.errorBg, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12 },
   delBtnTxt:     { fontSize: 12, fontWeight: '600', color: C.errorText },
+  publishRow:    { marginTop: 8 },
+  pubBtn:        { backgroundColor: '#F0FDF4', borderRadius: 8, paddingVertical: 7, alignItems: 'center', borderWidth: 1, borderColor: '#BBF7D0' },
+  pubBtnTxt:     { fontSize: 12, fontWeight: '600', color: '#15803D' },
+  unpubBtn:      { backgroundColor: '#FFFBEB', borderRadius: 8, paddingVertical: 7, alignItems: 'center', borderWidth: 1, borderColor: '#FDE68A' },
+  unpubBtnTxt:   { fontSize: 12, fontWeight: '600', color: '#B45309' },
 });
 
 // UC #115 — Profile tab
@@ -184,8 +217,17 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
           <Text style={s.pageSub}>Manage your recipes and profile</Text>
         </View>
         <TabBar active={activeTab} onSelect={setActiveTab} />
-        {activeTab === 'My Recipes' && <MyRecipesTab userId={user.userId} navigation={navigation} user={user} />}
-        {activeTab === 'Profile'    && <ProfileTab   userId={user.userId} />}
+        {activeTab === 'My Recipes'    && <MyRecipesTab  userId={user.userId} navigation={navigation} user={user} />}
+        {activeTab === 'My Blog Posts' && (
+          <TouchableOpacity
+            style={{ backgroundColor: '#7C3AED', borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginTop: 8 }}
+            onPress={() => navigation.navigate('BlogPostsScreen', { user })}
+            activeOpacity={0.85}
+          >
+            <Text style={{ fontSize: 15, fontWeight: '700', color: '#FFFFFF' }}>Open Blog Posts</Text>
+          </TouchableOpacity>
+        )}
+        {activeTab === 'Profile'       && <ProfileTab   userId={user.userId} />}
       </ScrollView>
     </SafeAreaView>
   );

@@ -41,6 +41,14 @@ import EditCuratorRecipeScreen       from './boundary/EditCuratorRecipeScreen';
 import AdminLoginScreen              from './boundary/AdminLoginScreen';
 import AdminDashboardScreen          from './boundary/AdminDashboardScreen';
 
+
+// ─── Sprint 6 ────────────────────────────────────────────────────────────────
+import BlogPostsScreen               from './boundary/BlogPostsScreen';
+import EditBlogPostScreen            from './boundary/EditBlogPostScreen';
+import CuratorBlogsScreen            from './boundary/CuratorBlogsScreen';
+import MindfulSnackingScreen         from './boundary/MindfulSnackingScreen';
+import FoodAlternativesScreen        from './boundary/FoodAlternativesScreen';
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -88,7 +96,14 @@ export default function App() {
         <Stack.Screen name="CuratorDashboardScreen"       component={CuratorDashboardScreen} />
         <Stack.Screen name="EditCuratorRecipeScreen"      component={EditCuratorRecipeScreen} />
         <Stack.Screen name="AdminLoginScreen"             component={AdminLoginScreen} />
-        <Stack.Screen name="AdminDashboardScreen"         component={AdminDashboardScreen} />  
+        <Stack.Screen name="AdminDashboardScreen"         component={AdminDashboardScreen} />
+
+        {/* ── Sprint 6 ─────────────────────────────────────────────────── */}
+        <Stack.Screen name="BlogPostsScreen"              component={BlogPostsScreen} />
+        <Stack.Screen name="EditBlogPostScreen"           component={EditBlogPostScreen} />
+        <Stack.Screen name="CuratorBlogsScreen"           component={CuratorBlogsScreen} />
+        <Stack.Screen name="MindfulSnackingScreen"        component={MindfulSnackingScreen} />
+        <Stack.Screen name="FoodAlternativesScreen"       component={FoodAlternativesScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -139,7 +139,7 @@ const rc = StyleSheet.create({
 
 // Full recipe detail view
 const RecipeDetail = ({ recipe, user, onBack, onSave, isSaving }) => {
-  const isPremium = user?.role === 'PREMIUM';
+  const isPremium = user?.role === 'premium';
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
       <TouchableOpacity style={rd.backBtn} onPress={onBack}>
@@ -375,7 +375,7 @@ const dp = StyleSheet.create({
 
 const RecipesScreen = ({ navigation, route }) => {
   const user      = route?.params?.user || null;
-  const isPremium = user?.role === 'PREMIUM';
+  const isPremium = user?.role === 'premium';
 
   const [allRecipes,     setAllRecipes]     = useState([]);
   const [isLoading,      setIsLoading]      = useState(true);

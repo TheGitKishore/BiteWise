@@ -1,5 +1,4 @@
 import express from 'express';
-import axios from 'axios';
 import { ObjectId } from 'mongodb';
 import { getDB } from '../db_mongodb/db.js';
 import db from '../db_sql/db.js';
@@ -99,12 +98,54 @@ const toClientRecipe = (doc) => ({
 });
 
 const fetchThemealdbByQuery = async (query) => {
-  const response = await axios.get(`${THEMEALDB_BASE_URL}/search.php`, {
-    params: { s: query },
-    timeout: 10000,
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
 
-  return Array.isArray(response?.data?.meals) ? response.data.meals : [];
+  try {
+    const url = `${THEMEALDB_BASE_URL}/search.php?s=${encodeURIComponent(query)}`;
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) return [];
+
+    const data = await response.json();
+    return Array.isArray(data?.meals) ? data.meals : [];
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+const cacheExternalRecipes = async (recipesCollection, mappedDocs) => {
+  for (const doc of mappedDocs) {
+    if (!doc.externalId) continue;
+    await recipesCollection.updateOne(
+      { externalSource: 'themealdb', externalId: doc.externalId },
+      {
+        $set: {
+          title: doc.title,
+          description: doc.description,
+          prepTimeMins: doc.prepTimeMins,
+          calories: doc.calories,
+          protein: doc.protein,
+          carbs: doc.carbs,
+          fat: doc.fat,
+          servings: doc.servings,
+          difficulty: doc.difficulty,
+          ingredients: doc.ingredients,
+          instructions: doc.instructions,
+          tags: doc.tags,
+          isCurated: doc.isCurated,
+          isMealPrep: doc.isMealPrep,
+          imageUrl: doc.imageUrl,
+          externalQuery: doc.externalQuery,
+          updatedAt: new Date(),
+        },
+        $setOnInsert: {
+          createdByUserId: null,
+          createdAt: new Date(),
+        },
+      },
+      { upsert: true }
+    );
+  }
 };
 
 // GET /api/recipes
@@ -125,47 +166,61 @@ router.get('/', async (req, res) => {
       : {};
 
     const mongoData = await recipes.find(mongoFilter).toArray();
-    if (mongoData.length > 0 || !q) {
+    if (q && mongoData.length > 0) {
       return res.json(mongoData.map(toClientRecipe));
     }
 
-    const meals = await fetchThemealdbByQuery(q);
+    // No query path used by current UI:
+    // return Mongo + top-up from TheMealDB (cached) so users see both sources.
+    if (!q) {
+      const fallbackTerms = ['chicken', 'beef', 'salad', 'vegetarian', 'pasta'];
+      const shouldTopUp = mongoData.length < 40;
+
+      if (shouldTopUp) {
+        const seenExternalIds = new Set();
+        const combinedMeals = [];
+
+        for (const term of fallbackTerms) {
+          const meals = await fetchThemealdbByQuery(term);
+          for (const meal of meals) {
+            const id = String(meal?.idMeal || '');
+            if (!id || seenExternalIds.has(id)) continue;
+            seenExternalIds.add(id);
+            combinedMeals.push(meal);
+          }
+          if (combinedMeals.length >= 40) break;
+        }
+
+        if (combinedMeals.length > 0) {
+          const mappedDocs = combinedMeals.map((meal) => mapMealDbToRecipeDoc(meal, 'bootstrap'));
+          await cacheExternalRecipes(recipes, mappedDocs);
+        }
+      }
+
+      const merged = await recipes
+        .find({})
+        .sort({ createdAt: -1 })
+        .limit(120)
+        .toArray();
+
+      const mongoNative = merged.filter((r) => !r.externalSource);
+      const apiCached = merged.filter((r) => r.externalSource);
+      const ordered = [...mongoNative, ...apiCached];
+
+      return res.json(ordered.map(toClientRecipe));
+    }
+
+    let meals = [];
+    try {
+      meals = await fetchThemealdbByQuery(q);
+    } catch (apiErr) {
+      // If external API is unavailable, fail soft with empty list.
+      return res.json([]);
+    }
     if (meals.length === 0) return res.json([]);
 
     const mappedDocs = meals.map((meal) => mapMealDbToRecipeDoc(meal, q));
-
-    for (const doc of mappedDocs) {
-      if (!doc.externalId) continue;
-      await recipes.updateOne(
-        { externalSource: 'themealdb', externalId: doc.externalId },
-        {
-          $set: {
-            title: doc.title,
-            description: doc.description,
-            prepTimeMins: doc.prepTimeMins,
-            calories: doc.calories,
-            protein: doc.protein,
-            carbs: doc.carbs,
-            fat: doc.fat,
-            servings: doc.servings,
-            difficulty: doc.difficulty,
-            ingredients: doc.ingredients,
-            instructions: doc.instructions,
-            tags: doc.tags,
-            isCurated: doc.isCurated,
-            isMealPrep: doc.isMealPrep,
-            imageUrl: doc.imageUrl,
-            externalQuery: doc.externalQuery,
-            updatedAt: new Date(),
-          },
-          $setOnInsert: {
-            createdByUserId: null,
-            createdAt: new Date(),
-          },
-        },
-        { upsert: true }
-      );
-    }
+    await cacheExternalRecipes(recipes, mappedDocs);
 
     const externalIds = mappedDocs.map((d) => d.externalId).filter(Boolean);
     const cached = await recipes
@@ -277,4 +332,3 @@ router.get('/saved/:userId', async (req, res) => {
 });
 
 export default router;
-

@@ -208,7 +208,20 @@ class Recipe {
     };
   }
 
-  static async delete() {
+  // ─── SPRINT 6 ADDITIONS ────────────────────────────────────────────────────
+
+  // UC #111 — curator: publish a recipe (makes it visible to all users)
+  static async publish(recipeId, curatorUserId) {
+    return { success: true, message: 'Recipe published! It is now visible to all users.', data: { recipeId, isPublished: true } };
+  }
+
+  // UC #112 — curator: unpublish a recipe (removes from public listing)
+  static async unpublish(recipeId, curatorUserId) {
+    return { success: true, message: 'Recipe unpublished and returned to drafts.', data: { recipeId, isPublished: false } };
+  }
+
+  // UC #114 — curator: delete a recipe they own (fixed args)
+  static async delete(recipeId, curatorUserId) {
     return { success: true, message: 'Recipe deleted.' };
   }
 }

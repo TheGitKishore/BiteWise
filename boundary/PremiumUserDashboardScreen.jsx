@@ -322,7 +322,14 @@ const PremiumUserDashboardScreen = ({ navigation, route }) => {
           title="Grocery List"
           subtitle="Auto-generate from recipes"
           isPremium
-          onPress={() => navigation.navigate('GroceryListScreen', { user: currentUser })}
+          onPress={() => navigation.navigate('CuratorBlogsScreen', { user: currentUser })}
+          />
+          <FeatureTile
+            icon="🛒"
+            title="Grocery List"
+            subtitle="Auto-generate from recipes"
+            isPremium={true}
+            onPress={() => navigation.navigate('GroceryListScreen', { user: currentUser })}
         />
 
         {/* Regular tiles */}
