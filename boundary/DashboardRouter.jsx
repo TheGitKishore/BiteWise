@@ -2,7 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import PremiumUserDashboardScreen from './PremiumUserDashboardScreen';
 import FreeUserDashboardScreen from './FreeUserDashboardScreen';
-import CuratorDashboardScreen from './CuratorDashboardScreen';
+import CuratorDashboardScreen  from './CuratorDashboardScreen';
+import AdminDashboardScreen    from './AdminDashboardScreen';
 import UserController from '../controller/UserController';
 
 const controller = new UserController();
@@ -32,18 +33,29 @@ const DashboardRouter = ({ navigation, route }) => {
     }, [refreshUser])
   );
 
-  if (user?.role === 'premium') {
+  const role = user?.role?.toUpperCase();
+
+  if (role === 'ADMIN') {
     return (
-      <PremiumUserDashboardScreen
+      <AdminDashboardScreen
         navigation={navigation}
         route={{ ...route, params: { user } }}
       />
     );
   }
 
-  if (user?.role === 'curator') {
+  if (role === 'CURATOR') {
     return (
       <CuratorDashboardScreen
+        navigation={navigation}
+        route={{ ...route, params: { user } }}
+      />
+    );
+  }
+
+  if (role === 'PREMIUM') {
+    return (
+      <PremiumUserDashboardScreen
         navigation={navigation}
         route={{ ...route, params: { user } }}
       />
