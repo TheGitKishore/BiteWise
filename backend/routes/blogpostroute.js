@@ -1,4 +1,5 @@
-﻿import express from 'express';
+import express from 'express';
+import { ObjectId } from 'mongodb';
 import { getDB } from '../db_mongodb/db.js';
 
 const router = express.Router();
@@ -32,6 +33,27 @@ const mapBlogPost = (doc = {}) => ({
   updatedAt: toISO(doc.updatedAt),
 });
 
+const buildPostLookupFilter = (id) => {
+  const normalized = String(id || '').trim();
+  if (!normalized) return null;
+
+  if (ObjectId.isValid(normalized)) {
+    return { $or: [{ blogPostId: normalized }, { _id: new ObjectId(normalized) }] };
+  }
+
+  return { blogPostId: normalized };
+};
+
+const normalizeUserId = (value) => String(value ?? '').trim();
+
+const userIdFilter = (value) => {
+  const normalized = normalizeUserId(value);
+  if (!normalized) return null;
+  const numeric = Number(normalized);
+  if (Number.isNaN(numeric)) return { userId: normalized };
+  return { userId: { $in: [normalized, numeric] } };
+};
+
 const validatePost = ({ title, content }) => {
   if (!title || !String(title).trim()) {
     return { valid: false, field: 'title', message: 'Title is required.' };
@@ -63,6 +85,57 @@ router.get('/published', async (_req, res) => {
       success: false,
       data: [],
       message: 'Unable to load blog posts. Please try again.',
+    });
+  }
+});
+
+router.get('/likes/:userId', async (req, res) => {
+  try {
+    const userId = normalizeUserId(req.params.userId);
+    const likeUserFilter = userIdFilter(userId);
+    if (!likeUserFilter) {
+      return res.status(400).json({ success: false, data: [], message: 'Invalid user id.' });
+    }
+
+    const db = getDB();
+    const rows = await db.collection('blog_post_likes')
+      .find(likeUserFilter)
+      .project({ _id: 0, blogPostId: 1 })
+      .toArray();
+
+    const likedIds = rows.map((r) => String(r.blogPostId)).filter(Boolean);
+    if (likedIds.length === 0) {
+      return res.status(200).json({ success: true, data: [], message: '' });
+    }
+
+    // Normalize legacy stored values (some may be Mongo _id strings) to canonical blogPostId used by UI.
+    const objectIds = likedIds.filter(ObjectId.isValid).map((id) => new ObjectId(id));
+    const likedPosts = await db.collection(COLLECTION)
+      .find({
+        $or: [
+          { blogPostId: { $in: likedIds } },
+          ...(objectIds.length > 0 ? [{ _id: { $in: objectIds } }] : []),
+        ],
+      })
+      .project({ _id: 1, blogPostId: 1 })
+      .toArray();
+
+    const canonical = new Set();
+    likedPosts.forEach((p) => {
+      canonical.add(String(p.blogPostId || p._id));
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: Array.from(canonical),
+      message: '',
+    });
+  } catch (err) {
+    console.error('[GET /blog-posts/likes/:userId]', err);
+    return res.status(500).json({
+      success: false,
+      data: [],
+      message: 'Unable to load blog likes.',
     });
   }
 });
@@ -277,6 +350,96 @@ router.put('/:blogPostId', async (req, res) => {
   }
 });
 
+// Persist blog post likes in Mongo.
+router.put('/:blogPostId/like', async (req, res) => {
+  try {
+    const { blogPostId } = req.params;
+    const userId = normalizeUserId(req.body?.userId);
+    const like = req.body?.like;
+    const incrementBy = Number(req.body?.incrementBy ?? 1);
+
+    if (![1, -1].includes(incrementBy)) {
+      return res.status(400).json({ success: false, message: 'incrementBy must be 1 or -1.' });
+    }
+
+    const postFilter = buildPostLookupFilter(blogPostId);
+    if (!postFilter) {
+      return res.status(400).json({ success: false, message: 'Invalid blog post id.' });
+    }
+
+    const db = getDB();
+    const existing = await db.collection(COLLECTION).findOne(
+      postFilter,
+      { projection: { likeCount: 1, blogPostId: 1 } }
+    );
+
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Blog post not found.' });
+    }
+
+    const currentLikeCount = Number(existing.likeCount ?? 0);
+    const resolvedBlogPostId = String(existing.blogPostId || existing._id || blogPostId);
+    const likesCollection = db.collection('blog_post_likes');
+
+    // Preferred path: persistent, user-scoped like state.
+    if (userId && typeof like === 'boolean') {
+      const likeUserFilter = userIdFilter(userId);
+      const likeFilter = { ...likeUserFilter, blogPostId: resolvedBlogPostId };
+      const likeEntry = await likesCollection.findOne(likeFilter);
+
+      let nextLikeCount = currentLikeCount;
+      if (like && !likeEntry) {
+        await likesCollection.insertOne({
+          userId: normalizeUserId(userId),
+          blogPostId: resolvedBlogPostId,
+          createdAt: new Date().toISOString(),
+        });
+        nextLikeCount = currentLikeCount + 1;
+      } else if (!like && likeEntry) {
+        await likesCollection.deleteOne(likeFilter);
+        nextLikeCount = Math.max(0, currentLikeCount - 1);
+      }
+
+      if (nextLikeCount !== currentLikeCount) {
+        await db.collection(COLLECTION).updateOne(
+          postFilter,
+          { $set: { likeCount: nextLikeCount, updatedAt: new Date().toISOString() } }
+        );
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'Blog post like updated.',
+        data: {
+          blogPostId: resolvedBlogPostId,
+          likeCount: nextLikeCount,
+          isLiked: like,
+        },
+      });
+    }
+
+    // Backward-compatible path for older clients.
+    const nextLikeCount = Math.max(0, currentLikeCount + incrementBy);
+
+    await db.collection(COLLECTION).updateOne(
+      postFilter,
+      { $set: { likeCount: nextLikeCount, updatedAt: new Date().toISOString() } }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Blog post like updated.',
+      data: {
+        blogPostId: resolvedBlogPostId,
+        likeCount: nextLikeCount,
+      },
+    });
+  } catch (err) {
+    console.error('[PUT /blog-posts/:blogPostId/like]', err);
+    return res.status(500).json({ success: false, message: 'Failed to update blog post like.' });
+  }
+});
+
 router.delete('/:blogPostId', async (req, res) => {
   try {
     const { blogPostId } = req.params;
@@ -300,3 +463,5 @@ router.delete('/:blogPostId', async (req, res) => {
 });
 
 export default router;
+
+

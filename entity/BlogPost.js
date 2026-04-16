@@ -109,6 +109,23 @@ class BlogPost {
     }
   }
 
+  static async fetchLikedPostIds(userId) {
+    try {
+      const res = await axios.get(`${API_URL}/likes/${userId}`);
+      return {
+        success: Boolean(res.data?.success),
+        data: Array.isArray(res.data?.data) ? res.data.data.map((id) => String(id)) : [],
+        message: res.data?.message || '',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        data: [],
+        message: err.response?.data?.message || 'Unable to load blog likes.',
+      };
+    }
+  }
+
   static async create(curatorUserId, curatorName, { title, content, tags, bannerImageUrl }) {
     const check = BlogPost.validatePost({ title, content });
     if (!check.valid) {
@@ -220,6 +237,32 @@ class BlogPost {
       return {
         success: false,
         message: err.response?.data?.message || 'Something went wrong. Please try again.',
+      };
+    }
+  }
+
+  static async updateLike(blogPostId, { userId, like, incrementBy }) {
+    try {
+      const payload = {};
+      if (userId) payload.userId = userId;
+      if (typeof like === 'boolean') payload.like = like;
+      if (typeof incrementBy === 'number') payload.incrementBy = incrementBy;
+
+      const res = await axios.put(`${API_URL}/${blogPostId}/like`, payload);
+      return {
+        success: Boolean(res.data?.success),
+        message: res.data?.message || 'Blog post like updated.',
+        data: {
+          blogPostId: res.data?.data?.blogPostId || blogPostId,
+          likeCount: Number(res.data?.data?.likeCount ?? 0),
+          isLiked: Boolean(res.data?.data?.isLiked),
+        },
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || 'Failed to update blog post like.',
+        data: null,
       };
     }
   }

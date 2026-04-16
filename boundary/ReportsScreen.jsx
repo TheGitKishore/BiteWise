@@ -97,7 +97,8 @@ const LineChart = ({ data, label }) => {
   const yAxisWidth = 38;
   const chartWidth = Math.min(Dimensions.get('window').width - 64, 360) - yAxisWidth;
   const chartHeight = 132;
-  const max = Math.max(...data.map((d) => Number(d.value) || 0), 1);
+  const rawMax = Math.max(...data.map((d) => Number(d.value) || 0), 1);
+  const max = Math.max(50, Math.ceil(rawMax / 50) * 50);
   const stepX = data.length > 1 ? chartWidth / (data.length - 1) : chartWidth;
   const tickCount = 5;
   const tickValues = Array.from({ length: tickCount }, (_, i) =>
@@ -210,7 +211,8 @@ const LineChart = ({ data, label }) => {
                 right:0,
                 top:(i / (tickCount - 1)) * chartHeight,
                 borderTopWidth:1,
-                borderTopColor:C.border,
+                borderTopColor:'#D1D5DB',
+                borderStyle:'dashed',
               }}
             />
           ))}
@@ -223,10 +225,13 @@ const LineChart = ({ data, label }) => {
                 bottom:0,
                 left:p.x,
                 borderLeftWidth:1,
-                borderLeftColor:C.border,
+                borderLeftColor:'#D1D5DB',
+                borderStyle:'dashed',
               }}
             />
           ))}
+          <View style={{position:'absolute',left:0,top:0,bottom:0,width:1,backgroundColor:'#9CA3AF'}}/>
+          <View style={{position:'absolute',left:0,right:0,bottom:0,height:1,backgroundColor:'#9CA3AF'}}/>
           {smoothPoints.map((p, i) => (
             <React.Fragment key={`curve-${i}`}>
               {i > 0 && (() => {
@@ -244,7 +249,7 @@ const LineChart = ({ data, label }) => {
                       width: segmentLength,
                       height: 2,
                       borderRadius: 2,
-                      backgroundColor: C.purple,
+                      backgroundColor: '#9333EA',
                       transform: [{ rotateZ: `${angle}rad` }],
                     }}
                   />
@@ -262,7 +267,7 @@ const LineChart = ({ data, label }) => {
                   width: 8,
                   height: 8,
                   borderRadius: 4,
-                  backgroundColor: selectedIndex === i ? C.dark : C.purple,
+                  backgroundColor: selectedIndex === i ? '#6D28D9' : '#9333EA',
                 }}
               />
             </React.Fragment>

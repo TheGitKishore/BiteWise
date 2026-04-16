@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ViewCuratorBlogsController from '../controller/ViewCuratorBlogsController';
+import BlogPost from '../entity/BlogPost';
 
 const ctrl = new ViewCuratorBlogsController();
 
@@ -40,7 +41,8 @@ const LikeButton = ({ isLiked, count, onPress }) => (
     onPress={onPress}
     activeOpacity={0.85}
   >
-    <Text style={[lb.icon, isLiked && lb.iconActive]}>Like</Text>
+    <Text style={lb.icon}>👍</Text>
+    <Text style={[lb.label, isLiked && lb.labelActive]}>Like</Text>
     <Text style={[lb.text, isLiked && lb.textActive]}>{formatCount(count)}</Text>
   </TouchableOpacity>
 );
@@ -62,8 +64,9 @@ const lb = StyleSheet.create({
     backgroundColor: C.purpleLight,
     borderColor: C.purple,
   },
-  icon: { fontSize: 12, fontWeight: '700', color: C.mid },
-  iconActive: { color: C.purple },
+  icon: { fontSize: 13 },
+  label: { fontSize: 12, fontWeight: '700', color: C.mid },
+  labelActive: { color: C.purple },
   text: { fontSize: 12, color: C.mid, fontWeight: '600' },
   textActive: { color: C.purple },
 });
@@ -101,7 +104,10 @@ const PostCard = ({ post, onPress, isLiked, likeCount, onToggleLike }) => (
         <LikeButton
           isLiked={isLiked}
           count={likeCount}
-          onPress={() => onToggleLike(post.blogPostId)}
+          onPress={(e) => {
+            e?.stopPropagation?.();
+            onToggleLike(post.blogPostId);
+          }}
         />
       </View>
     </View>
@@ -194,7 +200,17 @@ const pd = StyleSheet.create({
   content: { fontSize: 15, color: C.mid, lineHeight: 24 },
 });
 
-const CuratorBlogsScreen = ({ navigation }) => {
+const CuratorBlogsScreen = ({ navigation, route }) => {
+  const user = route?.params?.user || null;
+  const currentUserId =
+    user?.userId != null
+      ? String(user.userId)
+      : user?.id != null
+        ? String(user.id)
+        : user?._id != null
+          ? String(user._id)
+          : '';
+
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -203,6 +219,7 @@ const CuratorBlogsScreen = ({ navigation }) => {
   const [activeTag, setActiveTag] = useState('All');
   const [likedByPost, setLikedByPost] = useState({});
   const [likesByPost, setLikesByPost] = useState({});
+  const [likingPostIds, setLikingPostIds] = useState({});
 
   useEffect(() => {
     ctrl.fetchPublishedPosts().then((r) => {
@@ -213,12 +230,24 @@ const CuratorBlogsScreen = ({ navigation }) => {
           initialLikes[p.blogPostId] = Number(p.likeCount || 0);
         });
         setLikesByPost(initialLikes);
+        setError('');
+
+        if (currentUserId) {
+          BlogPost.fetchLikedPostIds(currentUserId).then((likedRes) => {
+            if (!likedRes.success) return;
+            const likedMap = {};
+            (likedRes.data || []).forEach((id) => {
+              likedMap[String(id)] = true;
+            });
+            setLikedByPost(likedMap);
+          });
+        }
       } else {
         setError(r.message);
       }
       setLoading(false);
     });
-  }, []);
+  }, [currentUserId]);
 
   const tags = useMemo(() => {
     const all = new Set();
@@ -246,14 +275,52 @@ const CuratorBlogsScreen = ({ navigation }) => {
     return list;
   }, [posts, activeTag, search]);
 
-  const toggleLike = (postId) => {
-    const isCurrentlyLiked = Boolean(likedByPost[postId]);
+  const toggleLike = async (postId) => {
+    if (likingPostIds[postId]) return;
+    if (!currentUserId) {
+      setError('Unable to identify current user for likes.');
+      return;
+    }
 
+    const isCurrentlyLiked = Boolean(likedByPost[postId]);
+    const nextLikeState = !isCurrentlyLiked;
+    const incrementBy = isCurrentlyLiked ? -1 : 1;
+    const post = posts.find((p) => p.blogPostId === postId);
+    const previousCount = Number(likesByPost[postId] ?? post?.likeCount ?? 0);
+    const optimisticCount = Math.max(0, previousCount + incrementBy);
+
+    setLikingPostIds((prev) => ({ ...prev, [postId]: true }));
     setLikedByPost((prev) => ({ ...prev, [postId]: !isCurrentlyLiked }));
     setLikesByPost((prev) => ({
       ...prev,
-      [postId]: Math.max(0, Number(prev[postId] || 0) + (isCurrentlyLiked ? -1 : 1)),
+      [postId]: optimisticCount,
     }));
+
+    const result = await BlogPost.updateLike(postId, {
+      userId: currentUserId,
+      like: nextLikeState,
+      incrementBy,
+    });
+    if (!result.success) {
+      setLikedByPost((prev) => ({ ...prev, [postId]: isCurrentlyLiked }));
+      setLikesByPost((prev) => ({ ...prev, [postId]: previousCount }));
+      setError(result.message || 'Unable to update blog like.');
+      setLikingPostIds((prev) => ({ ...prev, [postId]: false }));
+      return;
+    }
+
+    const serverLikeCount = Number(result.data?.likeCount ?? optimisticCount);
+    const serverIsLiked = typeof result.data?.isLiked === 'boolean' ? result.data.isLiked : nextLikeState;
+    setLikedByPost((prev) => ({ ...prev, [postId]: serverIsLiked }));
+    setLikesByPost((prev) => ({ ...prev, [postId]: serverLikeCount }));
+    setPosts((prev) =>
+      prev.map((p) => (p.blogPostId === postId ? { ...p, likeCount: serverLikeCount } : p))
+    );
+    setSelectedPost((prev) =>
+      prev && prev.blogPostId === postId ? { ...prev, likeCount: serverLikeCount } : prev
+    );
+    setError('');
+    setLikingPostIds((prev) => ({ ...prev, [postId]: false }));
   };
 
   return (
