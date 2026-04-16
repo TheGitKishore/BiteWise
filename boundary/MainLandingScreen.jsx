@@ -580,6 +580,10 @@ const MainLandingScreen = ({ navigation }) => {
     loadReviews();
   }, []);
 
+  useEffect(() => {
+    console.log(navigation.getState());
+  }, []);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: C.white }}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />

@@ -8,7 +8,7 @@
 // System Admin only (#106)
 
 import CuratorApplication from '../entity/CuratorApplication';
-import User               from '../entity/User';
+import Admin from '../entity/Admin';
 
 class ApproveCuratorApplicationController {
   constructor() {}
@@ -29,7 +29,7 @@ class ApproveCuratorApplicationController {
     return this._safeCall(async () => {
       const result = await CuratorApplication.approve(applicationId, adminId);
       if (result.success && result.data) {
-        await User.promoteToMinuteCurator(result.data.userId, applicationId);
+        await Admin.promoteToCurator(result.data.userId, applicationId);
       }
       return result;
     });

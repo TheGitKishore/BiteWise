@@ -59,7 +59,20 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const [rows] = await db.query(`
-      SELECT * FROM curator_applications
+      SELECT 
+        application_id AS applicationId,
+        user_id AS userId,
+        username,
+        motivation,
+        journey,
+        expertise,
+        social,
+        status,
+        reviewed_by_admin_id AS reviewedByAdminId,
+        reviewed_at AS reviewedAt,
+        rejection_reason AS rejectionReason,
+        created_at AS createdAt
+      FROM curator_applications
       ORDER BY created_at DESC
     `);
 
@@ -83,7 +96,23 @@ router.put('/:id/approve', async (req, res) => {
     const { id } = req.params;
     const { adminId } = req.body;
 
-    const [result] = await db.query(`
+    // 1. get userId from application
+    const [appRows] = await db.query(
+      'SELECT user_id FROM curator_applications WHERE application_id = ?',
+      [id]
+    );
+
+    if (!appRows.length) {
+      return res.status(404).json({
+        success: false,
+        message: 'Application not found'
+      });
+    }
+
+    const userId = appRows[0].user_id;
+
+    // 2. approve application
+    await db.query(`
       UPDATE curator_applications
       SET status = 'APPROVED',
           reviewed_by_admin_id = ?,
@@ -91,27 +120,23 @@ router.put('/:id/approve', async (req, res) => {
       WHERE application_id = ?
     `, [adminId, id]);
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Application not found'
-      });
-    }
+    // 3. promote user
+    await db.query(`
+      UPDATE users
+      SET role = 'curator',
+          updated_at = NOW()
+      WHERE user_id = ?
+    `, [userId]);
 
-    const [rows] = await db.query(
-      'SELECT * FROM curator_applications WHERE application_id = ?',
-      [id]
-    );
-
-    res.json({
+    return res.json({
       success: true,
-      message: 'Application approved',
-      data: rows[0]
+      message: 'Application approved and user promoted',
+      data: { applicationId: id, userId }
     });
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Server error'
     });

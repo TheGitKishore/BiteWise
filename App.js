@@ -88,7 +88,7 @@ export default function App() {
         <Stack.Screen name="CuratorDashboardScreen"       component={CuratorDashboardScreen} />
         <Stack.Screen name="EditCuratorRecipeScreen"      component={EditCuratorRecipeScreen} />
         <Stack.Screen name="AdminLoginScreen"             component={AdminLoginScreen} />
-        <Stack.Screen name="AdminDashboardScreen"         component={AdminDashboardScreen} />
+        <Stack.Screen name="AdminDashboardScreen"         component={AdminDashboardScreen} />  
       </Stack.Navigator>
     </NavigationContainer>
   );
