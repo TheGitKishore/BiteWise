@@ -90,6 +90,339 @@ const BarChart = ({ data, label }) => {
   );
 };
 
+const LineChart = ({ data, label }) => {
+  if (!data || data.length === 0) return null;
+
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const yAxisWidth = 38;
+  const chartWidth = Math.min(Dimensions.get('window').width - 64, 360) - yAxisWidth;
+  const chartHeight = 132;
+  const max = Math.max(...data.map((d) => Number(d.value) || 0), 1);
+  const stepX = data.length > 1 ? chartWidth / (data.length - 1) : chartWidth;
+  const tickCount = 5;
+  const tickValues = Array.from({ length: tickCount }, (_, i) =>
+    Math.round(max - ((max * i) / (tickCount - 1)))
+  );
+
+  const points = data.map((d, i) => {
+    const x = i * stepX;
+    const y = chartHeight - (((Number(d.value) || 0) / max) * chartHeight);
+    return { x, y, value: d.value, label: d.label };
+  });
+
+  const smoothPoints = (() => {
+    if (points.length < 3) return points;
+
+    const stepsPerSegment = 24;
+    const n = points.length;
+    const y = points.map((p) => p.y);
+    const d = [];
+    for (let i = 0; i < n - 1; i += 1) d.push(y[i + 1] - y[i]);
+
+    // Fritsch-Carlson style monotone tangents to prevent overshoot
+    const m = new Array(n).fill(0);
+    m[0] = d[0];
+    m[n - 1] = d[n - 2];
+    for (let i = 1; i < n - 1; i += 1) {
+      m[i] = (d[i - 1] * d[i] <= 0) ? 0 : (d[i - 1] + d[i]) / 2;
+    }
+    for (let i = 0; i < n - 1; i += 1) {
+      if (d[i] === 0) {
+        m[i] = 0;
+        m[i + 1] = 0;
+      } else {
+        const a = m[i] / d[i];
+        const b = m[i + 1] / d[i];
+        const h = Math.hypot(a, b);
+        if (h > 3) {
+          const t = 3 / h;
+          m[i] = t * a * d[i];
+          m[i + 1] = t * b * d[i];
+        }
+      }
+    }
+
+    const interpolated = [];
+    for (let i = 0; i < n - 1; i += 1) {
+      const x0 = points[i].x;
+      const x1 = points[i + 1].x;
+      const y0 = y[i];
+      const y1 = y[i + 1];
+      const minY = Math.min(y0, y1);
+      const maxY = Math.max(y0, y1);
+
+      for (let step = 0; step < stepsPerSegment; step += 1) {
+        const t = step / stepsPerSegment;
+        const t2 = t * t;
+        const t3 = t2 * t;
+        const h00 = (2 * t3) - (3 * t2) + 1;
+        const h10 = t3 - (2 * t2) + t;
+        const h01 = (-2 * t3) + (3 * t2);
+        const h11 = t3 - t2;
+
+        const xVal = x0 + (x1 - x0) * t;
+        let yVal = (h00 * y0) + (h10 * m[i]) + (h01 * y1) + (h11 * m[i + 1]);
+        yVal = Math.min(maxY, Math.max(minY, yVal));
+        yVal = Math.max(0, Math.min(chartHeight, yVal));
+        interpolated.push({ x: xVal, y: yVal });
+      }
+    }
+
+    interpolated.push({ x: points[n - 1].x, y: points[n - 1].y });
+    return interpolated;
+  })();
+
+  const selectedPoint = selectedIndex !== null ? points[selectedIndex] : null;
+  const tooltipLeft = selectedPoint
+    ? Math.min(
+        Math.max(yAxisWidth + selectedPoint.x - 48, yAxisWidth + 2),
+        yAxisWidth + chartWidth - 96
+      )
+    : 0;
+
+  return (
+    <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:12}}>
+      {label ? <Text style={{fontSize:14,fontWeight:'700',color:C.dark,marginBottom:10}}>{label}</Text> : null}
+      <View style={{flexDirection:'row'}}>
+        <View style={{width:yAxisWidth,height:chartHeight}}>
+          {tickValues.map((tick, i) => (
+            <Text
+              key={`line-y-${i}`}
+              style={{
+                position:'absolute',
+                top:(i / (tickCount - 1)) * chartHeight - 8,
+                right:4,
+                fontSize:10,
+                color:C.subtle,
+              }}
+            >
+              {tick}
+            </Text>
+          ))}
+        </View>
+        <View style={{width:chartWidth,height:chartHeight,position:'relative'}}>
+          {tickValues.map((_, i) => (
+            <View
+              key={`line-grid-${i}`}
+              style={{
+                position:'absolute',
+                left:0,
+                right:0,
+                top:(i / (tickCount - 1)) * chartHeight,
+                borderTopWidth:1,
+                borderTopColor:C.border,
+              }}
+            />
+          ))}
+          {points.map((p, i) => (
+            <View
+              key={`line-grid-x-${i}`}
+              style={{
+                position:'absolute',
+                top:0,
+                bottom:0,
+                left:p.x,
+                borderLeftWidth:1,
+                borderLeftColor:C.border,
+              }}
+            />
+          ))}
+          {smoothPoints.map((p, i) => (
+            <React.Fragment key={`curve-${i}`}>
+              {i > 0 && (() => {
+                const prev = smoothPoints[i - 1];
+                const dx = p.x - prev.x;
+                const dy = p.y - prev.y;
+                const segmentLength = Math.max(1, Math.sqrt((dx * dx) + (dy * dy)));
+                const angle = Math.atan2(dy, dx);
+                return (
+                  <View
+                    style={{
+                      position:'absolute',
+                      left: ((prev.x + p.x) / 2) - (segmentLength / 2),
+                      top: ((prev.y + p.y) / 2) - 1,
+                      width: segmentLength,
+                      height: 2,
+                      borderRadius: 2,
+                      backgroundColor: C.purple,
+                      transform: [{ rotateZ: `${angle}rad` }],
+                    }}
+                  />
+                );
+              })()}
+            </React.Fragment>
+          ))}
+          {points.map((p, i) => (
+            <React.Fragment key={`dot-${i}`}>
+              <View
+                style={{
+                  position:'absolute',
+                  left: Math.max(0, p.x - 4),
+                  top: Math.max(0, p.y - 4),
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: selectedIndex === i ? C.dark : C.purple,
+                }}
+              />
+            </React.Fragment>
+          ))}
+          {selectedPoint && (
+            <>
+                <View
+                  style={{
+                    position:'absolute',
+                    left: selectedPoint.x,
+                    top: selectedPoint.y,
+                    bottom:0,
+                    width:1,
+                    backgroundColor:C.purpleLight,
+                  }}
+                />
+              <View
+                style={{
+                  position:'absolute',
+                  left: tooltipLeft,
+                  top: Math.max(2, selectedPoint.y - 46),
+                  backgroundColor:C.dark,
+                  borderRadius:8,
+                  paddingVertical:6,
+                  paddingHorizontal:8,
+                }}
+              >
+                <Text style={{fontSize:10,color:C.white,fontWeight:'700'}}>{selectedPoint.label}</Text>
+                <Text style={{fontSize:10,color:C.white}}>{selectedPoint.value} kcal</Text>
+              </View>
+            </>
+          )}
+          <View style={{position:'absolute',left:0,right:0,top:0,bottom:0,flexDirection:'row'}}>
+            {data.map((_, i) => (
+              <TouchableOpacity
+                key={`line-hit-${i}`}
+                style={{flex:1}}
+                activeOpacity={0.9}
+                onPress={() => setSelectedIndex(i)}
+              />
+            ))}
+          </View>
+        </View>
+      </View>
+      <View style={{flexDirection:'row'}}>
+        <View style={{width:yAxisWidth}}/>
+        <View style={{flex:1,flexDirection:'row',justifyContent:'space-between'}}>
+        {data.map((d, i) => (
+          <Text key={`label-${i}`} style={{fontSize:9,color:C.subtle,width:32,textAlign:'center'}} numberOfLines={1}>
+            {d.label}
+          </Text>
+        ))}
+        </View>
+      </View>
+    </View>
+  );
+};
+
+const GroupedMacroBarChart = ({ data, label }) => {
+  if (!data || data.length === 0) return null;
+
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const yAxisWidth = 38;
+  const plotHeight = 92;
+  const seriesMax = Math.max(
+    ...data.map((d) => Math.max(d.protein || 0, d.carbs || 0, d.fat || 0)),
+    1
+  );
+  const tickCount = 5;
+  const tickValues = Array.from({ length: tickCount }, (_, i) =>
+    Math.round(seriesMax - ((seriesMax * i) / (tickCount - 1)))
+  );
+
+  const legend = [
+    { key: 'protein', text: 'Protein', color: '#2563EB' },
+    { key: 'carbs', text: 'Carbs', color: '#F59E0B' },
+    { key: 'fat', text: 'Fat', color: '#16A34A' },
+  ];
+  const selected = selectedIndex !== null ? data[selectedIndex] : null;
+
+  return (
+    <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:12}}>
+      {label ? <Text style={{fontSize:14,fontWeight:'700',color:C.dark,marginBottom:8}}>{label}</Text> : null}
+      <View style={{flexDirection:'row',gap:10,marginBottom:10}}>
+        {legend.map((item) => (
+          <View key={item.key} style={{flexDirection:'row',alignItems:'center',gap:5}}>
+            <View style={{width:10,height:10,borderRadius:2,backgroundColor:item.color}}/>
+            <Text style={{fontSize:11,color:C.subtle}}>{item.text}</Text>
+          </View>
+        ))}
+      </View>
+      {selected && (
+        <View style={{backgroundColor:C.dark,borderRadius:8,padding:8,marginBottom:10}}>
+          <Text style={{fontSize:10,fontWeight:'700',color:C.white,marginBottom:2}}>{selected.label}</Text>
+          <Text style={{fontSize:10,color:C.white}}>Protein: {selected.protein || 0}g | Carbs: {selected.carbs || 0}g | Fat: {selected.fat || 0}g</Text>
+        </View>
+      )}
+      <View style={{flexDirection:'row'}}>
+        <View style={{width:yAxisWidth,height:plotHeight}}>
+          {tickValues.map((tick, i) => (
+            <Text
+              key={`bar-y-${i}`}
+              style={{
+                position:'absolute',
+                top:(i / (tickCount - 1)) * plotHeight - 8,
+                right:4,
+                fontSize:10,
+                color:C.subtle,
+              }}
+            >
+              {tick}
+            </Text>
+          ))}
+        </View>
+        <View style={{flex:1,height:plotHeight}}>
+          {tickValues.map((_, i) => (
+            <View
+              key={`bar-grid-${i}`}
+              style={{
+                position:'absolute',
+                left:0,
+                right:0,
+                top:(i / (tickCount - 1)) * plotHeight,
+                borderTopWidth:1,
+                borderTopColor:C.border,
+              }}
+            />
+          ))}
+          <View style={{flexDirection:'row',alignItems:'flex-end',gap:6,height:plotHeight}}>
+            {data.map((d, idx) => (
+              <TouchableOpacity
+                key={`macro-${idx}`}
+                style={{flex:1,alignItems:'center'}}
+                activeOpacity={0.85}
+                onPress={() => setSelectedIndex(idx)}
+              >
+                <View style={{width:'100%',height:plotHeight,flexDirection:'row',justifyContent:'space-between',alignItems:'flex-end'}}>
+                  <View style={{width:'30%',height:Math.max(3, ((d.protein || 0) / seriesMax) * plotHeight),backgroundColor:'#2563EB',borderRadius:2}}/>
+                  <View style={{width:'30%',height:Math.max(3, ((d.carbs || 0) / seriesMax) * plotHeight),backgroundColor:'#F59E0B',borderRadius:2}}/>
+                  <View style={{width:'30%',height:Math.max(3, ((d.fat || 0) / seriesMax) * plotHeight),backgroundColor:'#16A34A',borderRadius:2}}/>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </View>
+      <View style={{flexDirection:'row',marginTop:4}}>
+        <View style={{width:yAxisWidth}}/>
+        <View style={{flex:1,flexDirection:'row',gap:6}}>
+          {data.map((d, idx) => (
+            <View key={`macro-label-${idx}`} style={{flex:1,alignItems:'center'}}>
+              <Text style={{fontSize:9,color:C.subtle}} numberOfLines={1}>{d.label}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+};
+
 // ────────────────────────────────────────────────────────────────
 // REUSABLE: Height Log Modal (#36, #87 Log / #89 Update)
 // ────────────────────────────────────────────────────────────────
@@ -252,21 +585,23 @@ const DailyProgressTab = ({ userId }) => {
     <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}>
       <View style={{height:20}}/>
       {calorieData.length > 0
-        ? <BarChart data={calorieData} label="7-Day Calorie Trend"/>
+        ? <LineChart data={calorieData} label="7-Day Calorie Trend"/>
+        : null}
+      {macroData.length > 0
+        ? <GroupedMacroBarChart data={macroData} label="7-Day Macronutrient Breakdown"/>
         : null}
       {report && (
         <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:12}}>
-          <Text style={{fontSize:14,fontWeight:'700',color:C.dark,marginBottom:12}}>7-Day Macronutrient Breakdown</Text>
-          <View style={{flexDirection:'row',flexWrap:'wrap',gap:12}}>
+          <View style={{flexDirection:'row',flexWrap:'wrap',justifyContent:'space-between'}}>
             {[
-              {l:'Avg Daily Calories', v:report.avgCalories??0},
+              {l:'Avg Daily Calories', v:report.avgCalories??0, c:C.purple},
               {l:'Avg Daily Protein',  v:`${report.avgProtein??0}g`},
               {l:'Avg Daily Carbs',    v:`${report.avgCarbs??0}g`},
               {l:'Avg Daily Fat',      v:`${report.avgFat??0}g`},
             ].map((s) => (
-              <View key={s.l} style={{width:'45%'}}>
-                <Text style={{fontSize:11,color:C.subtle,marginBottom:2}}>{s.l}</Text>
-                <Text style={{fontSize:22,fontWeight:'800',color:C.dark}}>{s.v}</Text>
+              <View key={s.l} style={{width:'48%',marginBottom:12,backgroundColor:C.bg,borderRadius:10,padding:12,borderWidth:1,borderColor:C.border}}>
+                <Text style={{fontSize:11,color:C.subtle,marginBottom:4}}>{s.l}</Text>
+                <Text style={{fontSize:20,fontWeight:'800',color:s.c || C.dark}}>{s.v}</Text>
               </View>
             ))}
           </View>
@@ -530,6 +865,8 @@ const MonthlySummaryTab = ({ userId }) => {
       <StatCard label="Total Entries"   value={summary?.totalEntries   ?? 0} sub="Food items logged"/>
       <StatCard label="Total Calories"  value={summary?.totalCalories  ?? 0} sub="Calories tracked"/>
       <StatCard label="Daily Average"   value={summary?.avgCalories    ?? 0} sub="Calories per day"/>
+      <StatCard label="Total Protein"   value={`${summary?.totalProtein ?? 0} g`} sub="Protein consumed this month"/>
+
       {!summary && (
         <View style={{alignItems:'center',paddingVertical:32}}>
           <Text style={{fontSize:40,marginBottom:12}}>📋</Text>
