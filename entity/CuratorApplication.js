@@ -78,10 +78,15 @@ class CuratorApplication {
   static async fetchAll() {
     try {
       const res = await axios.get(API_URL);
-      return res.data;
+    
+      return {
+        success: true,
+        data: res.data.data || res.data.applications || res.data
+      };
     } catch (err) {
       return {
         success: false,
+        data: [],
         message: err.response?.data?.message || err.message
       };
     }

@@ -19,7 +19,7 @@ class AdminCuratorApplicationsController {
   async approveApplication(applicationId, adminId) {
     return this._safeCall(async () => {
       const result = await CuratorApplication.approve(applicationId, adminId);
-      if (result.success && result.data) await User.promoteToMinuteCurator(result.data.userId, applicationId);
+      if (result.success && result.data) await User.promoteToMinuteCurator(result.data.userId);
       return result;
     });
   }
