@@ -146,11 +146,6 @@ class User {
       return { success: false, field: 'confirm', message: 'Passwords do not match.', user: null };
     }
 
-    const available = await this.isUsernameAvailable(username);
-    if (!available) {
-      return { success: false, field: 'username', message: 'Username already exists', user: null };
-    }
-
     try {
       console.log('Sending request to:', `${API_URL}/register`);
       const res = await axios.post(`${API_URL}/register`, {
