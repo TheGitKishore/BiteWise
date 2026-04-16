@@ -43,7 +43,7 @@ import AdminDashboardScreen          from './boundary/AdminDashboardScreen';
 
 
 // ─── Sprint 6 ────────────────────────────────────────────────────────────────
-import BlogPostsScreen               from './boundary/BlogPostsScreen';
+import BlogPostsScreen               from './entity/BlogPostsScreen';
 import EditBlogPostScreen            from './boundary/EditBlogPostScreen';
 import CuratorBlogsScreen            from './boundary/CuratorBlogsScreen';
 import MindfulSnackingScreen         from './boundary/MindfulSnackingScreen';
