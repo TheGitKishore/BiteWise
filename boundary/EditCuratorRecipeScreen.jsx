@@ -29,6 +29,8 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
   const user   = route?.params?.user   || null;
   const recipe = route?.params?.recipe || null; // null = create mode
   const isEdit = recipe !== null;
+  const recipeId = recipe?._id || recipe?.recipeId;
+  console.log('🔥 RECEIVED recipe:', recipe);
 
   const [title,        setTitle]        = useState(recipe?.title        || '');
   const [description,  setDescription]  = useState(recipe?.description  || '');
@@ -61,30 +63,107 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
 
   // UC #108 create / UC #113 edit
   const handleSave = useCallback(async () => {
+    console.log('🔥 handleSave TRIGGERED');
+    console.log('isEdit:', isEdit);
+    console.log('recipeId:', recipeId);
+    console.log('userId:', user?.userId);
+
+    if (isEdit && !recipeId) {
+      console.log('❌ Missing recipeId for edit');
+      return;
+    }
+
     setErrors({});
     setSaving(true);
+
     let result;
-    if (isEdit) {
-      result = await editCtrl.updateRecipe(recipe.recipeId, user.userId, buildFields());
-    } else {
-      result = await createCtrl.createRecipe(user.userId, buildFields());
+
+    const fields = buildFields();
+
+    console.log('➡️ Fields:', fields);
+
+    try {
+      if (isEdit) {
+        console.log('➡️ Calling updateRecipe');
+
+        result = await editCtrl.updateRecipe(
+          recipe,
+          user.userId,
+          fields
+        );
+
+        console.log('⬅️ updateRecipe RESULT:', result);
+      } else {
+        console.log('➡️ Calling createRecipe');
+
+        result = await createCtrl.createRecipe(
+          user.userId,
+          fields
+        );
+
+        console.log('⬅️ createRecipe RESULT:', result);
+      }
+
+    } catch (err) {
+      console.log('❌ Unexpected error:', err);
+      result = {
+        success: false,
+        message: 'Unexpected error occurred',
+      };
     }
+
     setSaving(false);
-    if (result.success) { showBanner(result.message); setTimeout(() => navigation.goBack(), 1500); }
-    else if (result.field) setErrors({ [result.field]: result.message });
-  }, [title, description, prepTimeMins, calories, protein, carbs, fat, servings, difficulty, ingredients, instructions, tags]);
+
+    if (result?.success) {
+      showBanner(result.message);
+
+      // 🔥 IMPORTANT: force refresh when going back
+      setTimeout(() => {
+        navigation.navigate('CuratorDashboardScreen', {
+          user,
+          refreshKey: Date.now(),
+        });
+      }, 1200);
+
+    } else if (result?.field) {
+      setErrors({ [result.field]: result.message });
+
+    } else {
+      console.log('⚠️ Failed result:', result);
+    }
+  }, [
+    isEdit,
+    recipeId,
+    user?.userId,
+    title,
+    description,
+    prepTimeMins,
+    calories,
+    protein,
+    carbs,
+    fat,
+    servings,
+    difficulty,
+    ingredients,
+    instructions,
+    tags
+  ]);
 
   // UC #114 delete
   const handleDelete = useCallback(() => {
     Alert.alert('Delete Recipe', 'Permanently delete this recipe?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => {
-          const r = await deleteCtrl.deleteRecipe(recipe.recipeId, user.userId);
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          const r = await deleteCtrl.deleteRecipe(recipeId, user.userId); // ✅ FIX
           if (r.success) navigation.goBack();
           else Alert.alert('Error', r.message);
-        }},
+        }
+      },
     ]);
-  }, [recipe?.recipeId, user?.userId]);
+  }, [recipeId, user?.userId]);
 
   const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
 

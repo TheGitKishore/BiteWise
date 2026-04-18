@@ -5,7 +5,7 @@
 // Alt Flow 8a: curator cancels → no action
 // Curator only (#114)
 
-import Recipe from '../entity/Recipe';
+import RecipeDraft from '../entity/RecipeDraft';
 
 class DeleteCuratorRecipeController {
   constructor() {}
@@ -13,7 +13,7 @@ class DeleteCuratorRecipeController {
 
   // UC #114
   async deleteRecipe(recipeId, curatorUserId) {
-    return this._safeCall(async () => Recipe.delete(recipeId, curatorUserId));
+    return this._safeCall(async () => RecipeDraft.delete(recipeId, curatorUserId));
   }
 }
 

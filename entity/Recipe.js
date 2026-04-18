@@ -5,7 +5,7 @@ const API_URL = `${API_CONFIG}/recipes`;
 
 class Recipe {
   constructor({
-    recipeId = null,
+    _id = null,
     title = '',
     description = '',
     prepTimeMins = 0,
@@ -24,7 +24,7 @@ class Recipe {
     createdByUserId = null,
     createdAt = null,
   } = {}) {
-    this.recipeId = recipeId;
+    this._id = _id;
     this.title = title;
     this.description = description;
     this.prepTimeMins = prepTimeMins;
@@ -108,14 +108,13 @@ class Recipe {
 
     return {
       success: true,
-      data: res.data.map(
-        (r) =>
-          new Recipe({
-            ...r,
-            recipeId: r.recipeId || r._id?.toString() || null,
-          })
+      data: res.data.map((r) =>
+        new Recipe({
+          ...r,
+          _id: r._id,
+          isPublished: r.isPublished ?? false, // 🔥 ADD THIS
+        })
       ),
-      message: '',
     };
   }
 
@@ -158,7 +157,7 @@ class Recipe {
     try {
       const res = await axios.post(`${API_URL}/save`, {
         userId,
-        recipeId: recipe.recipeId,
+        recipeId: recipe._id,
       });
 
       return {
@@ -208,21 +207,33 @@ class Recipe {
     };
   }
 
+  static async getById(recipeId) {
+    try {
+      const res = await axios.get(`${API_URL}/${recipeId}`);
+      return {
+        success: true,
+        data: new Recipe({
+          ...res.data,
+          _id: res.data._id,
+          isPublished: res.data.isPublished ?? false,
+        }),
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.message || 'Recipe not found',
+      };
+    }
+  }  
+
   // ─── SPRINT 6 ADDITIONS ────────────────────────────────────────────────────
 
-  // UC #111 — curator: publish a recipe (makes it visible to all users)
-  static async publish(recipeId, curatorUserId) {
-    return { success: true, message: 'Recipe published! It is now visible to all users.', data: { recipeId, isPublished: true } };
-  }
-
-  // UC #112 — curator: unpublish a recipe (removes from public listing)
-  static async unpublish(recipeId, curatorUserId) {
-    return { success: true, message: 'Recipe unpublished and returned to drafts.', data: { recipeId, isPublished: false } };
-  }
-
-  // UC #114 — curator: delete a recipe they own (fixed args)
-  static async delete(recipeId, curatorUserId) {
-    return { success: true, message: 'Recipe deleted.' };
+  static async unpublish(recipeId, userId) {
+    const res = await axios.post(`${API_URL}/${recipeId}/unpublish`, {
+      userId,
+    });
+  
+    return res.data;
   }
 }
 
