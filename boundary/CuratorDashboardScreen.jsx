@@ -41,21 +41,27 @@ const TabBar = ({ active, onSelect }) => (
 const tb = StyleSheet.create({ bar: { flexDirection: 'row', backgroundColor: C.white, borderRadius: 10, borderWidth: 1, borderColor: C.border, marginBottom: 16, overflow: 'hidden' }, tab: { flex: 1, paddingVertical: 10, alignItems: 'center' }, active: { backgroundColor: C.purpleLight }, txt: { fontSize: 13, color: C.subtle }, activeTxt: { color: C.purple, fontWeight: '700' } });
 
 // UC #109 — My Recipes tab
-const MyRecipesTab = ({ userId, navigation, user }) => {
+const MyRecipesTab = ({ userId, navigation, user, route }) => {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const refreshKey = route?.params?.refreshKey;
 
-  useFocusEffect(useCallback(() => {
-    setLoading(true);
-    recipesCtrl.fetchCuratorRecipes(userId).then((r) => { if (r.success) setRecipes(r.data); setLoading(false); });
-  }, [userId]));
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      recipesCtrl.fetchCuratorRecipes(userId).then((r) => {
+        if (r.success) setRecipes(r.data);
+        setLoading(false);
+      });
+    }, [userId, refreshKey]) // 🔥 ADD THIS
+  );
 
   const handleDelete = useCallback((recipeId) => {
     Alert.alert('Delete Recipe', 'Permanently delete this recipe?', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: async () => {
           const r = await deleteCtrl.deleteRecipe(recipeId, userId);
-          if (r.success) setRecipes((p) => p.filter((rec) => rec.recipeId !== recipeId));
+          if (r.success) setRecipes((p) => p.filter((rec) => rec._id !== recipeId));
         }},
     ]);
   }, [userId]);
@@ -64,10 +70,29 @@ const MyRecipesTab = ({ userId, navigation, user }) => {
   const handlePublishRecipe = useCallback((recipeId) => {
     Alert.alert('Publish Recipe', 'Make this recipe visible to all users?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Publish', onPress: async () => {
+      {
+        text: 'Publish',
+        onPress: async () => {
           const r = await publishRecipeCtrl.publishRecipe(recipeId, userId);
-          if (r.success) setRecipes((p) => p.map((rec) => rec.recipeId === recipeId ? { ...rec, isPublished: true } : rec));
-        }},
+          console.log("🧪 PUBLISH RESPONSE:", r);
+          console.log("🧪 RETURNED DATA:", r.data);
+
+          if (r.success) {
+            setRecipes((prev) =>
+              prev.map((rec) =>
+                (rec._id || rec.recipeId) === recipeId
+                  ? {
+                      ...rec,
+                      ...r.data,
+                      recipeId: r.data._id?.toString(),  // 🔥 ADD THIS
+                      isPublished: true,   // 🔥 FORCE THIS
+                    }
+                  : rec
+              )
+            );
+          }
+        },
+      },
     ]);
   }, [userId]);
 
@@ -75,34 +100,140 @@ const MyRecipesTab = ({ userId, navigation, user }) => {
   const handleUnpublishRecipe = useCallback((recipeId) => {
     Alert.alert('Unpublish Recipe', 'Remove this recipe from public listing?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Unpublish', onPress: async () => {
+      {
+        text: 'Unpublish',
+        onPress: async () => {
+          console.log("➡️ CALLING CONTROLLER unpublishRecipe:", recipeId, userId);
+
           const r = await unpublishRecipeCtrl.unpublishRecipe(recipeId, userId);
-          if (r.success) setRecipes((p) => p.map((rec) => rec.recipeId === recipeId ? { ...rec, isPublished: false } : rec));
-        }},
+
+          console.log("⬅️ UNPUBLISH RESPONSE:", r);
+        
+          if (r.success) {
+            setRecipes((prev) =>
+              prev.map((rec) =>
+                rec._id === recipeId
+                  ? {
+                      ...r.data,
+                      recipeId: r.data._id?.toString(), // 🔥 ADD THIS
+                    } // ✅ REPLACE with new draft
+                  : rec
+              )
+            );
+            console.log('Recipe object:', r);
+          }
+        },
+      },
     ]);
   }, [userId]);
 
   if (loading) return <Text style={rs.loading}>Loading...</Text>;
   return (
     <View>
-      <TouchableOpacity style={rs.createBtn} onPress={() => navigation.navigate('EditCuratorRecipeScreen', { user, recipe: null })}>
+
+      {/* Create Button */}
+      <TouchableOpacity
+        style={rs.createBtn}
+        onPress={() =>
+          navigation.navigate('EditCuratorRecipeScreen', {
+            user,
+          })
+        }
+      >
         <Text style={rs.createBtnTxt}>+ Create Recipe</Text>
       </TouchableOpacity>
+
+      {/* Empty State */}
       {recipes.length === 0 ? (
-        <View style={rs.empty}><Text style={rs.emptyEmoji}>👨‍🍳</Text><Text style={rs.emptyTitle}>No Recipes Yet</Text><Text style={rs.emptyBody}>Create your first curator recipe to share with the community.</Text></View>
-      ) : recipes.map((r) => (
-        <View key={r.recipeId} style={rs.card}>
-          <View style={rs.cardInfo}>
-            <Text style={rs.cardTitle}>{r.title}</Text>
-            <Text style={rs.cardMeta}>{r.prepTimeMins} min  •  {r.calories} kcal  •  {r.difficulty}</Text>
-            <View style={rs.tagRow}>{r.tags?.slice(0,3).map((t) => <View key={t} style={rs.tag}><Text style={rs.tagTxt}>{t}</Text></View>)}</View>
-          </View>
-          <View style={rs.actions}>
-            <TouchableOpacity style={rs.editBtn} onPress={() => navigation.navigate('EditCuratorRecipeScreen', { user, recipe: r })}><Text style={rs.editBtnTxt}>Edit</Text></TouchableOpacity>
-            <TouchableOpacity style={rs.delBtn} onPress={() => handleDelete(r.recipeId)}><Text style={rs.delBtnTxt}>Delete</Text></TouchableOpacity>
-          </View>
+        <View style={rs.empty}>
+          <Text style={rs.emptyEmoji}>👨‍🍳</Text>
+          <Text style={rs.emptyTitle}>No Recipes Yet</Text>
+          <Text style={rs.emptyBody}>
+            Create your first curator recipe to share with the community.
+          </Text>
         </View>
-      ))}
+      ) : (
+        recipes.map((r) => {
+          const id = r._id || r.recipeId;
+
+          return (
+            <View key={id.toString()} style={rs.card}>
+
+              {/* ───── CARD INFO ───── */}
+              <View style={rs.cardInfo}>
+                <Text style={rs.cardTitle}>{r.title}</Text>
+                <Text style={rs.cardMeta}>
+                  {r.prepTimeMins} min • {r.calories} kcal • {r.difficulty}
+                </Text>
+
+                <View style={rs.tagRow}>
+                  {r.tags?.slice(0, 3).map((t) => (
+                    <View key={t} style={rs.tag}>
+                      <Text style={rs.tagTxt}>{t}</Text>
+                    </View>
+                  ))}
+                </View>
+
+                <Text style={{ fontSize: 11, color: '#6B7280', marginTop: 4 }}>
+                  {r.isPublished ? 'Published' : 'Draft'}
+                </Text>
+              </View>
+
+              {/* ───── ACTIONS ───── */}
+              <View style={rs.actions}>
+
+                {/* ONLY SHOW EDIT + DELETE IF NOT PUBLISHED */}
+                {!r.isPublished && (
+                  <>
+                    <TouchableOpacity
+                      style={rs.editBtn}
+                      onPress={() => {
+                        if (r.isPublished) {
+                          Alert.alert('Cannot edit', 'Unpublish the recipe first.');
+                          return;
+                        }
+                        navigation.navigate('EditCuratorRecipeScreen', {
+                          user,
+                          recipe: r
+                        });
+                      }}
+                    >
+                      <Text style={rs.editBtnTxt}>Edit</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity
+                      style={rs.delBtn}
+                      onPress={() => handleDelete(id)}
+                    >
+                      <Text style={rs.delBtnTxt}>Delete</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+
+                {/* PUBLISH / UNPUBLISH */}
+                {r.isPublished ? (
+                  <TouchableOpacity
+                    style={rs.unpubBtn}
+                    onPress={() => handleUnpublishRecipe(id)}
+                  >
+                    <Text style={rs.unpubBtnTxt}>Unpublish</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={rs.pubBtn}
+                    onPress={() => handlePublishRecipe(id)}
+                  >
+                    <Text style={rs.pubBtnTxt}>Publish</Text>
+                  </TouchableOpacity>
+                )}
+
+              </View>
+
+            </View>
+          );
+        })
+      )}
+
     </View>
   );
 };
@@ -226,7 +357,7 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
           <Text style={s.pageSub}>Manage your recipes and profile</Text>
         </View>
         <TabBar active={activeTab} onSelect={setActiveTab} />
-        {activeTab === 'My Recipes'    && <MyRecipesTab  userId={user.userId} navigation={navigation} user={user} />}
+        {activeTab === 'My Recipes'    && <MyRecipesTab  userId={user.userId} navigation={navigation} user={user} route={route}/>}
         {activeTab === 'My Blog Posts' && (
           <TouchableOpacity
             style={{ backgroundColor: '#7C3AED', borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginTop: 8 }}

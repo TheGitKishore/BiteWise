@@ -6,15 +6,26 @@
 // Alt Flow 1a: required fields missing → { success: false, field, message }
 // Curator only (#108)
 
-import Recipe from '../entity/Recipe';
+import RecipeDraft from '../entity/RecipeDraft';
 
 class CreateCuratorRecipeController {
   constructor() {}
-  async _safeCall(fn) { try { return await fn(); } catch (e) { console.error('[CreateCuratorRecipeController]', e); return { success: false, field: null, message: 'Something went wrong.', data: null }; } }
 
-  // UC #108 — curator recipes are always isCurated: true
+  async _safeCall(fn) {
+    try { return await fn(); }
+    catch (e) {
+      console.error('[CreateCuratorRecipeController]', e);
+      return { success: false, field: null, message: 'Something went wrong.', data: null };
+    }
+  }
+
   async createRecipe(userId, fields) {
-    return this._safeCall(async () => Recipe.create(userId, { ...fields, isCurated: true }));
+    return this._safeCall(async () =>
+      RecipeDraft.create(userId, {
+        ...fields,
+        isCurated: true,
+      })
+    );
   }
 }
 

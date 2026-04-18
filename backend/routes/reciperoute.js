@@ -10,6 +10,7 @@ const getCollections = () => {
   const dbMongo = getDB();
   return {
     recipes: dbMongo.collection('recipes'),
+    drafts: dbMongo.collection('recipe_drafts'), // ✅ add this
     savedRecipes: dbMongo.collection('saved_recipes'),
     recipeLikes: dbMongo.collection('recipe_likes'),
   };
@@ -259,7 +260,7 @@ router.post('/', async (req, res) => {
     const result = await recipes.insertOne(newRecipe);
 
     return res.json({
-      recipeId: result.insertedId,
+      _id: result.insertedId,
       ...newRecipe,
     });
   } catch (err) {
@@ -442,6 +443,85 @@ router.get('/saved/:userId', async (req, res) => {
     return res.json(data.map(toClientRecipe));
   } catch (err) {
     return res.status(500).json({ message: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────
+// UC #112 — UNPUBLISH (MOVE recipe → draft)
+// ─────────────────────────────────────────────
+router.post('/:id/unpublish', async (req, res) => {
+  try {
+    const { recipes, drafts } = getCollections();
+
+    const recipeId = req.params.id;
+    const { userId } = req.body;
+
+    console.log("UNPUBLISH _id:", recipeId);
+    console.log("recipeId param:", recipeId);
+    console.log("userId:", userId);
+
+    if (!ObjectId.isValid(recipeId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid recipe id',
+      });
+    }
+
+    console.log("LOOKING IN recipes collection for:", recipeId);
+
+    const sample = await recipes.find().limit(3).toArray();
+    console.log("ALL sample recipes:", sample);
+
+    const recipe = await recipes.findOne({
+      _id: new ObjectId(recipeId),
+    });
+
+    console.log("FOUND RECIPE:", recipe);
+
+    if (!recipe) {
+      return res.status(404).json({
+        success: false,
+        message: 'Recipe not found',
+      });
+    }
+
+    if (String(recipe.createdByUserId) !== String(userId)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized',
+      });
+    }
+
+    const draft = {
+      ...recipe,
+      isPublished: false,
+      movedFromRecipeId: recipe._id,
+      createdAt: new Date(),
+    };
+
+    delete draft._id;
+
+    const result = await drafts.insertOne(draft);
+
+    await recipes.deleteOne({
+      _id: new ObjectId(recipeId),
+    });
+
+    return res.json({
+      success: true,
+      message: 'Recipe unpublished successfully',
+      data: {
+        ...draft,
+        _id: result.insertedId,   // ✅ ONLY _id now
+      },
+    });
+
+  } catch (err) {
+    console.error('[UNPUBLISH ERROR]', err);
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 });
 

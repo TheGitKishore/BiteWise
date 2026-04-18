@@ -14,16 +14,28 @@ class UnpublishCuratorRecipeController {
   constructor() {}
 
   async _safeCall(fn) {
-    try { return await fn(); }
-    catch (e) { console.error('[UnpublishCuratorRecipeController]', e); return { success: false, message: 'Failed to unpublish recipe. Please try again.' }; }
+    try {
+      return await fn();
+    } catch (e) {
+      console.error('[UnpublishCuratorRecipeController]', e);
+      return { success: false, message: 'Failed to unpublish recipe.' };
+    }
   }
 
-  // UC #112
-  // @param  {string} recipeId
-  // @param  {number} curatorUserId
-  // @return {Promise<{ success, message, data }>}
-  async unpublishRecipe(recipeId, curatorUserId) {
-    return this._safeCall(async () => Recipe.unpublish(recipeId, curatorUserId));
+  async unpublishRecipe(recipeId, userId) {
+    return this._safeCall(async () => {
+      console.log("🟡 CONTROLLER UNPUBLISH INPUT:", recipeId, userId);
+
+      const res = await Recipe.unpublish(recipeId, userId);
+      
+      console.log("🟢 CONTROLLER UNPUBLISH RESPONSE:", res);
+
+      return {
+        success: true,
+        message: res.message,
+        data: res.data,
+      };
+    });
   }
 }
 
