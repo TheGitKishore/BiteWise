@@ -23,6 +23,62 @@ const C = {
   green:       '#059669',
 };
 
+const TopBar = ({ navigation }) => (
+  <View style={top.bar}>
+    <View style={top.brand}>
+      <Text style={top.icon}>🍴</Text>
+      <Text style={top.brandName}>BiteWise</Text>
+    </View>
+    <TouchableOpacity
+      style={top.loginBtn}
+      onPress={() => navigation.navigate('LoginScreen')}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel="Go to login"
+    >
+      <Text style={top.loginTxt}>Log In</Text>
+    </TouchableOpacity>
+  </View>
+);
+
+const top = StyleSheet.create({
+  bar: {
+    flexDirection:     'row',
+    alignItems:        'center',
+    justifyContent:    'space-between',
+    paddingHorizontal: 20,
+    paddingVertical:   14,
+    backgroundColor:   C.white,
+    borderBottomWidth: 1,
+    borderBottomColor: C.border,
+  },
+  brand: {
+    flexDirection: 'row',
+    alignItems:    'center',
+    gap:           6,
+  },
+  icon: { fontSize: 20 },
+  brandName: {
+    fontSize:      20,
+    fontWeight:    '800',
+    color:         C.dark,
+    letterSpacing: -0.3,
+  },
+  loginBtn: {
+    backgroundColor: C.bg,
+    borderRadius:    8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderWidth:     1,
+    borderColor:     C.border,
+  },
+  loginTxt: {
+    fontSize:   13,
+    fontWeight: '600',
+    color:      C.mid,
+  },
+});
+
 
 // SHARED LAYOUT COMPONENTS
 
@@ -587,6 +643,7 @@ const MainLandingScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: C.white }}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
+      <TopBar navigation={navigation} />
       <ScrollView showsVerticalScrollIndicator={false} bounces={true}>
         <FeaturesSection />
         <HowItWorksSection navigation={navigation} />

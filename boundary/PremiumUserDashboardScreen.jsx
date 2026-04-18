@@ -178,6 +178,7 @@ const PremiumUserDashboardScreen = ({ navigation, route }) => {
 
   // Sprint 2 replaces with real FoodIntakeEntry data
   const [consumed, setConsumed] = useState(0);
+  const isCurator = String(currentUser?.role || '').toUpperCase() === 'CURATOR';
 
   const refreshUserData = useCallback(async () => {
     if (!currentUser?.userId) return;
@@ -310,13 +311,15 @@ const PremiumUserDashboardScreen = ({ navigation, route }) => {
           isPremium
           onPress={() => navigation.navigate('WeightTrackingScreen', { user: currentUser })}
         />
-        <FeatureTile
-          icon="🏅"
-          title="Curator Program"
-          subtitle="Become a curator"
-          isPremium
-          onPress={() => navigation.navigate('CuratorProgramScreen', { user: currentUser })}
-        />
+        {!isCurator && (
+          <FeatureTile
+            icon="🏅"
+            title="Curator Program"
+            subtitle="Become a curator"
+            isPremium
+            onPress={() => navigation.navigate('CuratorProgramScreen', { user: currentUser })}
+          />
+        )}
         <FeatureTile
           icon="📰"
           title="Blogs"

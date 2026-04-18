@@ -203,11 +203,20 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
     if (r.success) navigation.replace('LoginScreen');
   }, [navigation]);
 
+  const handleBackToPremium = useCallback(() => {
+    navigation.navigate('PremiumUserDashboardScreen', { user });
+  }, [navigation, user]);
+
   return (
     <SafeAreaView style={s.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <View style={s.nav}>
-        <View style={s.brand}><Text style={s.navTitle}>Curator</Text></View>
+        <View style={s.brand}>
+          <TouchableOpacity style={s.backBtn} onPress={handleBackToPremium} accessibilityRole="button" accessibilityLabel="Back to premium dashboard">
+            <Text style={s.backTxt}>← Back</Text>
+          </TouchableOpacity>
+          <Text style={s.navTitle}>Curator</Text>
+        </View>
         <TouchableOpacity style={s.logoutBtn} onPress={handleLogout}><Text style={s.logoutTxt}>Log Out</Text></TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={s.scroll}>
@@ -236,7 +245,9 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
 const s = StyleSheet.create({
   safe:      { flex: 1, backgroundColor: C.bg },
   nav:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
-  brand:     { flex: 1 },
+  brand:     { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  backBtn:   { backgroundColor: C.bg, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: C.border },
+  backTxt:   { fontSize: 13, fontWeight: '600', color: C.mid },
   navTitle:  { fontSize: 20, fontWeight: '800', color: C.dark },
   logoutBtn: { backgroundColor: C.bg, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: C.border },
   logoutTxt: { fontSize: 13, fontWeight: '600', color: C.mid },
