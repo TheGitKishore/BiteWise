@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ViewRecipesController from '../controller/ViewRecipesController';
 import SaveRecipeController  from '../controller/SaveRecipeController';
+import Recipe from '../entity/Recipe';
 
 const viewCtrl = new ViewRecipesController();
 const saveCtrl = new SaveRecipeController();
@@ -35,6 +36,17 @@ const QUICK_FILTERS  = ['All Recipes', 'High Protein', 'Vegetarian', 'Quick & Ea
 const DIET_TAGS      = ['All', 'high-protein', 'low-carb', 'gluten-free', 'vegetarian', 'breakfast', 'vegan', 'meal-prep', 'batch-cooking'];
 const DIETARY_RESTRICTIONS = ['Vegetarian', 'Vegan', 'Pescatarian', 'Gluten-Free', 'Dairy-Free', 'Low-Carb', 'Keto', 'Paleo'];
 const ALLERGIES             = ['Nuts', 'Peanuts', 'Shellfish', 'Fish', 'Eggs', 'Dairy', 'Soy', 'Wheat', 'Gluten'];
+const ALLERGY_KEYWORDS = {
+  Nuts: ['nut', 'almond', 'walnut', 'cashew', 'hazelnut', 'pecan', 'pistachio', 'macadamia'],
+  Peanuts: ['peanut', 'groundnut'],
+  Shellfish: ['shellfish', 'shrimp', 'prawn', 'crab', 'lobster', 'mussel', 'oyster', 'clam', 'scallop'],
+  Fish: ['fish', 'salmon', 'tuna', 'cod', 'mackerel', 'sardine', 'anchovy'],
+  Eggs: ['egg'],
+  Dairy: ['dairy', 'milk', 'cheese', 'butter', 'yogurt', 'cream', 'lactose', 'ghee'],
+  Soy: ['soy', 'soya', 'tofu', 'edamame', 'miso', 'tempeh', 'soy sauce'],
+  Wheat: ['wheat', 'whole wheat', 'semolina'],
+  Gluten: ['gluten', 'wheat', 'barley', 'rye'],
+};
 
 
 // SUB-COMPONENTS
@@ -121,7 +133,7 @@ const lk = StyleSheet.create({
 });
 
 // Recipe card in library list — shows image, title, macros, tags
-const RecipeCard = ({ recipe, onPress, isLiked, likeCount, onToggleLike }) => (
+const RecipeCard = ({ recipe, onPress, isLiked, likeCount, onToggleLike, canLike }) => (
   <TouchableOpacity style={rc.card} onPress={onPress} activeOpacity={0.85}>
     {recipe.imageUrl ? (
       <Image source={{ uri: recipe.imageUrl }} style={rc.image} resizeMode="cover" />
@@ -147,17 +159,21 @@ const RecipeCard = ({ recipe, onPress, isLiked, likeCount, onToggleLike }) => (
       {recipe.ingredients.length > 3 && (
         <Text style={rc.ingMore}>+ {recipe.ingredients.length - 3} more</Text>
       )}
-      <View style={rc.tagRow}>
-        {recipe.tags.map((t, i) => <View key={i} style={rc.tag}><Text style={rc.tagText}>{t}</Text></View>)}
+      <View style={rc.footer}>
+        <View style={rc.tagRow}>
+          {recipe.tags.map((t, i) => <View key={i} style={rc.tag}><Text style={rc.tagText}>{t}</Text></View>)}
+        </View>
+        {canLike ? (
+          <LikeButton
+            isLiked={isLiked}
+            count={likeCount}
+            onPress={(e) => {
+              e?.stopPropagation?.();
+              onToggleLike();
+            }}
+          />
+        ) : null}
       </View>
-      <LikeButton
-        isLiked={isLiked}
-        count={likeCount}
-        onPress={(e) => {
-          e?.stopPropagation?.();
-          onToggleLike();
-        }}
-      />
     </View>
   </TouchableOpacity>
 );
@@ -179,13 +195,14 @@ const rc = StyleSheet.create({
   ing:                { fontSize:13, color:C.subtle, marginBottom:2 },
   ingPurple:          { color:C.purple },
   ingMore:            { fontSize:13, color:C.purple, marginBottom:6 },
+  footer:             { flexDirection:'row', alignItems:'flex-end', justifyContent:'space-between', gap:8 },
   tagRow:             { flexDirection:'row', flexWrap:'wrap', gap:6, marginTop:4 },
   tag:                { backgroundColor:C.purpleLight, borderRadius:20, paddingHorizontal:10, paddingVertical:3 },
   tagText:            { fontSize:11, color:C.purple },
 });
 
 // Full recipe detail view
-const RecipeDetail = ({ recipe, user, onBack, onSave, isSaving, isLiked, likeCount, onToggleLike }) => {
+const RecipeDetail = ({ recipe, user, onBack, onSave, isSaving, isLiked, likeCount, onToggleLike, canLike }) => {
   const isPremium = user?.role === 'premium';
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
@@ -254,13 +271,15 @@ const RecipeDetail = ({ recipe, user, onBack, onSave, isSaving, isLiked, likeCou
       </View>
 
       {/* Save button — gated by role */}
-      <View style={{ marginHorizontal: 16, marginTop: 8 }}>
-        <LikeButton
-          isLiked={isLiked}
-          count={likeCount}
-          onPress={onToggleLike}
-        />
-      </View>
+      {canLike ? (
+        <View style={{ marginHorizontal: 16, marginTop: 8 }}>
+          <LikeButton
+            isLiked={isLiked}
+            count={likeCount}
+            onPress={onToggleLike}
+          />
+        </View>
+      ) : null}
 
       <TouchableOpacity
         style={[rd.saveBtn, isSaving && rd.saveBtnDisabled]}
@@ -430,6 +449,14 @@ const dp = StyleSheet.create({
 
 const RecipesScreen = ({ navigation, route }) => {
   const user      = route?.params?.user || null;
+  const currentUserId =
+    user?.userId != null
+      ? String(user.userId)
+      : user?.id != null
+        ? String(user.id)
+        : user?._id != null
+          ? String(user._id)
+          : '';
   const isPremium = user?.role === 'premium';
 
   const [allRecipes,     setAllRecipes]     = useState([]);
@@ -445,6 +472,9 @@ const RecipesScreen = ({ navigation, route }) => {
   const [dietPrefs,      setDietPrefs]      = useState({ restrictions:[], allergies:[] });
   const [likedRecipes,   setLikedRecipes]   = useState({});
   const [recipeLikeCounts, setRecipeLikeCounts] = useState({});
+  const [likingRecipeIds, setLikingRecipeIds] = useState({});
+
+  const canLikeRecipe = (recipe) => Boolean(recipe?.isCurated);
 
   // Load recipes on mount
   useEffect(() => {
@@ -453,23 +483,75 @@ const RecipesScreen = ({ navigation, route }) => {
         setAllRecipes(result.data);
         const baselineLikes = {};
         (result.data || []).forEach((r) => {
-          const idSeed = String(r.recipeId || r.title || '').length;
-          baselineLikes[r.recipeId] = Number(r.likeCount ?? (80 + (idSeed * 37) % 2300));
+          if (!canLikeRecipe(r)) return;
+          baselineLikes[r.recipeId] = Number(r.likeCount ?? 0);
         });
         setRecipeLikeCounts(baselineLikes);
+
+        if (currentUserId) {
+          Recipe.fetchLikedRecipeIds(currentUserId).then((likedRes) => {
+            if (!likedRes.success) return;
+            const likedMap = {};
+            (likedRes.data || []).forEach((id) => {
+              likedMap[String(id)] = true;
+            });
+            setLikedRecipes(likedMap);
+          });
+        }
       }
       setIsLoading(false);
     });
-  }, []);
+  }, [currentUserId]);
 
-  const toggleRecipeLike = useCallback((recipeId) => {
+  const toggleRecipeLike = useCallback(async (recipeId) => {
+    if (likingRecipeIds[recipeId]) return;
+    if (!currentUserId) {
+      setBanner({ message: 'Unable to identify current user for likes.', type: 'error' });
+      return;
+    }
+
+    const recipe = allRecipes.find((r) => r.recipeId === recipeId);
+    if (!canLikeRecipe(recipe)) return;
+
     const currentlyLiked = Boolean(likedRecipes[recipeId]);
+    const nextLikeState = !currentlyLiked;
+    const incrementBy = currentlyLiked ? -1 : 1;
+    const previousCount = Number(recipeLikeCounts[recipeId] ?? recipe?.likeCount ?? 0);
+    const optimisticCount = Math.max(0, previousCount + incrementBy);
+
+    setLikingRecipeIds((prev) => ({ ...prev, [recipeId]: true }));
     setLikedRecipes((prev) => ({ ...prev, [recipeId]: !currentlyLiked }));
     setRecipeLikeCounts((prev) => ({
       ...prev,
-      [recipeId]: Math.max(0, Number(prev[recipeId] || 0) + (currentlyLiked ? -1 : 1)),
+      [recipeId]: optimisticCount,
     }));
-  }, [likedRecipes]);
+
+    const result = await Recipe.updateLike(recipeId, {
+      userId: currentUserId,
+      like: nextLikeState,
+      incrementBy,
+    });
+    if (!result.success) {
+      setLikedRecipes((prev) => ({ ...prev, [recipeId]: currentlyLiked }));
+      setRecipeLikeCounts((prev) => ({ ...prev, [recipeId]: previousCount }));
+      setBanner({ message: result.message || 'Unable to update recipe like.', type: 'error' });
+      setLikingRecipeIds((prev) => ({ ...prev, [recipeId]: false }));
+      return;
+    }
+
+    const serverIsLiked =
+      typeof result.data?.isLiked === 'boolean' ? result.data.isLiked : nextLikeState;
+    setLikedRecipes((prev) => ({ ...prev, [recipeId]: serverIsLiked }));
+    const serverLikeCount = Number(result.data?.likeCount ?? optimisticCount);
+    setRecipeLikeCounts((prev) => ({ ...prev, [recipeId]: serverLikeCount }));
+    setAllRecipes((prev) =>
+      prev.map((r) => (r.recipeId === recipeId ? { ...r, likeCount: serverLikeCount } : r))
+    );
+    setSelectedRecipe((prev) =>
+      prev && prev.recipeId === recipeId ? { ...prev, likeCount: serverLikeCount } : prev
+    );
+    setLikingRecipeIds((prev) => ({ ...prev, [recipeId]: false }));
+  }, [allRecipes, currentUserId, likedRecipes, likingRecipeIds, recipeLikeCounts]);
 
   // Derive visible recipes based on active filters
   const visibleRecipes = (() => {
@@ -493,6 +575,23 @@ const RecipesScreen = ({ navigation, route }) => {
       list = list.filter((r) =>
         dietPrefs.restrictions.some((pref) => r.tags.includes(pref.toLowerCase()))
       );
+    }
+
+    // UC #64 — allergy exclusion filter (Premium)
+    if (isPremium && dietPrefs.allergies.length > 0) {
+      list = list.filter((r) => {
+        const haystack = [
+          r.title || '',
+          r.description || '',
+          ...(Array.isArray(r.tags) ? r.tags : []),
+          ...(Array.isArray(r.ingredients) ? r.ingredients : []),
+        ].join(' ').toLowerCase();
+
+        return !dietPrefs.allergies.some((allergy) => {
+          const needles = ALLERGY_KEYWORDS[allergy] || [String(allergy || '').toLowerCase()];
+          return needles.some((kw) => haystack.includes(kw));
+        });
+      });
     }
 
     // UC #23, #61 — search
@@ -544,6 +643,7 @@ const RecipesScreen = ({ navigation, route }) => {
           isLiked={Boolean(likedRecipes[selectedRecipe.recipeId])}
           likeCount={recipeLikeCounts[selectedRecipe.recipeId] ?? selectedRecipe.likeCount ?? 0}
           onToggleLike={() => toggleRecipeLike(selectedRecipe.recipeId)}
+          canLike={canLikeRecipe(selectedRecipe)}
         />
       </SafeAreaView>
     );
@@ -655,6 +755,7 @@ const RecipesScreen = ({ navigation, route }) => {
               isLiked={Boolean(likedRecipes[recipe.recipeId])}
               likeCount={recipeLikeCounts[recipe.recipeId] ?? recipe.likeCount ?? 0}
               onToggleLike={() => toggleRecipeLike(recipe.recipeId)}
+              canLike={canLikeRecipe(recipe)}
             />
           ))
         )}

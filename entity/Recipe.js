@@ -21,6 +21,7 @@ class Recipe {
     isCurated = false,
     isMealPrep = false,
     imageUrl = null,
+    likeCount = 0,
     createdByUserId = null,
     createdAt = null,
   } = {}) {
@@ -40,6 +41,7 @@ class Recipe {
     this.isCurated = isCurated;
     this.isMealPrep = isMealPrep;
     this.imageUrl = imageUrl;
+    this.likeCount = Number(likeCount || 0);
     this.createdByUserId = createdByUserId;
     this.createdAt = createdAt;
   }
@@ -170,6 +172,49 @@ class Recipe {
         success: false,
         message: err.message || 'Failed to save recipe',
         data: null,
+      };
+    }
+  }
+
+  static async updateLike(recipeId, incrementBy) {
+    try {
+      const payload =
+        typeof incrementBy === 'object' && incrementBy !== null
+          ? incrementBy
+          : { incrementBy };
+      const res = await axios.put(`${API_URL}/${recipeId}/like`, payload);
+
+      return {
+        success: true,
+        message: 'Recipe like updated',
+        data: {
+          recipeId: res.data?.recipeId || recipeId,
+          likeCount: Number(res.data?.likeCount ?? 0),
+          isLiked: typeof res.data?.isLiked === 'boolean' ? res.data.isLiked : undefined,
+        },
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err?.response?.data?.message || err.message || 'Failed to update recipe like',
+        data: null,
+      };
+    }
+  }
+
+  static async fetchLikedRecipeIds(userId) {
+    try {
+      const res = await axios.get(`${API_URL}/likes/${userId}`);
+      return {
+        success: true,
+        data: Array.isArray(res.data) ? res.data.map((id) => String(id)) : [],
+        message: '',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        data: [],
+        message: err?.response?.data?.message || err.message || 'Failed to fetch recipe likes',
       };
     }
   }

@@ -12,10 +12,21 @@ const getCollections = () => {
     recipes: dbMongo.collection('recipes'),
     drafts: dbMongo.collection('recipe_drafts'), // ✅ add this
     savedRecipes: dbMongo.collection('saved_recipes'),
+    recipeLikes: dbMongo.collection('recipe_likes'),
   };
 };
 
 const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const normalizeUserId = (value) => String(value ?? '').trim();
+
+const userIdFilter = (value) => {
+  const normalized = normalizeUserId(value);
+  if (!normalized) return null;
+  const numeric = Number(normalized);
+  if (Number.isNaN(numeric)) return { userId: normalized };
+  return { userId: { $in: [normalized, numeric] } };
+};
 
 const deriveTags = (meal) => {
   const tags = new Set();
@@ -241,7 +252,9 @@ router.post('/', async (req, res) => {
 
     const newRecipe = {
       ...req.body,
+      likeCount: Number(req.body?.likeCount ?? 0),
       createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     const result = await recipes.insertOne(newRecipe);
@@ -249,6 +262,107 @@ router.post('/', async (req, res) => {
     return res.json({
       _id: result.insertedId,
       ...newRecipe,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/recipes/likes/:userId
+router.get('/likes/:userId', async (req, res) => {
+  try {
+    const { recipeLikes } = getCollections();
+    const userId = normalizeUserId(req.params.userId);
+    const likeUserFilter = userIdFilter(userId);
+
+    if (!likeUserFilter) {
+      return res.status(400).json({ message: 'Invalid userId' });
+    }
+
+    const rows = await recipeLikes
+      .find(likeUserFilter)
+      .project({ _id: 0, recipeId: 1 })
+      .toArray();
+
+    return res.json(rows.map((r) => String(r.recipeId)).filter(Boolean));
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+
+// PUT /api/recipes/:recipeId/like
+// Persists recipe likes in Mongo. Curated recipes only.
+router.put('/:recipeId/like', async (req, res) => {
+  try {
+    const { recipes, recipeLikes } = getCollections();
+    const { recipeId } = req.params;
+    const userId = normalizeUserId(req.body?.userId);
+    const like = req.body?.like;
+    const incrementBy = Number(req.body?.incrementBy ?? 1);
+
+    if (!ObjectId.isValid(recipeId)) {
+      return res.status(400).json({ message: 'Invalid recipeId' });
+    }
+    if (![1, -1].includes(incrementBy)) {
+      return res.status(400).json({ message: 'incrementBy must be 1 or -1' });
+    }
+
+    const objectId = new ObjectId(recipeId);
+    const existing = await recipes.findOne(
+      { _id: objectId, isCurated: true },
+      { projection: { likeCount: 1 } }
+    );
+
+    if (!existing) {
+      return res.status(404).json({
+        message: 'Recipe not found or likes are only enabled for curated recipes',
+      });
+    }
+
+    const currentLikeCount = Number(existing.likeCount ?? 0);
+
+    if (userId && typeof like === 'boolean') {
+      const likeUserFilter = userIdFilter(userId);
+      const likeFilter = { ...likeUserFilter, recipeId: String(recipeId) };
+      const likeEntry = await recipeLikes.findOne(likeFilter);
+
+      let nextLikeCount = currentLikeCount;
+      if (like && !likeEntry) {
+        await recipeLikes.insertOne({
+          userId: normalizeUserId(userId),
+          recipeId: String(recipeId),
+          createdAt: new Date(),
+        });
+        nextLikeCount = currentLikeCount + 1;
+      } else if (!like && likeEntry) {
+        await recipeLikes.deleteOne(likeFilter);
+        nextLikeCount = Math.max(0, currentLikeCount - 1);
+      }
+
+      if (nextLikeCount !== currentLikeCount) {
+        await recipes.updateOne(
+          { _id: objectId },
+          { $set: { likeCount: nextLikeCount, updatedAt: new Date() } }
+        );
+      }
+
+      return res.json({
+        recipeId,
+        likeCount: nextLikeCount,
+        isLiked: like,
+      });
+    }
+
+    const nextLikeCount = Math.max(0, currentLikeCount + incrementBy);
+
+    await recipes.updateOne(
+      { _id: objectId },
+      { $set: { likeCount: nextLikeCount, updatedAt: new Date() } }
+    );
+
+    return res.json({
+      recipeId,
+      likeCount: nextLikeCount,
     });
   } catch (err) {
     return res.status(500).json({ message: err.message });
