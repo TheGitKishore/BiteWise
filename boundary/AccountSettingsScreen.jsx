@@ -6,7 +6,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import LogOutController              from '../controller/LogOutController';
 import ViewAccountDetailsController  from '../controller/ViewAccountDetailsController';
 import UpdateAccountDetailsController from '../controller/UpdateAccountDetailsController';
-import TerminateAccountController    from '../controller/TerminateAccountController';
+import TerminateAccountController       from '../controller/TerminateAccountController';
+import UpdateProfileTypeController    from '../controller/UpdateProfileTypeController';
 
 const logOutController    = new LogOutController();
 const viewDetailsCtrl     = new ViewAccountDetailsController();
@@ -313,6 +314,33 @@ const AccountSettingsScreen = ({ navigation, route }) => {
     }
   }, [route?.params?.updatedUser]);  
 
+  const handleUpdateProfile = useCallback(async () => {
+    if (selectedProfile === currentProfile) {
+      setBanner({ message: 'This is already your current profile.', type: 'error' });
+      return;
+    }
+    const meta = profileTypeCtrl.getProfileMeta(selectedProfile);
+    Alert.alert(
+      'Confirm Profile Change',
+      `Set your profile to ${meta.label}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          onPress: async () => {
+            const result = await profileTypeCtrl.updateProfileType(user?.userId, selectedProfile);
+            if (result.success) {
+              setCurrentProfile(selectedProfile);
+              setBanner({ message: `Profile updated to ${meta.label}!`, type: 'success' });
+            } else {
+              setBanner({ message: result.message, type: 'error' });
+            }
+          },
+        },
+      ]
+    );
+  }, [selectedProfile, currentProfile, user]);
+
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
@@ -354,6 +382,63 @@ const AccountSettingsScreen = ({ navigation, route }) => {
             <Text style={styles.updateBtnText}>
               {isUpdating ? 'Updating...' : 'Update Account'}
             </Text>
+          </TouchableOpacity>
+        </Section>
+
+
+        {/* Profile Type — between Account Details and Subscription */}
+        <Section>
+          <SectionHead
+            title="Profile Type"
+            subtitle="Personalises your dashboard, tab order and app name"
+          />
+          {/* Current profile display */}
+          {(() => {
+            const meta = profileTypeCtrl.getProfileMeta(currentProfile || 'HEALTH_ORIENTED');
+            return (
+              <View style={styles.profileCurrentWrap}>
+                <Text style={styles.profileCurrentEmoji}>{meta.emoji}</Text>
+                <View>
+                  <Text style={styles.profileCurrentLabel}>Current Profile</Text>
+                  <Text style={styles.profileCurrentName}>{meta.label}</Text>
+                </View>
+              </View>
+            );
+          })()}
+
+          {/* Dropdown */}
+          <TouchableOpacity style={styles.profileDropdown} onPress={() => setProfileDropdown(!profileDropdown)} activeOpacity={0.8}>
+            <Text style={styles.profileDropdownTxt}>
+              {profileOptions.find(p => p.profileType === selectedProfile)?.label || 'Select profile'}
+            </Text>
+            <Text style={styles.profileDropdownArrow}>{profileDropdown ? '▲' : '▼'}</Text>
+          </TouchableOpacity>
+          {profileDropdown && (
+            <View style={styles.profileDropdownList}>
+              {profileOptions.map(p => (
+                <TouchableOpacity
+                  key={p.profileType}
+                  style={[styles.profileDropdownItem, selectedProfile === p.profileType && styles.profileDropdownItemSelected]}
+                  onPress={() => { setSelectedProfile(p.profileType); setProfileDropdown(false); }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.profileDropdownEmoji}>{p.emoji}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.profileDropdownItemLabel}>{p.label}</Text>
+                    <Text style={styles.profileDropdownItemDesc} numberOfLines={1}>{p.description}</Text>
+                  </View>
+                  {selectedProfile === p.profileType && <Text style={styles.profileDropdownCheck}>✓</Text>}
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          <TouchableOpacity
+            style={styles.updateBtn}
+            onPress={handleUpdateProfile}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.updateBtnText}>Update Profile</Text>
           </TouchableOpacity>
         </Section>
 
@@ -504,6 +589,21 @@ const styles = StyleSheet.create({
     color:      C.dangerText,
   },
   btnDisabled: { opacity: 0.6 },
+  // Profile Type section styles
+  profileCurrentWrap:      { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#FAF5FF', borderRadius: 10, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#EDE9FE' },
+  profileCurrentEmoji:     { fontSize: 28 },
+  profileCurrentLabel:     { fontSize: 11, color: '#6B7280', fontWeight: '600', marginBottom: 2 },
+  profileCurrentName:      { fontSize: 16, fontWeight: '700', color: '#111827' },
+  profileDropdown:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB', paddingHorizontal: 14, paddingVertical: 13, marginBottom: 4 },
+  profileDropdownTxt:      { fontSize: 14, color: '#111827', fontWeight: '600' },
+  profileDropdownArrow:    { fontSize: 11, color: '#6B7280' },
+  profileDropdownList:     { backgroundColor: '#FFFFFF', borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB', marginBottom: 12, overflow: 'hidden' },
+  profileDropdownItem:     { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+  profileDropdownItemSelected: { backgroundColor: '#FAF5FF' },
+  profileDropdownEmoji:    { fontSize: 22 },
+  profileDropdownItemLabel:{ fontSize: 14, fontWeight: '700', color: '#111827', marginBottom: 2 },
+  profileDropdownItemDesc: { fontSize: 12, color: '#6B7280' },
+  profileDropdownCheck:    { fontSize: 14, fontWeight: '700', color: '#7C3AED' },
 });
 
 export default AccountSettingsScreen;

@@ -185,5 +185,81 @@ class UserProfileType {
   }
 }
 */
+
+  // ─── SPRINT 7 ADDITIONS ────────────────────────────────────────────────────
+
+  // Step 3 — compute recommended profile type from onboarding survey answers.
+  // answers: array of { questionIndex: number, answerIndex: number }
+  // Returns 'ATHLETE' | 'HEALTH_ORIENTED' | 'MEAL_PLANNER'
+  //
+  // Scoring map: each question/answer combination awards points to one or
+  // more profile types. The type with the highest cumulative score wins.
+  static computeProfileFromAnswers(answers) {
+    // Points awarded per [questionIndex][answerIndex] — keyed by profile type
+    const SCORING = [
+      // Q1: What's your main goal right now?
+      [{ HO:1 }, { HO:1 }, { A:1 }, { MP:1 }, { MP:1 }],
+      // Q2: Which sounds most like you?
+      [{ HO:1, A:1 }, { A:1 }, { MP:1 }, { HO:1 }],
+      // Q3: How active are you?
+      [{ MP:1 }, { HO:1 }, { A:1 }],
+      // Q4: What would you most likely open this app to do?
+      [{ A:1 }, { HO:1 }, { MP:1 }],
+      // Q5: How do you usually decide what to eat?
+      [{ A:1 }, { HO:1 }, { MP:1 }],
+      // Q6: What makes you feel like you're doing well?
+      [{ A:1 }, { HO:1 }, { MP:1 }],
+      // Q7: Which approach do you prefer?
+      [{ A:1 }, { HO:1 }, { MP:1 }],
+      // Q8: Which statement sounds most like you?
+      [{ A:1 }, { HO:1 }, { MP:1 }],
+      // Q9: What would make this app most useful to you?
+      [{ A:1 }, { HO:1 }, { MP:1 }],
+      // Q10: What motivates you the most?
+      [{ A:1 }, { HO:1 }, { MP:1 }],
+    ];
+
+    const scores = { A: 0, HO: 0, MP: 0 };
+    for (const { questionIndex, answerIndex } of answers) {
+      const row = SCORING[questionIndex];
+      if (!row) continue;
+      const pts = row[answerIndex];
+      if (!pts) continue;
+      if (pts.A)  scores.A  += pts.A;
+      if (pts.HO) scores.HO += pts.HO;
+      if (pts.MP) scores.MP += pts.MP;
+    }
+
+    // Pick highest score; ties → HO default
+    if (scores.A >= scores.HO && scores.A >= scores.MP) return 'ATHLETE';
+    if (scores.MP > scores.HO && scores.MP > scores.A)  return 'MEAL_PLANNER';
+    return 'HEALTH_ORIENTED';
+  }
+
+  // Profile display metadata (used by OnboardingScreen + AccountSettingsScreen)
+  static getProfileMeta(profileType) {
+    const META = {
+      ATHLETE: {
+        label:       'Athlete',
+        emoji:       '🏋️',
+        description: 'Optimised for performance, muscle gain and precise macro tracking.',
+        appName:     'BiteWise for Athletes',
+      },
+      HEALTH_ORIENTED: {
+        label:       'Health Oriented',
+        emoji:       '🥗',
+        description: 'Focused on overall wellness, balanced nutrition and healthy habits.',
+        appName:     'BiteWise Health',
+      },
+      MEAL_PLANNER: {
+        label:       'Meal Planner',
+        emoji:       '📋',
+        description: 'Built for those who prefer planning meals ahead with minimal daily tracking.',
+        appName:     'BiteWise for Meal Planners',
+      },
+    };
+    return META[profileType] || META.HEALTH_ORIENTED;
+  }
+
 }
 export default UserProfileType;

@@ -32,11 +32,11 @@ const C = {
 // SUB-COMPONENTS
 
 // NavBar
-const NavBar = ({ onMenuPress }) => (
+const NavBar = ({ onMenuPress, brandName }) => (
   <View style={nav.bar}>
     <View style={nav.brand}>
       <Text style={nav.icon}>🍴</Text>
-      <Text style={nav.brandName}>BiteWise</Text>
+      <Text style={nav.brandName}>{brandName || 'BiteWise'}</Text>
     </View>
     <TouchableOpacity
       onPress={onMenuPress}
@@ -331,6 +331,41 @@ const gs = StyleSheet.create({
 
 // MAIN SCREEN
 
+// ─── SPRINT 7: Profile-based brand name (Step 5) ─────────────────────────────
+const getBrandName = (profileType) => {
+  if (profileType === 'ATHLETE')         return 'BiteWise for Athletes';
+  if (profileType === 'MEAL_PLANNER')    return 'BiteWise for Meal Planners';
+  return 'BiteWise Health'; // HEALTH_ORIENTED default
+};
+
+// ─── SPRINT 7: Ordered tile configs by profile (Step 6) ──────────────────────
+const FREE_TILES = {
+  HEALTH_ORIENTED: [
+    { icon: '🍴', title: 'Food Tracking',    subtitle: 'Log your meals and track calories',  screen: 'FoodTrackingLandingScreen' },
+    { icon: '📈', title: 'Reports',           subtitle: 'View your progress over time',       screen: 'ReportsScreen' },
+    { icon: '📖', title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',        screen: 'RecipesScreen' },
+    { icon: '📅', title: 'Meal Plans',        subtitle: 'Create and manage meal plans',       screen: 'MealPlansScreen' },
+    { icon: '👤', title: 'Account',           subtitle: 'Manage your profile and settings',   screen: 'AccountSettingsScreen' },
+    { icon: '👨‍🍳', title: 'My Recipes',       subtitle: 'Create your own recipes',            screen: 'MyRecipesScreen' },
+  ],
+  ATHLETE: [
+    { icon: '🍴', title: 'Food Tracking',    subtitle: 'Log your meals and track calories',  screen: 'FoodTrackingLandingScreen' },
+    { icon: '📈', title: 'Reports',           subtitle: 'View your progress over time',       screen: 'ReportsScreen' },
+    { icon: '📅', title: 'Meal Plans',        subtitle: 'Create and manage meal plans',       screen: 'MealPlansScreen' },
+    { icon: '📖', title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',        screen: 'RecipesScreen' },
+    { icon: '👤', title: 'Account',           subtitle: 'Manage your profile and settings',   screen: 'AccountSettingsScreen' },
+    { icon: '👨‍🍳', title: 'My Recipes',       subtitle: 'Create your own recipes',            screen: 'MyRecipesScreen' },
+  ],
+  MEAL_PLANNER: [
+    { icon: '📅', title: 'Meal Plans',        subtitle: 'Create and manage meal plans',       screen: 'MealPlansScreen' },
+    { icon: '📖', title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',        screen: 'RecipesScreen' },
+    { icon: '👨‍🍳', title: 'My Recipes',       subtitle: 'Create your own recipes',            screen: 'MyRecipesScreen' },
+    { icon: '🍴', title: 'Food Tracking',    subtitle: 'Log your meals and track calories',  screen: 'FoodTrackingLandingScreen' },
+    { icon: '📈', title: 'Reports',           subtitle: 'View your progress over time',       screen: 'ReportsScreen' },
+    { icon: '👤', title: 'Account',           subtitle: 'Manage your profile and settings',   screen: 'AccountSettingsScreen' },
+  ],
+};
+
 const FreeUserDashboardScreen = ({ navigation, route }) => {
   const initialUser = route?.params?.user || null;
   const [currentUser, setCurrentUser] = useState(initialUser);
@@ -397,7 +432,10 @@ const FreeUserDashboardScreen = ({ navigation, route }) => {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
 
-      <NavBar onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user: currentUser })} />
+      <NavBar
+        onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user: currentUser })}
+        brandName={getBrandName(currentUser?.profileType)}
+      />
       <Banner message={successMessage} />
 
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
@@ -421,43 +459,16 @@ const FreeUserDashboardScreen = ({ navigation, route }) => {
           <UpgradeBanner onPress={() => navigation.navigate('ViewPricingPlansScreen')} />
         )}
 
-        {/* Feature tiles */}
-        <FeatureTile
-          icon="🍴"
-          title="Food Tracking"
-          subtitle="Log your meals and track calories"
-          onPress={() => navigation.navigate('FoodTrackingLandingScreen', { user: currentUser})}
-        />
-        <FeatureTile
-          icon="📅"
-          title="Meal Plans"
-          subtitle="Create and manage meal plans"
-          onPress={() => navigation.navigate('MealPlansScreen', { user: currentUser})}
-        />
-        <FeatureTile
-          icon="📖"
-          title="Recipes"
-          subtitle="Browse healthy recipe ideas"
-          onPress={() => navigation.navigate('RecipesScreen', { user: currentUser})}
-        />
-        <FeatureTile
-          icon="👨‍🍳"
-          title="My Recipes"
-          subtitle="Create your own recipes"
-          onPress={() => navigation.navigate('MyRecipesScreen', { user: currentUser})}
-        />
-        <FeatureTile
-          icon="📈"
-          title="Reports"
-          subtitle="View your progress over time"
-          onPress={() => navigation.navigate('ReportsScreen', { user: currentUser})}
-        />
-        <FeatureTile
-          icon="👤"
-          title="Account"
-          subtitle="Manage your profile and settings"
-          onPress={() => navigation.navigate('AccountSettingsScreen', { user: currentUser})}
-        />
+        {/* Feature tiles — Sprint 7: ordered by profile type (Step 6) */}
+        {(FREE_TILES[currentUser?.profileType] || FREE_TILES.HEALTH_ORIENTED).map((tile) => (
+          <FeatureTile
+            key={tile.title}
+            icon={tile.icon}
+            title={tile.title}
+            subtitle={tile.subtitle}
+            onPress={() => navigation.navigate(tile.screen, { user: currentUser })}
+          />
+        ))}
 
         {/* Getting Started */}
         <GettingStartedSection

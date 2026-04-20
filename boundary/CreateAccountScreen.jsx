@@ -318,7 +318,7 @@ const CreateAccountScreen = ({ navigation, route }) => {
     setIsLoading(false);
 
     if (result.success) {
-      navigation.navigate('LoginScreen', { successMessage: result.message });
+      navigation.navigate('OnboardingScreen', { user: result.user });
     } else {
       if (result.field) {
         setFieldErrors({ [result.field]: result.message });

@@ -501,6 +501,27 @@ class User {
     }
   } */
 
+
+  // ─── SPRINT 7 ADDITIONS ────────────────────────────────────────────────────
+
+  // Step 3 (Onboarding) + Step 4 (Account Settings) — set a user's profile type
+  // Seeded stub — confirms update without server mutation.
+  // In production this would call: PUT /users/:userId/profile-type
+  // @param  {number} userId
+  // @param  {string} profileType — 'ATHLETE' | 'HEALTH_ORIENTED' | 'MEAL_PLANNER'
+  // @return {Promise<{ success, message, data }>}
+  static async setProfileType(userId, profileType) {
+    const valid = ['ATHLETE', 'HEALTH_ORIENTED', 'MEAL_PLANNER'];
+    if (!valid.includes(profileType)) {
+      return { success: false, message: 'Invalid profile type.', data: null };
+    }
+    return {
+      success: true,
+      message: 'Profile type updated successfully.',
+      data:    { userId, profileType },
+    };
+  }
+
 }
 
 export default User;

@@ -42,6 +42,9 @@ import AdminLoginScreen              from './boundary/AdminLoginScreen';
 import AdminDashboardScreen          from './boundary/AdminDashboardScreen';
 
 
+// ─── Sprint 7 ────────────────────────────────────────────────────────────────
+import OnboardingScreen              from './boundary/OnboardingScreen';
+
 // ─── Sprint 6 ────────────────────────────────────────────────────────────────
 import BlogPostsScreen               from './boundary/BlogPostsScreen';
 import EditBlogPostScreen            from './boundary/EditBlogPostScreen';
@@ -97,6 +100,9 @@ export default function App() {
         <Stack.Screen name="EditCuratorRecipeScreen"      component={EditCuratorRecipeScreen} />
         <Stack.Screen name="AdminLoginScreen"             component={AdminLoginScreen} />
         <Stack.Screen name="AdminDashboardScreen"         component={AdminDashboardScreen} />
+
+        {/* ── Sprint 7 ─────────────────────────────────────────────────── */}
+        <Stack.Screen name="OnboardingScreen"               component={OnboardingScreen} />
 
         {/* ── Sprint 6 ─────────────────────────────────────────────────── */}
         <Stack.Screen name="BlogPostsScreen"              component={BlogPostsScreen} />

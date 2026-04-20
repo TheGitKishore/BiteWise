@@ -33,11 +33,11 @@ const C = {
 // SUB-COMPONENTS
 
 // NavBar
-const NavBar = ({ onMenuPress }) => (
+const NavBar = ({ onMenuPress, brandName }) => (
   <View style={nav.bar}>
     <View style={nav.brand}>
       <Text style={nav.icon}>🍴</Text>
-      <Text style={nav.brandName}>BiteWise</Text>
+      <Text style={nav.brandName} numberOfLines={1} adjustsFontSizeToFit>{brandName || 'BiteWise'}</Text>
     </View>
     <TouchableOpacity onPress={onMenuPress} style={nav.menuBtn} accessibilityRole="button">
       <View style={nav.menuLine} />
@@ -169,6 +169,68 @@ const gs = StyleSheet.create({
 
 // MAIN SCREEN
 
+// ─── SPRINT 7: Profile-based brand name (Step 5) ─────────────────────────────
+const getPremiumBrandName = (profileType) => {
+  if (profileType === 'ATHLETE')         return 'BiteWise for Athletes';
+  if (profileType === 'MEAL_PLANNER')    return 'BiteWise for Meal Planners';
+  return 'BiteWise Health';
+};
+
+// ─── SPRINT 7: Ordered premium tile configs by profile (Step 6) ──────────────
+const PREMIUM_TILES = {
+  HEALTH_ORIENTED: [
+    { icon: '🍴',  title: 'Food Tracking',    subtitle: 'Log your meals and track calories',      screen: 'FoodTrackingLandingScreen' },
+    { icon: '⚖️',  title: 'Weight Tracking',  subtitle: 'Monitor weight progress',                screen: 'WeightTrackingScreen' },
+    { icon: '📈',  title: 'Reports',           subtitle: 'View your progress over time',           screen: 'ReportsScreen' },
+    { icon: '🎯',  title: 'Nutrition Targets', subtitle: 'Personalized macro goals',               screen: 'NutritionTargetsScreen' },
+    { icon: '📔',  title: 'Health Diary',      subtitle: 'Document your journey',                  screen: 'DiaryScreen' },
+    { icon: '🥦',  title: 'Food Alternatives', subtitle: 'Healthier substitutes',                  screen: 'FoodAlternativesScreen' },
+    { icon: '🍎',  title: 'Mindful Snacking',  subtitle: 'Smart snacking guidance',                screen: 'MindfulSnackingScreen' },
+    { icon: '📖',  title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',            screen: 'RecipesScreen' },
+    { icon: '🔖',  title: 'Saved Recipes',     subtitle: 'Your recipe collection',                 screen: 'SavedRecipesScreen' },
+    { icon: '📅',  title: 'Meal Plans',        subtitle: 'Create and manage meal plans',           screen: 'MealPlansScreen' },
+    { icon: '🛒',  title: 'Grocery List',      subtitle: 'Auto-generate from recipes',             screen: 'GroceryListScreen' },
+    { icon: '👨‍🍳', title: 'My Recipes',       subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
+    { icon: '🏃',  title: 'Activity Tracking', subtitle: 'Log exercise & sync devices',            screen: 'ActivityTrackingScreen' },
+    { icon: '👤',  title: 'Account',           subtitle: 'Manage your profile and settings',       screen: 'AccountSettingsScreen' },
+    { icon: '⭐',  title: 'Curator Program',   subtitle: 'Become a curator',                       screen: 'CuratorProgramScreen', premium: true },
+  ],
+  ATHLETE: [
+    { icon: '🍴',  title: 'Food Tracking',    subtitle: 'Log your meals and track calories',      screen: 'FoodTrackingLandingScreen' },
+    { icon: '🎯',  title: 'Nutrition Targets', subtitle: 'Personalized macro goals',               screen: 'NutritionTargetsScreen' },
+    { icon: '🏃',  title: 'Activity Tracking', subtitle: 'Log exercise & sync devices',            screen: 'ActivityTrackingScreen' },
+    { icon: '📈',  title: 'Reports',           subtitle: 'View your progress over time',           screen: 'ReportsScreen' },
+    { icon: '📅',  title: 'Meal Plans',        subtitle: 'Create and manage meal plans',           screen: 'MealPlansScreen' },
+    { icon: '⚖️',  title: 'Weight Tracking',  subtitle: 'Monitor weight progress',                screen: 'WeightTrackingScreen' },
+    { icon: '📖',  title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',            screen: 'RecipesScreen' },
+    { icon: '🔖',  title: 'Saved Recipes',     subtitle: 'Your recipe collection',                 screen: 'SavedRecipesScreen' },
+    { icon: '🥦',  title: 'Food Alternatives', subtitle: 'Healthier substitutes',                  screen: 'FoodAlternativesScreen' },
+    { icon: '🛒',  title: 'Grocery List',      subtitle: 'Auto-generate from recipes',             screen: 'GroceryListScreen' },
+    { icon: '📔',  title: 'Health Diary',      subtitle: 'Document your journey',                  screen: 'DiaryScreen' },
+    { icon: '🍎',  title: 'Mindful Snacking',  subtitle: 'Smart snacking guidance',                screen: 'MindfulSnackingScreen' },
+    { icon: '👨‍🍳', title: 'My Recipes',       subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
+    { icon: '👤',  title: 'Account',           subtitle: 'Manage your profile and settings',       screen: 'AccountSettingsScreen' },
+    { icon: '⭐',  title: 'Curator Program',   subtitle: 'Become a curator',                       screen: 'CuratorProgramScreen', premium: true },
+  ],
+  MEAL_PLANNER: [
+    { icon: '📅',  title: 'Meal Plans',        subtitle: 'Create and manage meal plans',           screen: 'MealPlansScreen' },
+    { icon: '📖',  title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',            screen: 'RecipesScreen' },
+    { icon: '🔖',  title: 'Saved Recipes',     subtitle: 'Your recipe collection',                 screen: 'SavedRecipesScreen' },
+    { icon: '🛒',  title: 'Grocery List',      subtitle: 'Auto-generate from recipes',             screen: 'GroceryListScreen' },
+    { icon: '👨‍🍳', title: 'My Recipes',       subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
+    { icon: '🍴',  title: 'Food Tracking',    subtitle: 'Log your meals and track calories',      screen: 'FoodTrackingLandingScreen' },
+    { icon: '🥦',  title: 'Food Alternatives', subtitle: 'Healthier substitutes',                  screen: 'FoodAlternativesScreen' },
+    { icon: '🍎',  title: 'Mindful Snacking',  subtitle: 'Smart snacking guidance',                screen: 'MindfulSnackingScreen' },
+    { icon: '📈',  title: 'Reports',           subtitle: 'View your progress over time',           screen: 'ReportsScreen' },
+    { icon: '🎯',  title: 'Nutrition Targets', subtitle: 'Personalized macro goals',               screen: 'NutritionTargetsScreen' },
+    { icon: '📔',  title: 'Health Diary',      subtitle: 'Document your journey',                  screen: 'DiaryScreen' },
+    { icon: '⚖️',  title: 'Weight Tracking',  subtitle: 'Monitor weight progress',                screen: 'WeightTrackingScreen' },
+    { icon: '🏃',  title: 'Activity Tracking', subtitle: 'Log exercise & sync devices',            screen: 'ActivityTrackingScreen' },
+    { icon: '👤',  title: 'Account',           subtitle: 'Manage your profile and settings',       screen: 'AccountSettingsScreen' },
+    { icon: '⭐',  title: 'Curator Program',   subtitle: 'Become a curator',                       screen: 'CuratorProgramScreen', premium: true },
+  ],
+};
+
 const PremiumUserDashboardScreen = ({ navigation, route }) => {
   const initialUser = route?.params?.user || null;
   const [currentUser, setCurrentUser] = useState(initialUser);
@@ -235,7 +297,10 @@ const PremiumUserDashboardScreen = ({ navigation, route }) => {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
 
-      <NavBar onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user: currentUser })} />
+      <NavBar
+        onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user: currentUser })}
+        brandName={getPremiumBrandName(currentUser?.profileType)}
+      />
       <Banner message={successMessage} />
 
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
@@ -253,119 +318,17 @@ const PremiumUserDashboardScreen = ({ navigation, route }) => {
         {/* Calorie Progress */}
         <CalorieProgressCard consumed={consumed} goal={goal} />
 
-        {/* Regular tile — Food Tracking (#50, #51, #52, #54, #55, #56, #57) */}
-        <FeatureTile
-          icon="🍴"
-          title="Food Tracking"
-          subtitle="Log your meals and track calories"
-          onPress={() => navigation.navigate('FoodTrackingLandingScreen', { user: currentUser })}
-        />
-
-        {/* Premium tiles */}
-        <FeatureTile
-          icon="⚡"
-          title="Nutrition Targets"
-          subtitle="Personalized macro goals"
-          isPremium
-          onPress={() => navigation.navigate('NutritionTargetsScreen', { user: currentUser })}
-        />
-        <FeatureTile
-          icon="📈"
-          title="Activity Tracking"
-          subtitle="Log exercise & sync devices"
-          isPremium
-          onPress={() => navigation.navigate('ActivityTrackingScreen', { user: currentUser })}
-        />
-        <FeatureTile
-          icon="❤️"
-          title="Saved Recipes"
-          subtitle="Your recipe collection"
-          isPremium
-          onPress={() => navigation.navigate('SavedRecipesScreen', { user: currentUser })}
-        />
-        <FeatureTile
-          icon="🔄"
-          title="Food Alternatives"
-          subtitle="Healthier substitutes"
-          isPremium
-          onPress={() => navigation.navigate('FoodAlternativesScreen', { user: currentUser })}
-        />
-        <FeatureTile
-          icon="🍎"
-          title="Mindful Snacking"
-          subtitle="Smart snacking guidance"
-          isPremium
-          onPress={() => navigation.navigate('MindfulSnackingScreen', { user: currentUser })}
-        />
-        <FeatureTile
-          icon="📖"
-          title="Health Diary"
-          subtitle="Document your journey"
-          isPremium
-          onPress={() => navigation.navigate('DiaryScreen', { user: currentUser })}
-        />
-        <FeatureTile
-          icon="⚖️"
-          title="Weight Tracking"
-          subtitle="Monitor weight progress"
-          isPremium
-          onPress={() => navigation.navigate('WeightTrackingScreen', { user: currentUser })}
-        />
-        {!isCurator && (
+        {/* Feature tiles — Sprint 7: ordered by profile type (Step 6) */}
+        {(PREMIUM_TILES[currentUser?.profileType] || PREMIUM_TILES.HEALTH_ORIENTED).map((tile) => (
           <FeatureTile
-            icon="🏅"
-            title="Curator Program"
-            subtitle="Become a curator"
-            isPremium
-            onPress={() => navigation.navigate('CuratorProgramScreen', { user: currentUser })}
+            key={tile.title}
+            icon={tile.icon}
+            title={tile.title}
+            subtitle={tile.subtitle}
+            isPremium={true}
+            onPress={() => navigation.navigate(tile.screen, { user: currentUser })}
           />
-        )}
-        <FeatureTile
-          icon="📰"
-          title="Blogs"
-          subtitle="Read published curator posts"
-          isPremium
-          onPress={() => navigation.navigate('CuratorBlogsScreen', { user: currentUser })}
-        />
-        <FeatureTile
-          icon="🛒"
-          title="Grocery List"
-          subtitle="Auto-generate from recipes"
-          isPremium
-          onPress={() => navigation.navigate('GroceryListScreen', { user: currentUser })}
-        />
-
-        {/* Regular tiles */}
-        <FeatureTile
-          icon="📅"
-          title="Meal Plans"
-          subtitle="Create and manage meal plans"
-          onPress={() => navigation.navigate('MealPlansScreen', { user: currentUser })}
-        />
-        <FeatureTile
-          icon="📋"
-          title="Recipes"
-          subtitle="Browse healthy recipe ideas"
-          onPress={() => navigation.navigate('RecipesScreen', { user: currentUser })}
-        />
-        <FeatureTile
-          icon="👨‍🍳"
-          title="My Recipes"
-          subtitle="Create your own recipes"
-          onPress={() => navigation.navigate('MyRecipesScreen', { user: currentUser })}
-        />
-        <FeatureTile
-          icon="📊"
-          title="Reports"
-          subtitle="View your progress over time"
-          onPress={() => navigation.navigate('ReportsScreen', { user: currentUser })}
-        />
-        <FeatureTile
-          icon="👤"
-          title="Account"
-          subtitle="Manage your profile and settings"
-          onPress={() => navigation.navigate('AccountSettingsScreen', { user: currentUser })}
-        />
+        ))}
 
         {/* Getting Started — no upgrade CTA for Premium */}
         <GettingStartedSection />
