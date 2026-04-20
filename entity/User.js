@@ -54,6 +54,20 @@ class User {
     this.nutritionTargets   = nutritionTargets;
   }
 
+  static normalizeProfileType(profileType) {
+    if (profileType === null || profileType === undefined) return null;
+    const normalized = String(profileType).trim().toUpperCase();
+    return normalized.length > 0 ? normalized : null;
+  }
+
+  static normalizeUserProfile(data) {
+    if (!data || typeof data !== 'object') return data;
+    return {
+      ...data,
+      profileType: User.normalizeProfileType(data.profileType),
+    };
+  }
+
 
   // STATIC VALIDATION METHODS
   // Each returns { valid: boolean, message: string }
@@ -236,7 +250,10 @@ class User {
   
     try {
       const res = await axios.get(`${API_URL}/${user.userId}`);
-      return res.data;
+      return {
+        ...res.data,
+        data: User.normalizeUserProfile(res.data?.data),
+      };
     
     } catch (err) {
       if (err.response?.data) return err.response.data;
@@ -408,10 +425,11 @@ class User {
   
     try {
       const res = await axios.get(`${API_URL}/${userId}`);
+      const raw = res.data.user || res.data.data || res.data;
     
       return {
         success: true,
-        data: res.data.user || res.data.data || res.data
+        data: User.normalizeUserProfile(raw),
       };
     } catch (err) {
       return {
@@ -505,21 +523,36 @@ class User {
   // ─── SPRINT 7 ADDITIONS ────────────────────────────────────────────────────
 
   // Step 3 (Onboarding) + Step 4 (Account Settings) — set a user's profile type
-  // Seeded stub — confirms update without server mutation.
-  // In production this would call: PUT /users/:userId/profile-type
   // @param  {number} userId
   // @param  {string} profileType — 'ATHLETE' | 'HEALTH_ORIENTED' | 'MEAL_PLANNER'
   // @return {Promise<{ success, message, data }>}
   static async setProfileType(userId, profileType) {
     const valid = ['ATHLETE', 'HEALTH_ORIENTED', 'MEAL_PLANNER'];
-    if (!valid.includes(profileType)) {
+    const normalizedProfileType = User.normalizeProfileType(profileType);
+
+    if (!valid.includes(normalizedProfileType)) {
       return { success: false, message: 'Invalid profile type.', data: null };
     }
-    return {
-      success: true,
-      message: 'Profile type updated successfully.',
-      data:    { userId, profileType },
-    };
+
+    try {
+      const res = await axios.put(`${API_URL}/profile-type`, {
+        userId,
+        profileType: normalizedProfileType,
+      });
+
+      return {
+        ...res.data,
+        data: User.normalizeUserProfile(res.data?.data),
+      };
+    } catch (err) {
+      if (err.response?.data) return err.response.data;
+
+      return {
+        success: false,
+        message: 'Failed to update profile type.',
+        data: null,
+      };
+    }
   }
 
 }

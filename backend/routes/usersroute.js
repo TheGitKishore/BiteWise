@@ -87,7 +87,7 @@ router.post('/register', async (req, res) => {
         last_name      AS lastName,
         date_of_birth  AS dateOfBirth,
         gender,
-        profile_type   AS profileType,
+        UPPER(profile_type) AS profileType,
         role,
         membership_plan_id AS membershipPlanId,
         is_active      AS isActive,
@@ -133,7 +133,7 @@ router.post('/login', async (req, res) => {
         last_name      AS lastName,
         date_of_birth  AS dateOfBirth,
         gender,
-        profile_type   AS profileType,
+        UPPER(profile_type) AS profileType,
         role,
         membership_plan_id AS membershipPlanId,
         is_active      AS isActive,
@@ -204,7 +204,7 @@ router.get('/:userId', async (req, res) => {
         last_name      AS lastName,
         date_of_birth  AS dateOfBirth,
         gender,
-        profile_type   AS profileType,
+        UPPER(profile_type) AS profileType,
         role,
         membership_plan_id AS membershipPlanId,
         daily_calorie_limit AS dailyCalorieLimit,
@@ -292,7 +292,7 @@ router.put('/update', async (req, res) => {
         last_name      AS lastName,
         date_of_birth  AS dateOfBirth,
         gender,
-        profile_type   AS profileType,
+        UPPER(profile_type) AS profileType,
         role,
         membership_plan_id AS membershipPlanId,
         is_active      AS isActive,
@@ -323,6 +323,77 @@ router.put('/update', async (req, res) => {
 // ─────────────────────────────────────────────
 // DELETE /api/users/delete/:userId   — UC #14 / #49
 // ─────────────────────────────────────────────
+router.put('/profile-type', async (req, res) => {
+  const { userId, profileType } = req.body;
+  const valid = ['ATHLETE', 'HEALTH_ORIENTED', 'MEAL_PLANNER'];
+
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: 'User ID is required.',
+      data: null
+    });
+  }
+
+  if (!valid.includes(profileType)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid profile type.',
+      data: null
+    });
+  }
+
+  try {
+    const [updateResult] = await db.query(
+      `UPDATE users
+       SET profile_type = ?, updated_at = NOW()
+       WHERE user_id = ?`,
+      [profileType, userId]
+    );
+
+    if (updateResult.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found.',
+        data: null
+      });
+    }
+
+    const [rows] = await db.query(
+      `SELECT
+        user_id        AS userId,
+        username,
+        email,
+        first_name     AS firstName,
+        last_name      AS lastName,
+        date_of_birth  AS dateOfBirth,
+        gender,
+        UPPER(profile_type) AS profileType,
+        role,
+        membership_plan_id AS membershipPlanId,
+        daily_calorie_limit AS dailyCalorieLimit,
+        is_active      AS isActive,
+        created_at     AS createdAt,
+        updated_at     AS updatedAt
+       FROM users WHERE user_id = ?`,
+      [userId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Profile type updated successfully.',
+      data: rows[0]
+    });
+  } catch (err) {
+    console.error('[PUT /profile-type]', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update profile type.',
+      data: null
+    });
+  }
+});
+
 router.delete('/delete/:userId', async (req, res) => {
   const { userId } = req.params;
 

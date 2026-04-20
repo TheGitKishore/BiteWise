@@ -193,6 +193,7 @@ const AccountSettingsScreen = ({ navigation, route }) => {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [profileDropdown, setProfileDropdown] = useState(false);
   const profileOptions = profileTypeCtrl.getAllProfileOptions();
+  const selectableProfileOptions = profileOptions.filter((p) => p.profileType !== currentProfile);
 
   // UC #12, #47 — load account details on mount
   useEffect(() => {
@@ -309,6 +310,8 @@ const AccountSettingsScreen = ({ navigation, route }) => {
 
           setUsername(result.data.username);
           setEmail(result.data.email);
+          setCurrentProfile(result.data.profileType || null);
+          setSelectedProfile(result.data.profileType || null);
         }
       };
 
@@ -323,6 +326,11 @@ const AccountSettingsScreen = ({ navigation, route }) => {
   }, [route?.params?.updatedUser]);  
 
   const handleUpdateProfile = useCallback(async () => {
+    if (!selectedProfile) {
+      setBanner({ message: 'Please select a profile.', type: 'error' });
+      return;
+    }
+
     if (selectedProfile === currentProfile) {
       setBanner({ message: 'This is already your current profile.', type: 'error' });
       return;
@@ -339,6 +347,8 @@ const AccountSettingsScreen = ({ navigation, route }) => {
             const result = await profileTypeCtrl.updateProfileType(user?.userId, selectedProfile);
             if (result.success) {
               setCurrentProfile(selectedProfile);
+              setUser(prev => ({ ...prev, profileType: selectedProfile }));
+              setProfileDropdown(false);
               setBanner({ message: `Profile updated to ${meta.label}!`, type: 'success' });
             } else {
               setBanner({ message: result.message, type: 'error' });
@@ -357,7 +367,11 @@ const AccountSettingsScreen = ({ navigation, route }) => {
 
       <Banner message={banner.message} type={banner.type} />
 
-      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
 
         <Text style={styles.pageTitle}>Account Settings</Text>
 
@@ -415,15 +429,25 @@ const AccountSettingsScreen = ({ navigation, route }) => {
           })()}
 
           {/* Dropdown */}
-          <TouchableOpacity style={styles.profileDropdown} onPress={() => setProfileDropdown(!profileDropdown)} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.profileDropdown}
+            onPress={() => {
+              if (selectableProfileOptions.length === 0) return;
+              setProfileDropdown(!profileDropdown);
+            }}
+            activeOpacity={0.8}
+          >
             <Text style={styles.profileDropdownTxt}>
               {profileOptions.find(p => p.profileType === selectedProfile)?.label || 'Select profile'}
             </Text>
             <Text style={styles.profileDropdownArrow}>{profileDropdown ? '▲' : '▼'}</Text>
           </TouchableOpacity>
+          {selectableProfileOptions.length === 0 && (
+            <Text style={styles.profileHint}>No other profile options available.</Text>
+          )}
           {profileDropdown && (
             <View style={styles.profileDropdownList}>
-              {profileOptions.map(p => (
+              {selectableProfileOptions.map(p => (
                 <TouchableOpacity
                   key={p.profileType}
                   style={[styles.profileDropdownItem, selectedProfile === p.profileType && styles.profileDropdownItemSelected]}
@@ -605,13 +629,14 @@ const styles = StyleSheet.create({
   profileDropdown:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB', paddingHorizontal: 14, paddingVertical: 13, marginBottom: 4 },
   profileDropdownTxt:      { fontSize: 14, color: '#111827', fontWeight: '600' },
   profileDropdownArrow:    { fontSize: 11, color: '#6B7280' },
-  profileDropdownList:     { backgroundColor: '#FFFFFF', borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB', marginBottom: 12, overflow: 'hidden' },
+  profileDropdownList:     { backgroundColor: '#FFFFFF', borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB', marginBottom: 12, overflow: 'hidden', zIndex: 20, elevation: 3 },
   profileDropdownItem:     { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
   profileDropdownItemSelected: { backgroundColor: '#FAF5FF' },
   profileDropdownEmoji:    { fontSize: 22 },
   profileDropdownItemLabel:{ fontSize: 14, fontWeight: '700', color: '#111827', marginBottom: 2 },
   profileDropdownItemDesc: { fontSize: 12, color: '#6B7280' },
   profileDropdownCheck:    { fontSize: 14, fontWeight: '700', color: '#7C3AED' },
+  profileHint:             { marginTop: 6, marginBottom: 12, fontSize: 12, color: '#6B7280' },
 });
 
 export default AccountSettingsScreen;
