@@ -263,11 +263,11 @@ const OnboardingScreen = ({ navigation, route }) => {
 
   // User picks a different profile from dropdown
   const handleChooseOther = (pt) => {
-    setChosenType(pt);
-    setChosenMeta(UserProfileType.getProfileMeta ? null : null);
-    // Use ALL_PROFILES to find the meta
     const found = ALL_PROFILES.find(p => p.profileType === pt);
-    if (found) setChosenMeta(found);
+    if (found) {
+      setChosenType(found.profileType);
+      setChosenMeta(found);
+    }
     setShowDropdown(false);
   };
 
