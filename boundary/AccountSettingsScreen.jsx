@@ -13,6 +13,7 @@ const logOutController    = new LogOutController();
 const viewDetailsCtrl     = new ViewAccountDetailsController();
 const updateDetailsCtrl   = new UpdateAccountDetailsController();
 const terminateCtrl       = new TerminateAccountController();
+const profileTypeCtrl     = new UpdateProfileTypeController();
 
 // Design Tokens
 const C = {
@@ -187,6 +188,11 @@ const AccountSettingsScreen = ({ navigation, route }) => {
   const [banner,       setBanner]       = useState({ message: '', type: '' });
   const [isUpdating,   setIsUpdating]   = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  // Profile Type state (Step 4)
+  const [currentProfile,  setCurrentProfile]  = useState(null);
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [profileDropdown, setProfileDropdown] = useState(false);
+  const profileOptions = profileTypeCtrl.getAllProfileOptions();
 
   // UC #12, #47 — load account details on mount
   useEffect(() => {
@@ -195,6 +201,8 @@ const AccountSettingsScreen = ({ navigation, route }) => {
     viewDetailsCtrl.fetchAccountDetails(user).then((result) => {
       if (result.success) {
         setUsername(result.data.username);
+        setCurrentProfile(result.data.profileType || null);
+        setSelectedProfile(result.data.profileType || null);
         setEmail(result.data.email);
       } else {
         setBanner({ message: result.message, type: 'error' });
