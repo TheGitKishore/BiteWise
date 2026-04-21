@@ -5,7 +5,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useCallback, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import UserController from '../controller/UserController';
+import UserController                       from '../controller/UserController';
+import ViewNutritionTargetsController       from '../controller/ViewNutritionTargetsController';
 import ViewCurrentCalorieIntakeController from '../controller/ViewCurrentCalorieIntakeController';
 
 const userController   = new UserController();
@@ -251,7 +252,13 @@ const PremiumUserDashboardScreen = ({ navigation, route }) => {
 
       if (userData) {
         setCurrentUser(userData);
-        setGoal(userData.dailyCalorieLimit ?? 2000);
+        // Sprint 8: fetch calorie goal from NutritionTargets entity
+        const ntResult = await nutritionCtrl.fetchNutritionTargets(currentUser.userId);
+        if (ntResult.success && ntResult.data?.calories) {
+          setGoal(ntResult.data.calories);
+        } else {
+          setGoal(userData.dailyCalorieLimit ?? 2000);
+        }
       }
     } catch (err) {
       console.log("Dashboard refresh failed:", err);

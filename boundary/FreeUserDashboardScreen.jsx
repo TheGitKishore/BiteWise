@@ -5,12 +5,16 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useCallback, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import UserController from '../controller/UserController';
+import UserController                       from '../controller/UserController';
+import ViewNutritionTargetsController       from '../controller/ViewNutritionTargetsController';
+import CheckDailyCalorieTargetController    from '../controller/CheckDailyCalorieTargetController';
 import ViewCurrentCalorieIntakeController from '../controller/ViewCurrentCalorieIntakeController';
 
 const intakeController = new ViewCurrentCalorieIntakeController();
 
-const userController = new UserController();
+const userController  = new UserController();
+const nutritionCtrl   = new ViewNutritionTargetsController();
+const targetCtrl      = new CheckDailyCalorieTargetController();
 
 // Design Tokens
 const C = {
@@ -342,6 +346,7 @@ const getBrandName = (profileType) => {
 const FREE_TILES = {
   HEALTH_ORIENTED: [
     { icon: '🍴', title: 'Food Tracking',    subtitle: 'Log your meals and track calories',  screen: 'FoodTrackingLandingScreen' },
+    { icon: '🎯', title: 'Nutrition Targets', subtitle: 'View and manage calorie targets',    screen: 'NutritionTargetsScreen' },
     { icon: '📈', title: 'Reports',           subtitle: 'View your progress over time',       screen: 'ReportsScreen' },
     { icon: '📖', title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',        screen: 'RecipesScreen' },
     { icon: '📅', title: 'Meal Plans',        subtitle: 'Create and manage meal plans',       screen: 'MealPlansScreen' },
@@ -350,6 +355,7 @@ const FREE_TILES = {
   ],
   ATHLETE: [
     { icon: '🍴', title: 'Food Tracking',    subtitle: 'Log your meals and track calories',  screen: 'FoodTrackingLandingScreen' },
+    { icon: '🎯', title: 'Nutrition Targets', subtitle: 'View and manage calorie targets',    screen: 'NutritionTargetsScreen' },
     { icon: '📈', title: 'Reports',           subtitle: 'View your progress over time',       screen: 'ReportsScreen' },
     { icon: '📅', title: 'Meal Plans',        subtitle: 'Create and manage meal plans',       screen: 'MealPlansScreen' },
     { icon: '📖', title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',        screen: 'RecipesScreen' },
@@ -361,6 +367,7 @@ const FREE_TILES = {
     { icon: '📖', title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',        screen: 'RecipesScreen' },
     { icon: '👨‍🍳', title: 'My Recipes',       subtitle: 'Create your own recipes',            screen: 'MyRecipesScreen' },
     { icon: '🍴', title: 'Food Tracking',    subtitle: 'Log your meals and track calories',  screen: 'FoodTrackingLandingScreen' },
+    { icon: '🎯', title: 'Nutrition Targets', subtitle: 'View and manage calorie targets',    screen: 'NutritionTargetsScreen' },
     { icon: '📈', title: 'Reports',           subtitle: 'View your progress over time',       screen: 'ReportsScreen' },
     { icon: '👤', title: 'Account',           subtitle: 'Manage your profile and settings',   screen: 'AccountSettingsScreen' },
   ],
@@ -386,7 +393,13 @@ const FreeUserDashboardScreen = ({ navigation, route }) => {
 
       if (userData) {
         setCurrentUser(userData);
-        setGoal(userData.dailyCalorieLimit ?? 2000);
+        // Sprint 8: fetch calorie goal from NutritionTargets entity
+        const ntResult = await nutritionCtrl.fetchNutritionTargets(currentUser.userId);
+        if (ntResult.success && ntResult.data?.calories) {
+          setGoal(ntResult.data.calories);
+        } else {
+          setGoal(userData.dailyCalorieLimit ?? 2000);
+        }
       }
     } catch (err) {
       console.log("Dashboard refresh failed:", err);

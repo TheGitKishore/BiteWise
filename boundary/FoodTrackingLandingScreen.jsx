@@ -10,7 +10,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import ViewFoodDatabaseController          from '../controller/ViewFoodDatabaseController';
 import CreateManualFoodEntryController     from '../controller/CreateManualFoodEntryController';
 import CameraFoodEntryController           from '../controller/CameraFoodEntryController';
-import SetDailyCalorieLimitController      from '../controller/SetDailyCalorieLimitController';
+import ViewNutritionTargetsController      from '../controller/ViewNutritionTargetsController';
 import ViewPastCalorieEntriesController    from '../controller/ViewPastCalorieEntriesController';
 import ViewCurrentCalorieIntakeController  from '../controller/ViewCurrentCalorieIntakeController';
 import CheckDailyCalorieTargetController   from '../controller/CheckDailyCalorieTargetController';
@@ -19,7 +19,7 @@ import UserController from '../controller/UserController';
 const dbController          = new ViewFoodDatabaseController();
 const manualController      = new CreateManualFoodEntryController();
 const cameraController      = new CameraFoodEntryController();
-const goalController        = new SetDailyCalorieLimitController();
+const nutritionCtrl         = new ViewNutritionTargetsController();
 const historyController     = new ViewPastCalorieEntriesController();
 const intakeController      = new ViewCurrentCalorieIntakeController();
 const targetController      = new CheckDailyCalorieTargetController();
@@ -270,49 +270,7 @@ const mp = StyleSheet.create({
 });
 
 
-// UC #18 — SET DAILY CALORIE GOAL MODAL
-
-const SetGoalModal = ({ visible, currentGoal, user, onClose, onSuccess }) => {
-  const [limit,     setLimit]     = useState(String(currentGoal || 2000));
-  const [fieldError,setFieldError]= useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleClose = () => { setFieldError(''); onClose(); };
-
-  const handleSave = useCallback(async () => {
-    setFieldError('');
-    setIsLoading(true);
-    const result = await goalController.setDailyCalorieLimit(user, limit);
-    setIsLoading(false);
-
-    if (result.success) {
-      onSuccess(result.message, result.user);
-    } else {
-      setFieldError(result.message);
-    }
-  }, [limit, user]);
-
-  return (
-    <ModalSheet visible={visible} title="Set Daily Calorie Goal" subtitle="Enter your target daily calorie intake" onClose={handleClose}>
-      <Field
-        label="Daily Calorie Goal"
-        value={limit}
-        onChangeText={setLimit}
-        placeholder="2000"
-        keyboardType="numeric"
-        error={fieldError}
-      />
-      <TouchableOpacity style={[sg.btn, isLoading && sg.btnDisabled]} onPress={handleSave} activeOpacity={0.85} disabled={isLoading}>
-        <Text style={sg.btnText}>{isLoading ? 'Saving...' : 'Save Goal'}</Text>
-      </TouchableOpacity>
-    </ModalSheet>
-  );
-};
-const sg = StyleSheet.create({
-  btn:         { backgroundColor: C.purple, borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
-  btnDisabled: { opacity: 0.6 },
-  btnText:     { fontSize: 15, fontWeight: '700', color: C.white },
-});
+// SetGoalModal removed Sprint 8 — calorie goals now managed via NutritionTargetsScreen
 
 
 // UC #16 — MANUAL ENTRY MODAL
@@ -727,12 +685,12 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
   const [pastEntries,   setPastEntries]   = useState([]);
   const [histLoading,   setHistLoading]   = useState(false);
   const [histError,     setHistError]     = useState('');
-  const [dailyGoal,     setDailyGoal]     = useState(user?.dailyCalorieLimit || 2000);
+  const [dailyGoal,     setDailyGoal]     = useState(user?.dailyCalorieLimit || 2000); // Sprint 8: refreshed from NutritionTargets on focus
   const [currentUser,   setCurrentUser]   = useState(user);
   const [banner,        setBanner]        = useState('');
   const [showManual,    setShowManual]    = useState(false);
   const [showCamera,    setShowCamera]    = useState(false);
-  const [showGoal,      setShowGoal]      = useState(false);
+  // showGoal removed — calorie goal is now set via NutritionTargetsScreen (Sprint 8)
 
   const intake = intakeController.getCurrentIntake(todaysEntries);
   const target = targetController.checkDailyTarget(todaysEntries, dailyGoal);
@@ -775,7 +733,13 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
     
       if (userData) {
         setCurrentUser(userData);
-        setDailyGoal(userData.dailyCalorieLimit || 2000);
+        // Sprint 8: calorie goal now comes from NutritionTargets
+        const ntResult = await nutritionCtrl.fetchNutritionTargets(currentUser.userId);
+        if (ntResult.success && ntResult.data?.calories) {
+          setDailyGoal(ntResult.data.calories);
+        } else {
+          setDailyGoal(userData.dailyCalorieLimit || 2000);
+        }
       }
     } catch (err) {
       console.log("Failed to refresh user:", err);
@@ -810,13 +774,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
     setTimeout(() => setBanner(''), 4000);
   }, [loadTodayEntries]);
 
-  const handleGoalSaved = useCallback((message, updatedUser) => {
-    setShowGoal(false);
-    setDailyGoal(updatedUser.dailyCalorieLimit);
-    setCurrentUser(updatedUser);
-    setBanner(message);
-    setTimeout(() => setBanner(''), 3000);
-  }, []);
+  // handleGoalSaved removed Sprint 8 — handled by NutritionTargetsScreen
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -825,13 +783,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
       <NavBar onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user: currentUser })} />
       <Banner message={banner} />
 
-      <SetGoalModal
-        visible={showGoal}
-        currentGoal={dailyGoal}
-        user={currentUser}
-        onClose={() => setShowGoal(false)}
-        onSuccess={handleGoalSaved}
-      />
+      {/* SetGoalModal removed Sprint 8 — calorie goals now managed in NutritionTargetsScreen */}
 
       <ManualEntryModal
         visible={showManual}
@@ -851,7 +803,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
 
         <View style={styles.titleRow}>
           <Text style={styles.pageTitle}>Food Tracking</Text>
-          <TouchableOpacity style={styles.goalBtn} onPress={() => setShowGoal(true)} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.goalBtn} onPress={() => navigation.navigate('NutritionTargetsScreen', { user: currentUser })} activeOpacity={0.8}>
             <Text style={styles.goalBtnText}>↗  Set Daily Goal</Text>
           </TouchableOpacity>
         </View>

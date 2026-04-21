@@ -1,14 +1,13 @@
 // Normal Flow (UC #18, #54)
-//   1. User taps "↗ Set Daily Goal" → modal opens
-//   2. User inputs calorie limit and taps "Save Goal"
-//   3. Boundary calls setDailyCalorieLimit()
-//   4. Controller delegates to User.setDailyCalorieLimit()
-//   5. Returns updated user → boundary closes modal, updates progress card
+//   UC #18 Free User – Set Daily Calorie Limit
+//   UC #54 Premium User – Set Daily Calorie Limit (now via NutritionTargets)
 //
-// Alt Flow 1a: invalid input → { success: false, field, message }
-// Shared by Free User (#18) and Premium User (#54)
+// Sprint 8: The "↗ Set Daily Goal" button in FoodTrackingLandingScreen now
+//           navigates to NutritionTargetsScreen rather than opening an inline modal.
+//           This controller is retained for direct calorie-only saves (e.g. API calls).
+//           Delegates to NutritionTargets.updateCalories() (was User.setDailyCalorieLimit).
 
-import User from '../entity/User';
+import NutritionTargets from '../entity/NutritionTargets';
 
 class SetDailyCalorieLimitController {
   constructor() {}
@@ -18,18 +17,17 @@ class SetDailyCalorieLimitController {
       return await fn();
     } catch (error) {
       console.error('[SetDailyCalorieLimitController]', error);
-      return { success: false, field: null, message: 'Something went wrong. Please try again.', user: null };
+      return { success: false, field: null, message: 'Something went wrong. Please try again.', data: null };
     }
   }
 
-  // UC #18, #54
-  // @param  {User}   user
-  // @param  {number} limit
-  // @return {Promise<{ success, field, message, user }>}
-  async setDailyCalorieLimit(user, limit) {
-    return this._safeCall(async () => {
-      return await User.setDailyCalorieLimit(user, limit);
-    });
+  // UC #18, #54 — save calorie goal via NutritionTargets entity.
+  // @param  {User|number} userOrId
+  // @param  {number}      limit    — daily calorie target in kcal
+  // @return {Promise<{ success, field, message, data }>}
+  async setDailyCalorieLimit(userOrId, limit) {
+    const userId = typeof userOrId === 'object' ? userOrId?.userId : userOrId;
+    return this._safeCall(async () => NutritionTargets.updateCalories(userId, limit));
   }
 }
 

@@ -1,12 +1,13 @@
 // Normal Flow (UC #53)
-//   1. Screen mounts → boundary calls fetchNutritionTargets()
-//   2. Controller delegates to User.fetchNutritionTargets()
+//   1. NutritionTargetsScreen mounts → boundary calls fetchNutritionTargets(userId)
+//   2. Controller delegates to NutritionTargets.fetchByUser() (Sprint 8 change)
 //   3. Returns { calories, protein, carbs, fat, fiber, activityLevel, goal }
 //
-// Alt Flow 1a: questionnaire not completed → targets not returned
-// Premium User only (#53)
+// Sprint 8: Delegates to new NutritionTargets entity (was User.fetchNutritionTargets).
+//           Backward-compat wrapper kept — callers that pass a user object still work.
+// Free User: calories only relevant; Premium User: full macro set.
 
-import User from '../entity/User';
+import NutritionTargets from '../entity/NutritionTargets';
 
 class ViewNutritionTargetsController {
   constructor() {}
@@ -20,13 +21,19 @@ class ViewNutritionTargetsController {
     }
   }
 
-  // UC #53
-  // @param  {User} user
+  // UC #53 — fetch full targets for a user.
+  // @param  {number} userId
+  // @return {Promise<{ success, data: NutritionTargets, message }>}
+  async fetchNutritionTargets(userId) {
+    return this._safeCall(async () => NutritionTargets.fetchByUser(userId));
+  }
+
+  // Backward-compat: called with a User object → extracts userId.
+  // @param  {User|number} userOrId
   // @return {Promise<{ success, data, message }>}
-  async fetchNutritionTargets(user) {
-    return this._safeCall(async () => {
-      return await User.fetchNutritionTargets(user);
-    });
+  async fetchNutritionTargetsForUser(userOrId) {
+    const userId = typeof userOrId === 'object' ? userOrId?.userId : userOrId;
+    return this.fetchNutritionTargets(userId);
   }
 }
 
