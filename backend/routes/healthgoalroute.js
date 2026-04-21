@@ -29,7 +29,7 @@ router.get('/active/:userId', async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const [rows] = await db.query(
+    let [rows] = await db.query(
       `SELECT 
       goal_id,
       user_id,
@@ -44,9 +44,33 @@ router.get('/active/:userId', async (req, res) => {
       updated_at
       FROM health_goals
       WHERE user_id = ? AND is_active = TRUE
+      ORDER BY updated_at DESC, goal_id DESC
       LIMIT 1`,
       [userId]
     );
+
+    if (!rows[0]) {
+      const [latestRows] = await db.query(
+        `SELECT
+          goal_id,
+          user_id,
+          goal_type,
+          custom_goal,
+          target_weight,
+          target_calories,
+          activity_level,
+          DATE_FORMAT(target_date, '%Y-%m-%d') AS target_date,
+          is_active,
+          created_at,
+          updated_at
+         FROM health_goals
+         WHERE user_id = ?
+         ORDER BY updated_at DESC, goal_id DESC
+         LIMIT 1`,
+        [userId]
+      );
+      rows = latestRows;
+    }
 
     res.json({
       success: true,
@@ -132,6 +156,11 @@ router.put('/:goalId', async (req, res) => {
            activity_level = ?, target_date = ?
        WHERE goal_id = ?`,
       [goalType, customGoal, targetWeight, targetCalories, activityLevel, formattedDate, goalId]
+    );
+
+    const [rows] = await db.query(
+      `SELECT user_id AS userId FROM health_goals WHERE goal_id = ? LIMIT 1`,
+      [goalId]
     );
 
     res.json({

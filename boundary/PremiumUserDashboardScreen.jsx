@@ -10,6 +10,7 @@ import ViewNutritionTargetsController       from '../controller/ViewNutritionTar
 import ViewCurrentCalorieIntakeController from '../controller/ViewCurrentCalorieIntakeController';
 
 const userController   = new UserController();
+const nutritionCtrl    = new ViewNutritionTargetsController();
 const intakeController = new ViewCurrentCalorieIntakeController();
 
 // Design Tokens
