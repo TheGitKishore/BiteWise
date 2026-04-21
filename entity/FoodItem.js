@@ -139,11 +139,11 @@ class FoodItem {
     };
   }
 
-  static async logFoodItem(item, quantity, userId, meal = 'Lunch') {
-    if (!item || !quantity || !userId) {
+  static async logFoodItem(item, quantity, userId, meal) {
+    if (!item || !quantity || !userId || !meal) {
       return {
         success: false,
-        message: 'Invalid food item, quantity, or user',
+        message: 'Invalid food item, quantity, user, or meal',
       };
     }
 
