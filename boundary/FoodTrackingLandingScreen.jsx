@@ -744,7 +744,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
     } catch (err) {
       console.log("Failed to refresh user:", err);
     }
-  }, [currentUser]);
+  }, [currentUser?.userId]);
 
   useEffect(() => {
     loadTodayEntries();
