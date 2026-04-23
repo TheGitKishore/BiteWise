@@ -27,17 +27,7 @@ class FoodItem {
   }
 
   getDisplayMeta() {
-    let servingText = this.serving || '';
-    
-    // Only append 'g' if it's a number and doesn't already include a unit
-    if (
-      servingText &&
-      !/[a-zA-Z]/.test(servingText) // no unit present
-    ) {
-      servingText = `${servingText}g`;
-    }
-  
-    return `${this.calories} kcal • ${servingText}`;
+    return `${this.calories} kcal • ${this.serving}`;
   }
 
   // UC #15, #50 — client-side search filter
@@ -139,11 +129,11 @@ class FoodItem {
     };
   }
 
-  static async logFoodItem(item, quantity, userId, meal) {
-    if (!item || !quantity || !userId || !meal) {
+  static async logFoodItem(item, quantity, userId, meal = 'Lunch') {
+    if (!item || !quantity || !userId) {
       return {
         success: false,
-        message: 'Invalid food item, quantity, user, or meal',
+        message: 'Invalid food item, quantity, or user',
       };
     }
 

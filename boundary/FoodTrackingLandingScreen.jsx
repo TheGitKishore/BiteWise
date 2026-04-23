@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Modal,
+  KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -328,13 +329,13 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
   const [step,      setStep]      = useState('capture');
   const [detected,  setDetected]  = useState(null);
   const [foodName,  setFoodName]  = useState('');
-  const [meal,      setMeal]      = useState('');
+  const [meal,      setMeal]      = useState('Lunch');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg,  setErrorMsg]  = useState('');
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraRef, setCameraRef] = useState(null);
 
-  const reset = () => { setStep('capture'); setDetected(null); setFoodName(''); setMeal(''); setErrorMsg(''); };
+  const reset = () => { setStep('capture'); setDetected(null); setFoodName(''); setMeal('Lunch'); setErrorMsg(''); };
   const handleClose = () => { reset(); onClose(); };
 
   const handleCapture = useCallback(async () => {
@@ -371,15 +372,10 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
 
   const handleConfirmLog = useCallback(async () => {
     if (!detected) return;
-    if (!meal) {
-      setErrorMsg('Please select a meal category.');
-      return;
-    }
     setIsLoading(true);
     const result = await cameraController.logCameraEntry(userId, { foodName, calories: detected.calories, protein: detected.protein, carbs: detected.carbs, fat: detected.fat, meal });
     setIsLoading(false);
     if (result.success) { reset(); onSuccess(result.message, result.data); }
-    else setErrorMsg(result.message || 'Failed to log entry');
   }, [detected, foodName, meal, userId]);
 
   if (!permission) {
@@ -435,48 +431,6 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
           </TouchableOpacity>
         </>
       )}
-
-      {step === 'confirm' && detected && (
-        <>
-          <View style={cm.pillRow}>
-            <View style={cm.pill}><Text style={cm.pillValue}>{detected.calories}</Text><Text style={cm.pillLabel}>kcal</Text></View>
-            <View style={cm.pill}><Text style={cm.pillValue}>{detected.protein}</Text><Text style={cm.pillLabel}>Protein</Text></View>
-            <View style={cm.pill}><Text style={cm.pillValue}>{detected.carbs}</Text><Text style={cm.pillLabel}>Carbs</Text></View>
-            <View style={cm.pill}><Text style={cm.pillValue}>{detected.fat}</Text><Text style={cm.pillLabel}>Fat</Text></View>
-          </View>
-
-          <Field
-            label="Food Name"
-            value={foodName}
-            onChangeText={setFoodName}
-            placeholder="Detected food name"
-          />
-          <MealPicker value={meal} onSelect={(m) => { setMeal(m); setErrorMsg(''); }} />
-          {errorMsg ? <Text style={cm.errorText}>{errorMsg}</Text> : null}
-
-          <View style={cm.confirmRow}>
-            <TouchableOpacity
-              style={cm.tryAgainBtn}
-              onPress={() => {
-                setStep('capture');
-                setMeal('');
-                setErrorMsg('');
-              }}
-              activeOpacity={0.85}
-            >
-              <Text style={cm.tryAgainText}>Try Again</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[cm.confirmBtn, isLoading && cm.btnDisabled]}
-              onPress={handleConfirmLog}
-              disabled={isLoading}
-              activeOpacity={0.85}
-            >
-              <Text style={cm.confirmBtnText}>{isLoading ? 'Logging...' : 'Log Entry'}</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
     </ModalSheet>
   );
 };
@@ -510,10 +464,6 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg, onEntryLogged, use
   const [search,        setSearch]        = useState('');
   const [expanded,      setExpanded]      = useState(null);
   const [quantities,    setQuantities]    = useState({});
-  const [showMealModal, setShowMealModal] = useState(false);
-  const [selectedMeal,  setSelectedMeal]  = useState('');
-  const [mealError,     setMealError]     = useState('');
-  const [pendingItem,   setPendingItem]   = useState(null);
   const debounceRef = useRef(null);
 
   // ── NEW state for async search ──────────────────────────────
@@ -555,34 +505,17 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg, onEntryLogged, use
   };
   const handleInc = (id) => setQuantities((p) => ({ ...p, [id]: (p[id] || 1) + 1 }));
   const handleDec = (id) => setQuantities((p) => ({ ...p, [id]: Math.max(1, (p[id] || 1) - 1) }));
-  const handleOpenMealModal = (item) => {
-    setPendingItem(item);
-    setSelectedMeal('');
-    setMealError('');
-    setShowMealModal(true);
-  };
-
-  const handleConfirmLog = async () => {
-    if (!pendingItem) return;
-    if (!selectedMeal) {
-      setMealError('Please select a meal category.');
-      return;
-    }
-
+  const handleLog = async (item) => {
     const result = await dbController.logFoodItem(
-      pendingItem,
-      quantities[pendingItem.foodItemId] || 1,
-      userId,
-      selectedMeal
-    );
+      item,
+      quantities[item.foodItemId] || 1,
+      userId   // ✅ REQUIRED
+    ); 
     if (result.success) {
       setExpanded(null);
-      setShowMealModal(false);
-      setPendingItem(null);
       onEntryLogged(result.message, result.data);
     }
   };
-
   if (isLoading) return <ActivityIndicator size="small" color={C.purple} style={{ marginTop: 16 }} />;
   if (errorMsg)  return <Text style={{ color: C.errorText, textAlign: 'center', marginTop: 16 }}>{errorMsg}</Text>;
 
@@ -641,45 +574,9 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg, onEntryLogged, use
           onAdd={() => handleAdd(item)}
           onIncrement={() => handleInc(item.foodItemId)}
           onDecrement={() => handleDec(item.foodItemId)}
-          onLog={() => handleOpenMealModal(item)}
+          onLog={() => handleLog(item)}
         />
       ))}
-
-      <ModalSheet
-        visible={showMealModal}
-        title="Select Meal Category"
-        subtitle="Choose where to log this food entry"
-        onClose={() => {
-          setShowMealModal(false);
-          setPendingItem(null);
-          setMealError('');
-          setSelectedMeal('');
-        }}
-      >
-        <MealPicker value={selectedMeal} onSelect={(m) => { setSelectedMeal(m); setMealError(''); }} />
-        {mealError ? <Text style={{ color: C.errorText, fontSize: 12, marginTop: -8, marginBottom: 10 }}>{mealError}</Text> : null}
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          <TouchableOpacity
-            style={{ flex: 1, borderWidth: 1, borderColor: C.border, borderRadius: 10, paddingVertical: 12, alignItems: 'center' }}
-            onPress={() => {
-              setShowMealModal(false);
-              setPendingItem(null);
-              setMealError('');
-              setSelectedMeal('');
-            }}
-            activeOpacity={0.85}
-          >
-            <Text style={{ fontSize: 14, fontWeight: '600', color: C.mid }}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{ flex: 1.2, backgroundColor: C.purple, borderRadius: 10, paddingVertical: 12, alignItems: 'center' }}
-            onPress={handleConfirmLog}
-            activeOpacity={0.85}
-          >
-            <Text style={{ fontSize: 14, fontWeight: '700', color: C.white }}>Log Entry</Text>
-          </TouchableOpacity>
-        </View>
-      </ModalSheet>
     </View>
   );
 };
@@ -848,7 +745,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
     } catch (err) {
       console.log("Failed to refresh user:", err);
     }
-  }, [currentUser?.userId]);
+  }, [currentUser]);
 
   useEffect(() => {
     loadTodayEntries();
@@ -903,7 +800,19 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
         onSuccess={handleEntryLogged}
       />
 
-      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+
+      <KeyboardAvoidingView
+
+
+        style={{ flex: 1 }}
+
+
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+
+
+      >
+
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
 
         <View style={styles.titleRow}>
           <Text style={styles.pageTitle}>Food Tracking</Text>
@@ -921,6 +830,9 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
         {activeTab === 'History'         && <HistoryTab pastEntries={pastEntries} isLoading={histLoading} errorMsg={histError} />}
 
       </ScrollView>
+
+
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

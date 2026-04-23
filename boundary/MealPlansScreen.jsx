@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Modal, Alert,
+  KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -153,6 +154,14 @@ const CreatePlanModal = ({ visible, userId, isPremium, onClose, onSuccess }) => 
 
   return (
     <ModalSheet visible={visible} title="Create Meal Plan" subtitle="Start a new custom meal plan for your week" onClose={resetAndClose}>
+
+      <KeyboardAvoidingView
+
+        style={{ flex: 1 }}
+
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+
+      >
       <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: 500 }}>
         <Field label="Plan Name" value={name} onChangeText={setName} placeholder="My Weekly Plan" error={fieldError} />
         <Field label="Description (Optional)" value={description} onChangeText={setDescription} placeholder="Describe your meal plan..." multiline />
@@ -194,6 +203,8 @@ const CreatePlanModal = ({ visible, userId, isPremium, onClose, onSuccess }) => 
           <Text style={cp.createBtnText}>{isLoading ? 'Creating...' : '+ Create Plan'}</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      </KeyboardAvoidingView>
     </ModalSheet>
   );
 };
@@ -561,7 +572,7 @@ const MealPlansScreen = ({ navigation, route }) => {
     return (
       <SafeAreaView style={styles.safe}>
         <NavBar onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user })} />
-        <ScrollView contentContainerStyle={styles.list}>
+        <ScrollView contentContainerStyle={styles.list} keyboardShouldPersistTaps="handled">
           <TouchableOpacity onPress={() => setViewingPlan(null)} style={{ paddingVertical:14 }}>
             <Text style={{ fontSize:14, color:C.mid, fontWeight:'500' }}>← Back to Meal Plans</Text>
           </TouchableOpacity>
@@ -636,7 +647,7 @@ const MealPlansScreen = ({ navigation, route }) => {
         }}
       />
 
-      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
         {/* Page title */}
         <Text style={styles.pageTitle}>Meal Plans</Text>

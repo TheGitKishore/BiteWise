@@ -10,6 +10,7 @@ import {
   StatusBar,
   TextInput,
   Image,
+  KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -134,7 +135,15 @@ const pc = StyleSheet.create({
 });
 
 const PostDetail = ({ post, onBack, isLiked, likeCount, onToggleLike }) => (
-  <ScrollView contentContainerStyle={pd.scroll} showsVerticalScrollIndicator={false}>
+
+  <KeyboardAvoidingView
+
+    style={{ flex: 1 }}
+
+    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+
+  >
+  <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={pd.scroll} showsVerticalScrollIndicator={false}>
     <TouchableOpacity style={pd.backBtn} onPress={onBack}>
       <Text style={pd.backTxt}>{'< Back to blogs'}</Text>
     </TouchableOpacity>
@@ -179,6 +188,8 @@ const PostDetail = ({ post, onBack, isLiked, likeCount, onToggleLike }) => (
 
     <Text style={pd.content}>{post.content}</Text>
   </ScrollView>
+
+  </KeyboardAvoidingView>
 );
 
 const pd = StyleSheet.create({
@@ -344,7 +355,7 @@ const CuratorBlogsScreen = ({ navigation, route }) => {
           onToggleLike={toggleLike}
         />
       ) : (
-        <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
           <View style={s.header}>
             <View style={s.badge}><Text style={s.badgeTxt}>Premium</Text></View>
             <Text style={s.pageTitle}>Blogs</Text>
@@ -363,7 +374,7 @@ const CuratorBlogsScreen = ({ navigation, route }) => {
             />
           </View>
 
-          <ScrollView
+          <ScrollView keyboardShouldPersistTaps="handled"
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={s.tagRow}

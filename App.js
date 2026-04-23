@@ -51,6 +51,9 @@ import EditBlogPostScreen            from './boundary/EditBlogPostScreen';
 import CuratorBlogsScreen            from './boundary/CuratorBlogsScreen';
 import MindfulSnackingScreen         from './boundary/MindfulSnackingScreen';
 import FoodAlternativesScreen        from './boundary/FoodAlternativesScreen';
+import TodaysMenuScreen             from './boundary/TodaysMenuScreen';
+import EditMyRecipeScreen           from './boundary/EditMyRecipeScreen';
+import DineOutScreen                from './boundary/DineOutScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -110,6 +113,9 @@ export default function App() {
         <Stack.Screen name="CuratorBlogsScreen"           component={CuratorBlogsScreen} />
         <Stack.Screen name="MindfulSnackingScreen"        component={MindfulSnackingScreen} />
         <Stack.Screen name="FoodAlternativesScreen"       component={FoodAlternativesScreen} />
+        <Stack.Screen name="TodaysMenuScreen"             component={TodaysMenuScreen} />
+        <Stack.Screen name="EditMyRecipeScreen"           component={EditMyRecipeScreen} />
+        <Stack.Screen name="DineOutScreen"                component={DineOutScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

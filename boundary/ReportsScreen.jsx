@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Modal, Dimensions,
+  KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -53,7 +54,15 @@ const Banner = ({ msg }) => !msg ? null : (
 );
 
 const TabBar = ({ active, onSelect }) => (
-  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{backgroundColor:C.white,borderBottomWidth:1,borderBottomColor:C.border}} contentContainerStyle={{paddingHorizontal:16}}>
+
+  <KeyboardAvoidingView
+
+    style={{ flex: 1 }}
+
+    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+
+  >
+  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{backgroundColor:C.white,borderBottomWidth:1,borderBottomColor:C.border}} contentContainerStyle={{paddingHorizontal:16}} keyboardShouldPersistTaps="handled">
     {TABS.map((t) => (
       <TouchableOpacity key={t} onPress={() => onSelect(t)}
         style={{paddingVertical:12,paddingHorizontal:14,borderBottomWidth:2,borderBottomColor:active===t?C.purple:'transparent',marginRight:4}}>
@@ -61,6 +70,8 @@ const TabBar = ({ active, onSelect }) => (
       </TouchableOpacity>
     ))}
   </ScrollView>
+
+  </KeyboardAvoidingView>
 );
 
 const StatCard = ({ label, value, sub }) => (
@@ -587,7 +598,7 @@ const DailyProgressTab = ({ userId }) => {
   const macroData   = report?.weeklyMacros   || [];
 
   return (
-    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}>
+    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}} keyboardShouldPersistTaps="handled">
       <View style={{height:20}}/>
       {calorieData.length > 0
         ? <LineChart data={calorieData} label="7-Day Calorie Trend"/>
@@ -699,7 +710,7 @@ const BodyMetricsTab = ({ userId, navigation, user, onBanner }) => {
   }, [goal, userId]);
   console.log("GoalModal render, handleGoalSave:", !!handleGoalSave);
   return (
-    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}>
+    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}} keyboardShouldPersistTaps="handled">
       <View style={{height:20}}/>
 
       {/* Health Goal — UC #38, #39, #40, #90 */}
@@ -826,7 +837,7 @@ const HistoryTab = ({ userId }) => {
   );
 
   return (
-    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}>
+    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}} keyboardShouldPersistTaps="handled">
       <View style={{height:20}}/>
       <Section title="Weight History" entries={weightEntries} unit="kg" chartData={wData}/>
       <Section title="Height History" entries={heightEntries} unit="cm" chartData={hData}/>
@@ -865,7 +876,7 @@ const MonthlySummaryTab = ({ userId }) => {
   if (loading) return <ActivityIndicator size="large" color={C.purple} style={{marginTop:40}}/>;
 
   return (
-    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}>
+    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}} keyboardShouldPersistTaps="handled">
       <View style={{height:20}}/>
       <StatCard label="Total Entries"   value={summary?.totalEntries   ?? 0} sub="Food items logged"/>
       <StatCard label="Total Calories"  value={summary?.totalCalories  ?? 0} sub="Calories tracked"/>

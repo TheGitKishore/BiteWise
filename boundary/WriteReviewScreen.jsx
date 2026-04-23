@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, StatusBar,
+  KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import WriteReviewController from '../controller/WriteReviewController';
@@ -63,6 +64,18 @@ const WriteReviewScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={{padding:4}}><Text style={{fontSize:14,color:C.mid,fontWeight:'500'}}>← Back</Text></TouchableOpacity>
       </View>
 
+
+      <KeyboardAvoidingView
+
+
+        style={{ flex: 1 }}
+
+
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+
+
+      >
+
       <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}} keyboardShouldPersistTaps="handled">
         <Text style={{fontSize:26,fontWeight:'800',color:C.dark,paddingTop:20,marginBottom:4}}>Write a Review</Text>
         <Text style={{fontSize:13,color:C.subtle,marginBottom:20}}>Share your BiteWise experience with the community</Text>
@@ -116,6 +129,9 @@ const WriteReviewScreen = ({ navigation, route }) => {
           <Text style={{fontSize:16,fontWeight:'700',color:C.white}}>{isLoading ? 'Submitting...' : 'Submit Review'}</Text>
         </TouchableOpacity>
       </ScrollView>
+
+
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

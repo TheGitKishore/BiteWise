@@ -57,11 +57,11 @@ class ViewFoodDatabaseController {
     return await FoodItem.searchWithFallback(items, query);
   }
 
-  async logFoodItem(item, quantity, userId, meal) {
-    if (!item || !quantity || !userId || !meal) {
+  async logFoodItem(item, quantity, userId, meal = 'Lunch') {
+    if (!item || !quantity || !userId) {
       return {
         success: false,
-        message: 'Invalid food item, quantity, user, or meal',
+        message: 'Invalid food item, quantity, or user',
       };
     }
   

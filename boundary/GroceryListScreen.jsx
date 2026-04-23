@@ -2,7 +2,9 @@
 // Premium User only
 
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, StatusBar, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, StatusBar, Modal ,
+  KeyboardAvoidingView, Platform, Keyboard,
+} from 'react-native';
 import { SafeAreaView }   from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -110,7 +112,15 @@ const GroceryListScreen = ({ navigation, route }) => {
       </View>
       {banner ? <View style={s.bannerBar}><Text style={s.bannerTxt}>✅  {banner}</Text></View> : null}
       <AddItemModal visible={showAdd} onClose={() => setShowAdd(false)} onAdd={handleAdd} />
-      <ScrollView contentContainerStyle={s.scroll}>
+
+      <KeyboardAvoidingView
+
+        style={{ flex: 1 }}
+
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+
+      >
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.scroll}>
         <View style={s.header}>
           <View style={s.badge}><Text style={s.badgeTxt}>☆ Premium</Text></View>
           <Text style={s.pageTitle}>Grocery List</Text>
@@ -119,7 +129,7 @@ const GroceryListScreen = ({ navigation, route }) => {
         {savedRecipes.length > 0 && (
           <View style={s.section}>
             <Text style={s.secTitle}>Generate from Saved Recipe</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <ScrollView keyboardShouldPersistTaps="handled" horizontal showsHorizontalScrollIndicator={false}>
               {savedRecipes.map((r) => (
                 <TouchableOpacity key={r.recipeId} style={s.recipeChip} onPress={() => handleGenerate(r)}>
                   <Text style={s.recipeChipTxt}>{r.title}</Text>
@@ -162,6 +172,8 @@ const GroceryListScreen = ({ navigation, route }) => {
           </View>
         )}
       </ScrollView>
+
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

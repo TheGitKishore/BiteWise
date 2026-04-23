@@ -8,6 +8,7 @@ import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, Alert,
+  KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -112,6 +113,18 @@ const EditBlogPostScreen = ({ navigation, route }) => {
         <View style={s.bannerBar}><Text style={s.bannerTxt}>✅  {banner}</Text></View>
       ) : null}
 
+
+      <KeyboardAvoidingView
+
+
+        style={{ flex: 1 }}
+
+
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+
+
+      >
+
       <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
 
         {/* Title */}
@@ -180,6 +193,9 @@ const EditBlogPostScreen = ({ navigation, route }) => {
         </TouchableOpacity>
 
       </ScrollView>
+
+
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

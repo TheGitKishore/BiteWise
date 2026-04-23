@@ -23,7 +23,6 @@ import adminRoutes from './routes/adminroute.js';
 import healthReportRoute from './routes/healthreportroute.js';
 import blogPostRoute from './routes/blogpostroute.js';
 import recipedraftRoute from './routes/recipedraftroute.js';
-import nutritiontargetsRoute from './routes/nutritiontargetsroute.js';
 
 // ? ADD THIS
 import { initializeDatabases } from './routes/apiroute.js';
@@ -61,7 +60,6 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/health-reports', healthReportRoute);
 app.use('/api/blog-posts', blogPostRoute);
 app.use('/api/recipe-drafts', recipedraftRoute);
-app.use('/api/nutrition-targets', nutritiontargetsRoute);
 
 // ? Initialize DB before server starts
 const startServer = async () => {

@@ -3,6 +3,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Modal,
   Image, Alert,
+  KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -205,7 +206,15 @@ const rc = StyleSheet.create({
 const RecipeDetail = ({ recipe, user, onBack, onSave, isSaving, isLiked, likeCount, onToggleLike, canLike }) => {
   const isPremium = user?.role === 'premium';
   return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+
+    <KeyboardAvoidingView
+
+      style={{ flex: 1 }}
+
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+
+    >
+    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 40 }}>
       <TouchableOpacity style={rd.backBtn} onPress={onBack}>
         <Text style={rd.backText}>← Back to Recipes</Text>
       </TouchableOpacity>
@@ -290,6 +299,8 @@ const RecipeDetail = ({ recipe, user, onBack, onSave, isSaving, isLiked, likeCou
         <Text style={rd.saveBtnText}>{isSaving ? 'Saving...' : '♡  Save Recipe'}</Text>
       </TouchableOpacity>
     </ScrollView>
+
+    </KeyboardAvoidingView>
   );
 };
 const rd = StyleSheet.create({
@@ -390,7 +401,7 @@ const DietaryPrefsModal = ({ visible, prefs, onSave, onClose }) => {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={dp.overlay}>
-        <ScrollView>
+        <ScrollView keyboardShouldPersistTaps="handled">
           <View style={dp.sheet}>
             <TouchableOpacity style={dp.closeBtn} onPress={onClose}><Text style={dp.closeIcon}>✕</Text></TouchableOpacity>
             <Text style={dp.title}>Dietary Preferences</Text>
@@ -665,13 +676,13 @@ const RecipesScreen = ({ navigation, route }) => {
         />
       )}
 
-      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
 
         {/* Page title */}
         <Text style={styles.pageTitle}>Recipe Library</Text>
 
         {/* Quick filter tabs — UC #23 */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabScroll} contentContainerStyle={styles.tabContent}>
+        <ScrollView keyboardShouldPersistTaps="handled" horizontal showsHorizontalScrollIndicator={false} style={styles.tabScroll} contentContainerStyle={styles.tabContent}>
           {QUICK_FILTERS.map((f) => {
             const isMealPrep   = f === 'Meal Prep';
             const isLocked     = isMealPrep && !isPremium;
@@ -704,7 +715,7 @@ const RecipesScreen = ({ navigation, route }) => {
               autoCorrect={false}
             />
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap:8, paddingVertical:4 }}>
+          <ScrollView keyboardShouldPersistTaps="handled" horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap:8, paddingVertical:4 }}>
             {DIET_TAGS.map((t) => (
               <TouchableOpacity
                 key={t}

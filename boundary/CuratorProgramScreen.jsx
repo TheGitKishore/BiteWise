@@ -6,6 +6,7 @@ import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar,
+  KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -109,7 +110,19 @@ const CuratorProgramScreen = ({ navigation, route }) => {
       <NavBar onMenu={() => navigation.navigate('AccountSettingsScreen', { user })}/>
       <Banner msg={banner}/>
 
-      <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}>
+
+      <KeyboardAvoidingView
+
+
+        style={{ flex: 1 }}
+
+
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+
+
+      >
+
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}>
         <View style={{paddingTop:20,marginBottom:14}}>
           <View style={{alignSelf:'flex-start',backgroundColor:C.purple,borderRadius:20,paddingHorizontal:10,paddingVertical:3,marginBottom:8}}>
             <Text style={{fontSize:11,fontWeight:'700',color:C.white}}>☆ Premium</Text>
@@ -193,6 +206,9 @@ const CuratorProgramScreen = ({ navigation, route }) => {
           </View>
         )}
       </ScrollView>
+
+
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
