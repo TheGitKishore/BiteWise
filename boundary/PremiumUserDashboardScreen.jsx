@@ -233,7 +233,7 @@ const PREMIUM_TILES = {
     { icon: '\ud83d\udc64', title: 'Account',           subtitle: 'Manage your profile and settings',       screen: 'AccountSettingsScreen' },
     { icon: '\u2b50',        title: 'Curator Program',   subtitle: 'Become a curator',                       screen: 'CuratorProgramScreen', premium: true },
   ],
-}
+
 };
 
 const PremiumUserDashboardScreen = ({ navigation, route }) => {
