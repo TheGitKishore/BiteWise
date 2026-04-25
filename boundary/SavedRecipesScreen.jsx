@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Alert, Image,
-  KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -177,19 +176,7 @@ const SavedRecipesScreen = ({ navigation, route }) => {
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <NavBar onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user })} />
 
-
-      <KeyboardAvoidingView
-
-
-        style={{ flex: 1 }}
-
-
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-
-
-      >
-
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
 
         {/* Header */}
         <View style={styles.header}>
@@ -237,7 +224,7 @@ const SavedRecipesScreen = ({ navigation, route }) => {
 
           {/* Dietary Tags — UC #64 */}
           <Text style={styles.filterLabel}>Dietary Tags</Text>
-          <ScrollView keyboardShouldPersistTaps="handled" horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap:6 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap:6 }}>
             {dietTags.map((t) => (
               <TouchableOpacity key={t} style={[pk.chip, activeDiet === t && pk.chipActive]} onPress={() => setActiveDiet(t)} activeOpacity={0.8}>
                 <Text style={[pk.chipText, activeDiet === t && pk.chipTextActive]}>{t}</Text>
@@ -262,9 +249,6 @@ const SavedRecipesScreen = ({ navigation, route }) => {
         )}
 
       </ScrollView>
-
-
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

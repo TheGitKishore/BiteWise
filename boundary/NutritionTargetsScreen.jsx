@@ -13,7 +13,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, Modal, ActivityIndicator,
-  KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -98,19 +97,21 @@ const sb = StyleSheet.create({
 });
 
 // ─── Macro Progress Row ────────────────────────────────────────────────────────
-const MacroRow = ({ label, consumed, goal, unit, greyed }) => {
+const formatNumber = (value, decimals = 0) => Number(value || 0).toFixed(decimals);
+
+const MacroRow = ({ label, consumed, goal, unit, greyed, decimals = 0 }) => {
   const pct = goal > 0 ? Math.min(consumed / goal, 1) : 0;
   const rem = Math.max(0, goal - consumed);
   return (
     <View style={mr.wrap}>
       <View style={mr.topRow}>
         <Text style={[mr.label, greyed && mr.greyedText]}>{label}</Text>
-        <Text style={[mr.value, greyed && mr.greyedText]}>{greyed ? '— / — ' + unit : `${consumed} / ${goal} ${unit}`}</Text>
+        <Text style={[mr.value, greyed && mr.greyedText]}>{greyed ? '— / — ' + unit : `${formatNumber(consumed, decimals)} / ${formatNumber(goal, decimals)} ${unit}`}</Text>
       </View>
       <View style={mr.barTrack}>
         <View style={[mr.barFill, greyed && mr.barFillGreyed, { width: greyed ? '0%' : `${Math.round(pct * 100)}%` }]} />
       </View>
-      <Text style={[mr.remaining, greyed && mr.greyedText]}>{greyed ? 'Upgrade to Premium' : `${rem} ${unit} remaining`}</Text>
+      <Text style={[mr.remaining, greyed && mr.greyedText]}>{greyed ? 'Upgrade to Premium' : `${formatNumber(rem, decimals)} ${unit} remaining`}</Text>
     </View>
   );
 };
@@ -288,7 +289,7 @@ const EditTargetsModal = ({ visible, targets, isPremium, user, onClose, onSaved 
   // Sync form when targets change (on open)
   useEffect(() => {
     if (visible && targets) {
-      setActivityLevel(targets.activityLevel || 'Moderate (3-5 days/week)');
+      setActivityLevel(targets.activityLevel || 'Balanced');
       setGoal(targets.goal           || 'Maintain Weight');
       setCalories(String(targets.calories || 2000));
       setProtein(String(targets.protein   || 0));
@@ -350,18 +351,6 @@ const EditTargetsModal = ({ visible, targets, isPremium, user, onClose, onSaved 
               <Text style={em.closeTxt}>✕</Text>
             </TouchableOpacity>
           </View>
-
-
-          <KeyboardAvoidingView
-
-
-            style={{ flex: 1 }}
-
-
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-
-
-          >
 
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
@@ -450,9 +439,6 @@ const EditTargetsModal = ({ visible, targets, isPremium, user, onClose, onSaved 
             </TouchableOpacity>
 
           </ScrollView>
-
-
-          </KeyboardAvoidingView>
         </View>
       </View>
     </Modal>
@@ -522,6 +508,13 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
   }
 
   const t = targets || {};
+  const proteinCals = Number(t.protein || 0) * 4;
+  const carbsCals = Number(t.carbs || 0) * 4;
+  const fatCals = Number(t.fat || 0) * 9;
+  const totalMacroCals = proteinCals + carbsCals + fatCals;
+  const proteinPct = totalMacroCals > 0 ? ((proteinCals / totalMacroCals) * 100).toFixed(1) : '0.0';
+  const carbsPct = totalMacroCals > 0 ? ((carbsCals / totalMacroCals) * 100).toFixed(1) : '0.0';
+  const fatPct = totalMacroCals > 0 ? ((fatCals / totalMacroCals) * 100).toFixed(1) : '0.0';
 
   return (
     <SafeAreaView style={s.safe}>
@@ -538,7 +531,7 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
         onSaved={handleSaved}
       />
 
-      <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
 
         {/* Header */}
         <View style={s.header}>
@@ -555,7 +548,7 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
         <Card>
           <SectionHeading icon="🎯" title="Today's Progress" />
           <MacroRow label="Calories" consumed={todayConsumed.calories} goal={t.calories || 2000} unit="kcal" greyed={false} />
-          <MacroRow label="Protein"  consumed={todayConsumed.protein}  goal={t.protein  || 0}    unit="g"    greyed={!isPremium} />
+          <MacroRow label="Protein"  consumed={todayConsumed.protein}  goal={t.protein  || 0}    unit="g"    greyed={!isPremium} decimals={2} />
           <MacroRow label="Carbs"    consumed={todayConsumed.carbs}    goal={t.carbs    || 0}    unit="g"    greyed={!isPremium} />
           <MacroRow label="Fat"      consumed={todayConsumed.fat}      goal={t.fat      || 0}    unit="g"    greyed={!isPremium} />
         </Card>
@@ -564,7 +557,7 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
         <Card>
           <SectionHeading icon="↗️" title="Your Targets" />
           <TargetRow label="Daily Calories"  description="Based on your activity level" value={`${t.calories || 2000} kcal`} greyed={false} />
-          <TargetRow label="Protein"         description="For muscle maintenance"        value={`${t.protein  || 0} g`}      greyed={!isPremium} />
+          <TargetRow label="Protein"         description="For muscle maintenance"        value={`${formatNumber(t.protein, 2)} g`}      greyed={!isPremium} />
           <TargetRow label="Carbohydrates"   description="Your energy source"            value={`${t.carbs    || 0} g`}      greyed={!isPremium} />
           <TargetRow label="Fats"            description="Essential for health"          value={`${t.fat      || 0} g`}      greyed={!isPremium} />
           <TargetRow label="Fiber"           description="For digestive health"          value={`${t.fiber    || 0} g`}      greyed={!isPremium} />
@@ -585,9 +578,9 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
         {isPremium && (
           <Card>
             <Text style={s.distHeading}>Macro Distribution</Text>
-            <DistRow label="Protein" pct={30} />
-            <DistRow label="Carbs"   pct={40} />
-            <DistRow label="Fat"     pct={30} />
+            <DistRow label="Protein" pct={proteinPct} />
+            <DistRow label="Carbs"   pct={carbsPct} />
+            <DistRow label="Fat"     pct={fatPct} />
           </Card>
         )}
 

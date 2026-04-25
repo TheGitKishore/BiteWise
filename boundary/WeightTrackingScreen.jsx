@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, Alert, Modal,
-  KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -158,19 +157,7 @@ const WeightTrackingScreen = ({ navigation, route }) => {
       <Banner msg={banner} />
       <UpdateModal visible={showModal} onClose={() => setShowModal(false)} onSubmit={handleSubmit} isLoading={isSaving} error={fieldError} />
 
-
-      <KeyboardAvoidingView
-
-
-        style={{ flex: 1 }}
-
-
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-
-
-      >
-
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}} showsVerticalScrollIndicator={false}>
         <View style={{paddingTop:20,marginBottom:14}}>
           <View style={{alignSelf:'flex-start',backgroundColor:C.purple,borderRadius:20,paddingHorizontal:10,paddingVertical:3,marginBottom:8}}>
             <Text style={{fontSize:11,fontWeight:'700',color:C.white}}>☆ Premium</Text>
@@ -263,9 +250,6 @@ const WeightTrackingScreen = ({ navigation, route }) => {
           ))}
         </View>
       </ScrollView>
-
-
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

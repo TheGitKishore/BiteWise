@@ -2,7 +2,6 @@ import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, Modal,
-  KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -423,19 +422,7 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
         onSuccess={handleExerciseLogged}
       />
 
-
-      <KeyboardAvoidingView
-
-
-        style={{ flex: 1 }}
-
-
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-
-
-      >
-
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
 
         {/* Header */}
         <View style={styles.header}>
@@ -450,9 +437,6 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
         {activeTab === 'Exercise Log' && <ExerciseLogTab  exerciseEntries={exerciseEntries} onOpenLog={() => setShowLogModal(true)} />}
 
       </ScrollView>
-
-
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

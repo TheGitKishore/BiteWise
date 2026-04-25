@@ -10,7 +10,6 @@ import {
   Modal,
   Alert,
   Image,
-  KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -376,19 +375,7 @@ const DiaryScreen = ({ navigation, route }) => {
         onSaved={handleSaved}
       />
 
-
-      <KeyboardAvoidingView
-
-
-        style={{ flex: 1 }}
-
-
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-
-
-      >
-
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.list}>
+      <ScrollView contentContainerStyle={s.list}>
         <View style={s.header}>
           <View style={s.badge}><Text style={s.badgeTxt}>Premium</Text></View>
           <Text style={s.pageTitle}>Health Diary</Text>
@@ -410,9 +397,6 @@ const DiaryScreen = ({ navigation, route }) => {
           <EntryCard key={e.entryId} entry={e} onDelete={handleDelete} />
         ))}
       </ScrollView>
-
-
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

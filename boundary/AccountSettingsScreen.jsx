@@ -1,7 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Alert ,
-  KeyboardAvoidingView, Platform, Keyboard,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -369,18 +367,6 @@ const AccountSettingsScreen = ({ navigation, route }) => {
 
       <Banner message={banner.message} type={banner.type} />
 
-
-      <KeyboardAvoidingView
-
-
-        style={{ flex: 1 }}
-
-
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-
-
-      >
-
       <ScrollView
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
@@ -546,9 +532,6 @@ const AccountSettingsScreen = ({ navigation, route }) => {
         </Section>
 
       </ScrollView>
-
-
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
