@@ -168,6 +168,22 @@ class FoodIntakeEntry {
       return [];
     }
   }
+
+  // Delete logged food entry
+  static async delete(entryId) {
+    try {
+      const res = await axios.delete(`${API_URL}/${entryId}`);
+      return {
+        success: Boolean(res.data?.success),
+        message: res.data?.message || 'Food entry deleted.',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || 'Unable to delete food entry.',
+      };
+    }
+  }
 }
 
 export default FoodIntakeEntry;

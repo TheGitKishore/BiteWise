@@ -32,6 +32,20 @@ class ViewCurrentCalorieIntakeController {
       return [];
     }
   }
+
+  // UC #20, #56 — delete a logged food entry.
+  // Boundary refreshes today's entries after this so calorie totals update.
+  async deleteEntry(entryId) {
+    try {
+      return await FoodIntakeEntry.delete(entryId);
+    } catch (error) {
+      console.error('[ViewCurrentCalorieIntakeController]', error);
+      return {
+        success: false,
+        message: 'Failed to delete food entry.',
+      };
+    }
+  }
 }
 
 export default ViewCurrentCalorieIntakeController;

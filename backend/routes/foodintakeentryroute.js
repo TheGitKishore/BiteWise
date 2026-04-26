@@ -1,5 +1,6 @@
 import express from 'express';
 import { getDB } from '../db_mongodb/db.js';
+import { ObjectId } from 'mongodb';
 
 const router = express.Router();
 import multer from 'multer';
@@ -171,6 +172,45 @@ router.get('/history/:userId', async (req, res) => {
     return res.json({
       success: true,
       data: entries,
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
+
+// ===============================
+// DELETE ENTRY
+// ===============================
+router.delete('/:entryId', async (req, res) => {
+  try {
+    const { entryId } = req.params;
+
+    if (!ObjectId.isValid(entryId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid food entry ID.',
+      });
+    }
+
+    const db = await getDB();
+    const collection = db.collection('food_logs');
+
+    const result = await collection.deleteOne({ _id: new ObjectId(entryId) });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Food entry not found.',
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Food entry deleted successfully.',
     });
 
   } catch (err) {

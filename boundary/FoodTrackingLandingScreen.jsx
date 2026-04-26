@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
-  StyleSheet, StatusBar, ActivityIndicator, Modal,
+  StyleSheet, StatusBar, ActivityIndicator, Modal, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -713,22 +713,40 @@ const LogFoodTab = ({ user, allItems, dbLoading, dbError, onOpenManual, onOpenCa
 
 // TODAY'S ENTRIES TAB — UC #20 — unchanged
 
-const TodaysEntriesTab = ({ entries }) =>
+const TodaysEntriesTab = ({ entries, onDeleteEntry }) =>
   entries.length === 0
     ? <View style={tet.wrap}><Text style={tet.msg}>No food logged today yet.</Text></View>
     : entries.map((e, i) => (
-        <View key={i} style={tet.row}>
-          <View><Text style={tet.name}>{e.foodName}</Text><Text style={tet.meal}>{e.meal}</Text></View>
-          <Text style={tet.cal}>{e.calories} kcal</Text>
+        <View key={e.entryId || i} style={tet.row}>
+          <View style={tet.info}>
+            <Text style={tet.name}>{e.foodName}</Text>
+            <Text style={tet.meal}>{e.meal}</Text>
+          </View>
+          <View style={tet.actions}>
+            <Text style={tet.cal}>{e.calories} kcal</Text>
+            <TouchableOpacity
+              style={tet.deleteBtn}
+              onPress={() => onDeleteEntry(e)}
+              accessibilityRole="button"
+              accessibilityLabel={`Delete ${e.foodName}`}
+              activeOpacity={0.8}
+            >
+              <Text style={tet.deleteTxt}>Delete</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       ));
 const tet = StyleSheet.create({
-  wrap: { alignItems: 'center', paddingVertical: 40 },
-  msg:  { fontSize: 14, color: C.subtle },
-  row:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: C.border },
-  name: { fontSize: 14, fontWeight: '600', color: C.dark },
-  meal: { fontSize: 12, color: C.subtle },
-  cal:  { fontSize: 14, fontWeight: '600', color: C.purple },
+  wrap:      { alignItems: 'center', paddingVertical: 40 },
+  msg:       { fontSize: 14, color: C.subtle },
+  row:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: C.border, gap: 10 },
+  info:      { flex: 1 },
+  name:      { fontSize: 14, fontWeight: '600', color: C.dark },
+  meal:      { fontSize: 12, color: C.subtle },
+  actions:   { alignItems: 'flex-end', gap: 6 },
+  cal:       { fontSize: 14, fontWeight: '600', color: C.purple },
+  deleteBtn: { borderWidth: 1, borderColor: '#FECACA', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: '#FEF2F2' },
+  deleteTxt: { fontSize: 12, fontWeight: '700', color: C.errorText },
 });
 
 
@@ -878,6 +896,39 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
     setTimeout(() => setBanner(''), 4000);
   }, [loadTodayEntries]);
 
+  const handleDeleteTodayEntry = useCallback((entry) => {
+    if (!entry?.entryId) {
+      setBanner('Unable to delete this entry.');
+      setTimeout(() => setBanner(''), 4000);
+      return;
+    }
+
+    Alert.alert(
+      'Delete Food Entry',
+      `Remove ${entry.foodName || 'this food'} from today's entries?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const result = await intakeController.deleteEntry(entry.entryId);
+
+            if (result.success) {
+              setBanner(result.message);
+              await loadTodayEntries();
+              if (activeTab === 'History') await loadHistory();
+              setTimeout(() => setBanner(''), 4000);
+            } else {
+              setBanner(result.message);
+              setTimeout(() => setBanner(''), 4000);
+            }
+          },
+        },
+      ]
+    );
+  }, [activeTab, loadHistory, loadTodayEntries]);
+
   // handleGoalSaved removed Sprint 8 — handled by NutritionTargetsScreen
 
   return (
@@ -917,7 +968,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
         <TabBar activeTab={activeTab} onSelect={handleTabSelect} />
 
         {activeTab === 'Log Food'        && <LogFoodTab user={currentUser} allItems={allItems} dbLoading={dbLoading} dbError={dbError} onOpenManual={() => setShowManual(true)} onOpenCamera={() => setShowCamera(true)} onEntryLogged={handleEntryLogged}/>}
-        {activeTab === "Today's Entries" && <TodaysEntriesTab entries={todaysEntries} />}
+        {activeTab === "Today's Entries" && <TodaysEntriesTab entries={todaysEntries} onDeleteEntry={handleDeleteTodayEntry} />}
         {activeTab === 'History'         && <HistoryTab pastEntries={pastEntries} isLoading={histLoading} errorMsg={histError} />}
 
       </ScrollView>
