@@ -474,6 +474,9 @@ const RecipesScreen = ({ navigation, route }) => {
   const [recipeLikeCounts, setRecipeLikeCounts] = useState({});
   const [likingRecipeIds, setLikingRecipeIds] = useState({});
 
+  const incomingSearch = String(route?.params?.initialSearch || '').trim();
+  const incomingFocusRecipeId = String(route?.params?.focusRecipeId || '').trim();
+
   const canLikeRecipe = (recipe) => Boolean(recipe?.isCurated);
 
   // Load recipes on mount
@@ -502,6 +505,40 @@ const RecipesScreen = ({ navigation, route }) => {
       setIsLoading(false);
     });
   }, [currentUserId]);
+
+  useEffect(() => {
+    if (!incomingSearch && !incomingFocusRecipeId) return;
+
+    if (incomingSearch) {
+      setSearch(incomingSearch);
+    }
+
+    if (allRecipes.length > 0) {
+      let targetRecipe = null;
+
+      if (incomingFocusRecipeId) {
+        targetRecipe = allRecipes.find((r) =>
+          String(r.recipeId || r._id || '') === incomingFocusRecipeId
+        );
+      }
+
+      if (!targetRecipe && incomingSearch) {
+        const q = incomingSearch.toLowerCase();
+        targetRecipe = allRecipes.find((r) =>
+          String(r.title || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (targetRecipe) {
+        setSelectedRecipe(targetRecipe);
+      }
+    }
+
+    navigation.setParams({
+      initialSearch: undefined,
+      focusRecipeId: undefined,
+    });
+  }, [allRecipes, incomingSearch, incomingFocusRecipeId, navigation]);
 
   const toggleRecipeLike = useCallback(async (recipeId) => {
     if (likingRecipeIds[recipeId]) return;

@@ -5,7 +5,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, StatusBar,
+  StyleSheet, StatusBar, Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -129,7 +129,7 @@ const wts = StyleSheet.create({
 });
 
 // ── Section 4: Smart Snack Ideas ─────────────────────────────────────────────
-const SnackIdeasCard = ({ snackIdeas, activeFilter, onFilterChange }) => {
+const SnackIdeasCard = ({ snackIdeas, activeFilter, onFilterChange, onViewRecipe }) => {
   const displayed = ctrl.filterSnackIdeas(snackIdeas, activeFilter);
   return (
     <View style={ss.card}>
@@ -187,7 +187,7 @@ const SnackIdeasCard = ({ snackIdeas, activeFilter, onFilterChange }) => {
 
           {/* View Recipe button */}
           <View style={si.divider} />
-          <TouchableOpacity style={si.viewRecipeBtn}>
+          <TouchableOpacity style={si.viewRecipeBtn} onPress={() => onViewRecipe(snack)}>
             <Text style={si.viewRecipeIcon}>👑 </Text>
             <Text style={si.viewRecipeTxt}>View Recipe</Text>
           </TouchableOpacity>
@@ -293,6 +293,7 @@ const MindfulSnackingScreen = ({ navigation, route }) => {
   const [loading,      setLoading]      = useState(true);
   const [error,        setError]        = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
+  const [selectedSnackRecipe, setSelectedSnackRecipe] = useState(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -306,6 +307,9 @@ const MindfulSnackingScreen = ({ navigation, route }) => {
   );
 
   const onMenuPress = () => navigation.goBack();
+  const handleViewRecipe = (snack) => {
+    setSelectedSnackRecipe(snack);
+  };
 
   return (
     <SafeAreaView style={s.safe}>
@@ -340,6 +344,7 @@ const MindfulSnackingScreen = ({ navigation, route }) => {
               snackIdeas={content.snackIdeas}
               activeFilter={activeFilter}
               onFilterChange={setActiveFilter}
+              onViewRecipe={handleViewRecipe}
             />
 
             {/* S5 */}
@@ -350,6 +355,44 @@ const MindfulSnackingScreen = ({ navigation, route }) => {
           </>
         ) : null}
       </ScrollView>
+
+      <Modal
+        visible={!!selectedSnackRecipe}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setSelectedSnackRecipe(null)}
+      >
+        <View style={rm.overlay}>
+          <View style={rm.sheet}>
+            <View style={rm.headerRow}>
+              <Text style={rm.title}>{selectedSnackRecipe?.name || 'Snack Recipe'}</Text>
+              <TouchableOpacity onPress={() => setSelectedSnackRecipe(null)} style={rm.closeBtn}>
+                <Text style={rm.closeTxt}>Close</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={rm.content}>
+              <Text style={rm.sectionTitle}>Ingredients</Text>
+              {(selectedSnackRecipe?.ingredients || []).length > 0 ? (
+                selectedSnackRecipe.ingredients.map((item, idx) => (
+                  <Text key={`${item}-${idx}`} style={rm.lineItem}>• {item}</Text>
+                ))
+              ) : (
+                <Text style={rm.emptyTxt}>No ingredients available.</Text>
+              )}
+
+              <Text style={[rm.sectionTitle, { marginTop: 16 }]}>Steps</Text>
+              {(selectedSnackRecipe?.steps || []).length > 0 ? (
+                selectedSnackRecipe.steps.map((step, idx) => (
+                  <Text key={`${step}-${idx}`} style={rm.lineItem}>{idx + 1}. {step}</Text>
+                ))
+              ) : (
+                <Text style={rm.emptyTxt}>No steps available.</Text>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -363,6 +406,19 @@ const s = StyleSheet.create({
   pageTitle:   { fontSize: 28, fontWeight: '800', color: C.dark, letterSpacing: -0.5, marginBottom: 6 },
   pageSub:     { fontSize: 14, color: C.subtle, lineHeight: 21 },
   empty:       { textAlign: 'center', color: C.subtle, paddingTop: 40 },
+});
+
+const rm = StyleSheet.create({
+  overlay:     { flex: 1, backgroundColor: 'rgba(17,24,39,0.45)', justifyContent: 'flex-end' },
+  sheet:       { backgroundColor: C.white, borderTopLeftRadius: 16, borderTopRightRadius: 16, maxHeight: '78%', padding: 16 },
+  headerRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  title:       { flex: 1, fontSize: 17, fontWeight: '800', color: C.dark, paddingRight: 12 },
+  closeBtn:    { backgroundColor: C.purpleLight, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  closeTxt:    { color: C.purple, fontWeight: '700', fontSize: 12 },
+  content:     { paddingBottom: 12 },
+  sectionTitle:{ fontSize: 14, fontWeight: '800', color: C.dark, marginBottom: 8 },
+  lineItem:    { fontSize: 13, color: C.body, lineHeight: 20, marginBottom: 6 },
+  emptyTxt:    { fontSize: 13, color: C.subtle },
 });
 
 export default MindfulSnackingScreen;

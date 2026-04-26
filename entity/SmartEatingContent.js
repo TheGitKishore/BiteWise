@@ -282,6 +282,33 @@ const TIPS_FOR_ALTERNATIVES = [
 // ─── Entity Class ─────────────────────────────────────────────────────────────
 
 class SmartEatingContent {
+  static _normalizeSnackingContent(data = {}) {
+    const safe = data && typeof data === 'object' ? data : {};
+    return {
+      corePrinciples: Array.isArray(safe.corePrinciples) ? safe.corePrinciples : [],
+      managingCravings: Array.isArray(safe.managingCravings) ? safe.managingCravings : [],
+      whenToSnack: Array.isArray(safe.whenToSnack) ? safe.whenToSnack : [],
+      snackIdeas: Array.isArray(safe.snackIdeas) ? safe.snackIdeas : [],
+      portionControl: {
+        visualGuides: Array.isArray(safe?.portionControl?.visualGuides) ? safe.portionControl.visualGuides : [],
+        prePortioningStrategies: Array.isArray(safe?.portionControl?.prePortioningStrategies) ? safe.portionControl.prePortioningStrategies : [],
+      },
+      warningSign: {
+        title: safe?.warningSign?.title || '',
+        intro: safe?.warningSign?.intro || '',
+        signs: Array.isArray(safe?.warningSign?.signs) ? safe.warningSign.signs : [],
+        footer: safe?.warningSign?.footer || '',
+      },
+    };
+  }
+
+  static _normalizeAlternativesGrouped(data = {}) {
+    const safe = data && typeof data === 'object' ? data : {};
+    return {
+      groups: Array.isArray(safe.groups) ? safe.groups : [],
+      tips: Array.isArray(safe.tips) ? safe.tips : [],
+    };
+  }
 
   // ── Legacy methods (Sprint 6) ─────────────────────────────────────────────
 
@@ -335,7 +362,36 @@ class SmartEatingContent {
   // UC #75 Sprint 9 — returns full structured snacking content object
   // @return {Promise<{ success: boolean, data: object, message: string }>}
   static async fetchSnackingContent() {
-    return { success: true, data: SNACKING_CONTENT, message: '' };
+    try {
+      const res = await axios.get(`${API_URL}/mindful-snacking/content`);
+      const normalized = this._normalizeSnackingContent(res.data?.data);
+
+      if (!res.data?.success) {
+        return {
+          success: false,
+          data: SNACKING_CONTENT,
+          message: res.data?.message || 'Unable to load snacking content. Please try again.',
+        };
+      }
+
+      const hasContent =
+        normalized.corePrinciples.length > 0 ||
+        normalized.managingCravings.length > 0 ||
+        normalized.whenToSnack.length > 0 ||
+        normalized.snackIdeas.length > 0;
+
+      return {
+        success: true,
+        data: hasContent ? normalized : SNACKING_CONTENT,
+        message: res.data?.message || '',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        data: SNACKING_CONTENT,
+        message: err.response?.data?.message || 'Unable to load snacking content. Please try again.',
+      };
+    }
   }
 
   // Client-side filter for snack ideas by timing period
@@ -352,11 +408,32 @@ class SmartEatingContent {
   // UC #74 Sprint 9 — returns grouped food alternatives + tips
   // @return {Promise<{ success: boolean, data: { groups, tips }, message: string }>}
   static async fetchFoodAlternativesGrouped() {
-    return {
-      success: true,
-      data: { groups: FOOD_ALT_GROUPS, tips: TIPS_FOR_ALTERNATIVES },
-      message: '',
-    };
+    try {
+      const res = await axios.get(`${API_URL}/alternatives/grouped`);
+      const normalized = this._normalizeAlternativesGrouped(res.data?.data);
+
+      if (!res.data?.success) {
+        return {
+          success: false,
+          data: { groups: FOOD_ALT_GROUPS, tips: TIPS_FOR_ALTERNATIVES },
+          message: res.data?.message || 'Unable to load food alternatives. Please try again.',
+        };
+      }
+
+      const hasGroups = normalized.groups.length > 0;
+
+      return {
+        success: true,
+        data: hasGroups ? normalized : { groups: FOOD_ALT_GROUPS, tips: TIPS_FOR_ALTERNATIVES },
+        message: res.data?.message || '',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        data: { groups: FOOD_ALT_GROUPS, tips: TIPS_FOR_ALTERNATIVES },
+        message: err.response?.data?.message || 'Unable to load food alternatives. Please try again.',
+      };
+    }
   }
 
   // Client-side search across groups and their alternatives
