@@ -187,6 +187,7 @@ const PREMIUM_TILES = {
     { icon: '📈',  title: 'Reports',           subtitle: 'View your progress over time',           screen: 'ReportsScreen' },
     { icon: '🎯',  title: 'Nutrition Targets', subtitle: 'Personalized macro goals',               screen: 'NutritionTargetsScreen' },
     { icon: '🍽️', title: "Today's Menu",      subtitle: 'Recipes matched to your budget',         screen: 'TodaysMenuScreen' },
+    { icon: '🛎️', title: 'Dine Out',          subtitle: 'Restaurant meals that fit your budget',  screen: 'DineOutScreen' },
     { icon: '📔',  title: 'Health Diary',      subtitle: 'Document your journey',                  screen: 'DiaryScreen' },
     { icon: '🥦',  title: 'Food Alternatives', subtitle: 'Healthier substitutes',                  screen: 'FoodAlternativesScreen' },
     { icon: '🍎',  title: 'Mindful Snacking',  subtitle: 'Smart snacking guidance',                screen: 'MindfulSnackingScreen' },
@@ -206,6 +207,7 @@ const PREMIUM_TILES = {
     { icon: '🏃',  title: 'Activity Tracking', subtitle: 'Log exercise & sync devices',            screen: 'ActivityTrackingScreen' },
     { icon: '📈',  title: 'Reports',           subtitle: 'View your progress over time',           screen: 'ReportsScreen' },
     { icon: '🍽️', title: "Today's Menu",      subtitle: 'Recipes matched to your budget',         screen: 'TodaysMenuScreen' },
+    { icon: '🛎️', title: 'Dine Out',          subtitle: 'Macro-friendly meals nearby',            screen: 'DineOutScreen' },
     { icon: '📅',  title: 'Meal Plans',        subtitle: 'Create and manage meal plans',           screen: 'MealPlansScreen' },
     { icon: '⚖️',  title: 'Weight Tracking',  subtitle: 'Monitor weight progress',                screen: 'WeightTrackingScreen' },
     { icon: '📖',  title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',            screen: 'RecipesScreen' },
@@ -222,6 +224,7 @@ const PREMIUM_TILES = {
   MEAL_PLANNER: [
     { icon: '📅',  title: 'Meal Plans',        subtitle: 'Create and manage meal plans',           screen: 'MealPlansScreen' },
     { icon: '🍽️', title: "Today's Menu",      subtitle: 'Recipes matched to your budget',         screen: 'TodaysMenuScreen' },
+    { icon: '🛎️', title: 'Dine Out',          subtitle: 'Plan restaurant meals around your day',  screen: 'DineOutScreen' },
     { icon: '📖',  title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',            screen: 'RecipesScreen' },
     { icon: '🔖',  title: 'Saved Recipes',     subtitle: 'Your recipe collection',                 screen: 'SavedRecipesScreen' },
     { icon: '🛒',  title: 'Grocery List',      subtitle: 'Auto-generate from recipes',             screen: 'GroceryListScreen' },
