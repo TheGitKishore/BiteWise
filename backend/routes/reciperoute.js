@@ -13,6 +13,7 @@ const getCollections = () => {
     drafts: dbMongo.collection('recipe_drafts'), // ✅ add this
     savedRecipes: dbMongo.collection('saved_recipes'),
     recipeLikes: dbMongo.collection('recipe_likes'),
+    customRecipes: dbMongo.collection('custom_recipes')
   };
 };
 
@@ -248,7 +249,7 @@ router.get('/', async (req, res) => {
 // POST /api/recipes
 router.post('/', async (req, res) => {
   try {
-    const { recipes } = getCollections();
+    const { customRecipes } = getCollections();
 
     const newRecipe = {
       ...req.body,
@@ -257,7 +258,7 @@ router.post('/', async (req, res) => {
       updatedAt: new Date(),
     };
 
-    const result = await recipes.insertOne(newRecipe);
+    const result = await customRecipes.insertOne(newRecipe);
 
     return res.json({
       _id: result.insertedId,
@@ -265,6 +266,104 @@ router.post('/', async (req, res) => {
     });
   } catch (err) {
     return res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/recipes/custom/:userId
+router.get('/custom/:userId', async (req, res) => {
+  try {
+    const { customRecipes } = getCollections();
+    const userId = normalizeUserId(req.params.userId);
+
+    const data = await customRecipes
+      .find({
+        createdByUserId: { $in: [String(userId), Number(userId)] }
+      })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    return res.json(data.map(toClientRecipe));
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+
+// PUT /api/recipes/custom/:id
+router.put('/custom/:id', async (req, res) => {
+  try {
+    const { customRecipes } = getCollections();
+
+    const recipeId = req.params.id;
+    const { userId, fields } = req.body;
+
+    if (!ObjectId.isValid(recipeId)) {
+      return res.status(400).json({ success: false, message: 'Invalid recipe id' });
+    }
+
+    const recipe = await customRecipes.findOne({ _id: new ObjectId(recipeId) });
+
+    if (!recipe) {
+      return res.status(404).json({ success: false, message: 'Recipe not found' });
+    }
+
+    if (String(recipe.createdByUserId) !== String(userId)) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    await customRecipes.updateOne(
+      { _id: new ObjectId(recipeId) },
+      {
+        $set: {
+          ...fields,
+          updatedAt: new Date(),
+        }
+      }
+    );
+
+    const updated = await customRecipes.findOne({ _id: new ObjectId(recipeId) });
+
+    return res.json({
+      success: true,
+      message: 'Recipe updated successfully',
+      data: updated
+    });
+
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// DELETE /api/recipes/custom/:id
+router.delete('/custom/:id', async (req, res) => {
+  try {
+    const { customRecipes } = getCollections();
+
+    const recipeId = req.params.id;
+    const { userId } = req.body;
+
+    if (!ObjectId.isValid(recipeId)) {
+      return res.status(400).json({ success: false, message: 'Invalid recipe id' });
+    }
+
+    const recipe = await customRecipes.findOne({ _id: new ObjectId(recipeId) });
+
+    if (!recipe) {
+      return res.status(404).json({ success: false, message: 'Recipe not found' });
+    }
+
+    if (String(recipe.createdByUserId) !== String(userId)) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    await customRecipes.deleteOne({ _id: new ObjectId(recipeId) });
+
+    return res.json({
+      success: true,
+      message: 'Recipe deleted successfully'
+    });
+
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
   }
 });
 

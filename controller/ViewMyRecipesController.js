@@ -23,22 +23,20 @@ class ViewMyRecipesController {
   // @param  {number} userId
   // @return {Promise<{ success, data, message }>}
   async fetchMyRecipes(userId) {
-    return this._safeCall(async () => {
-      const result = await Recipe.fetchAll();
+  return this._safeCall(async () => {
+    const result = await Recipe.fetchCustom(userId); // ✅ FIX
 
-      if (!result.success) {
-        return { success: false, data: [], message: result.message || 'Failed to load recipes.' };
-      }
+    if (!result.success) {
+      return { success: false, data: [], message: result.message || 'Failed to load recipes.' };
+    }
 
-      const myRecipes = Recipe.filterByUser(result.data, userId);
-
-      return {
-        success: true,
-        data:    myRecipes,
-        message: myRecipes.length === 0 ? 'No custom recipes yet.' : '',
-      };
-    });
-  }
+    return {
+      success: true,
+      data: result.data,
+      message: result.data.length === 0 ? 'No custom recipes yet.' : '',
+    };
+  });
+}
 }
 
 export default ViewMyRecipesController;

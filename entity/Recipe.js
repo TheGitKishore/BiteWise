@@ -385,6 +385,69 @@ class Recipe {
 
     return (calScore + proteinScore + carbsScore + fatScore) / 4;
   }
+  // GET custom recipes (all or by user)
+  static async fetchCustom(userId = null) {
+    try {
+      const url = userId
+        ? `${API_URL}/custom/${userId}`
+        : `${API_URL}/custom`;
+
+      const res = await axios.get(url);
+
+      return {
+        success: true,
+        data: res.data.map((r) => new Recipe(r)),
+        message: '',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        data: [],
+        message: err.message || 'Failed to fetch custom recipes',
+      };
+    }
+  }
+
+  static async updateCustomRecipe(recipeId, userId, fields) {
+    try {
+      const res = await axios.put(`${API_URL}/custom/${recipeId}`, {
+        userId,
+        fields,
+      });
+
+      return {
+        success: true,
+        field: null,
+        message: res.data.message,
+        data: new Recipe(res.data.data),
+      };
+    } catch (err) {
+      return {
+        success: false,
+        field: null,
+        message: err?.response?.data?.message || err.message,
+        data: null,
+      };
+    }
+  }
+
+  static async deleteCustomRecipe(recipeId, userId) {
+    try {
+      const res = await axios.delete(`${API_URL}/custom/${recipeId}`, {
+        data: { userId },
+      });
+
+      return {
+        success: true,
+        message: res.data.message,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err?.response?.data?.message || err.message,
+      };
+    }
+  }
 }
 
 export default Recipe;
