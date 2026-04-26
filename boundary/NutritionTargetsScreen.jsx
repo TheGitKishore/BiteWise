@@ -508,13 +508,14 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
   }
 
   const t = targets || {};
-  const proteinCals = Number(t.protein || 0) * 4;
-  const carbsCals = Number(t.carbs || 0) * 4;
-  const fatCals = Number(t.fat || 0) * 9;
-  const totalMacroCals = proteinCals + carbsCals + fatCals;
-  const proteinPct = totalMacroCals > 0 ? ((proteinCals / totalMacroCals) * 100).toFixed(1) : '0.0';
-  const carbsPct = totalMacroCals > 0 ? ((carbsCals / totalMacroCals) * 100).toFixed(1) : '0.0';
-  const fatPct = totalMacroCals > 0 ? ((fatCals / totalMacroCals) * 100).toFixed(1) : '0.0';
+  // Today's macro distribution should reflect consumed macros, not target macros.
+  const proteinConsumedCals = Number(todayConsumed.protein || 0) * 4;
+  const carbsConsumedCals = Number(todayConsumed.carbs || 0) * 4;
+  const fatConsumedCals = Number(todayConsumed.fat || 0) * 9;
+  const totalConsumedMacroCals = proteinConsumedCals + carbsConsumedCals + fatConsumedCals;
+  const proteinPct = totalConsumedMacroCals > 0 ? ((proteinConsumedCals / totalConsumedMacroCals) * 100).toFixed(1) : '0.0';
+  const carbsPct = totalConsumedMacroCals > 0 ? ((carbsConsumedCals / totalConsumedMacroCals) * 100).toFixed(1) : '0.0';
+  const fatPct = totalConsumedMacroCals > 0 ? ((fatConsumedCals / totalConsumedMacroCals) * 100).toFixed(1) : '0.0';
 
   return (
     <SafeAreaView style={s.safe}>
@@ -577,7 +578,7 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
         {/* Macro Distribution — Premium only */}
         {isPremium && (
           <Card>
-            <Text style={s.distHeading}>Macro Distribution</Text>
+            <Text style={s.distHeading}>Today's Macro Distribution</Text>
             <DistRow label="Protein" pct={proteinPct} />
             <DistRow label="Carbs"   pct={carbsPct} />
             <DistRow label="Fat"     pct={fatPct} />
@@ -594,7 +595,7 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
             'Use the auto-calculate feature to update targets based on your current weight.',
           ].map((tip, i) => (
             <View key={i} style={s.tipRow}>
-              <Text style={s.tipCheck}>\u2713</Text>
+              <Text style={s.tipCheck}>•</Text>
               <Text style={s.tipText}>{tip}</Text>
             </View>
           ))}
