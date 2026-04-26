@@ -13,8 +13,6 @@ class Review {
     title             = '',
     content           = '',
     membershipPlanId  = null,
-    isApproved        = false,
-    approvedByAdminId = null,
     createdAt         = null,
     updatedAt         = null,
   } = {}) {
@@ -27,8 +25,6 @@ class Review {
     this.title             = title;
     this.content           = content;
     this.membershipPlanId  = membershipPlanId;
-    this.isApproved        = isApproved;
-    this.approvedByAdminId = approvedByAdminId;
     this.createdAt         = createdAt;
     this.updatedAt         = updatedAt;
   }
@@ -52,31 +48,20 @@ class Review {
     return { valid: true, field: null, message: '' };
   }
 
-
-  // STATIC / COLLECTION METHODS
-
-  // Returns only approved reviews — unregistered users see approved only
-  // @param  {Review[]} reviews
-  // @return {Review[]}
-  static getApprovedReviews(reviews) {
-    return reviews.filter((r) => r.isApproved);
-  }
-
-  // @param  {Review[]} reviews
-  // @return {boolean}
-  static hasApprovedReviews(reviews) {
-    return reviews.some((r) => r.isApproved);
-  }
-
   // @param  {Review[]} reviews
   // @return {number} — rounded to 1 decimal place
   static getAverageRating(reviews) {
-    const approved = Review.getApprovedReviews(reviews);
-    if (approved.length === 0) return 0;
-    const total = approved.reduce((sum, r) => sum + r.rating, 0);
-    return Math.round((total / approved.length) * 10) / 10;
+    if (!reviews || reviews.length === 0) return 0;
+    
+    const total = reviews.reduce((sum, r) => {
+      return sum + Number(r.rating || 0);
+    }, 0);
+  
+    const avg = total / reviews.length;
+    return Math.round(avg * 10) / 10;
   }
 
+  
 
   // DATA ACCESS
 
@@ -86,19 +71,17 @@ class Review {
     const res = await axios.get(API_URL);
 
     return res.data.map((r) => new Review({
-      reviewId:          r.review_id,
-      userId:            r.review_user_id,
-      reviewerName:      r.reviewer_name,
-      reviewerInitials:  r.reviewer_initials,
-      profileType:       r.profile_type,
-      rating:            r.rating,
-      title:             r.title ?? '',
-      content:           r.content,
-      membershipPlanId:  r.membership_plan_id ?? null,
-      isApproved:        r.is_approved === 1,
-      approvedByAdminId: r.approved_by_admin_id ?? null,
-      createdAt:         r.created_at,
-      updatedAt:         r.updated_at ?? null,
+      reviewId: r.review_id,
+      userId: r.review_user_id,
+      reviewerName: r.reviewer_name,
+      reviewerInitials: r.reviewer_initials,
+      profileType: r.profile_type,
+      rating: r.rating,
+      title: r.title ?? '',
+      content: r.content,
+      membershipPlanId: r.membership_plan_id ?? null,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at ?? null,
     }));
   }
 
@@ -114,11 +97,11 @@ class Review {
 
     try {
       const res = await axios.post(API_URL, {
-        userId,
-        rating:      Number(rating),
-        title:       title.trim(),
-        content:     content.trim(),
-        profileType: profileType || '',
+        review_user_id: userId,
+        rating: Number(rating),
+        title: title.trim(),
+        content: content.trim(),
+        profile_type: profileType || null,
       });
       return res.data;
     } catch (err) {
@@ -138,9 +121,20 @@ class Review {
   // @param  {string} reviewId
   // @return {Promise<{ success, message }>}
   static async remove(reviewId) {
-    return { success: true, message: 'Review removed.' };
+    try {
+      const res = await axios.delete(`${API_URL}/${reviewId}`);
+      return {
+        success: true,
+        message: res.data.message || 'Review deleted',
+      };
+    } catch (err) {
+      console.log('DELETE REVIEW ERROR:', err.response?.data || err.message);
+      return {
+        success: false,
+        message: err.response?.data?.message || 'Failed to delete review',
+      };
+    }
   }
-
 }
 
 export default Review;

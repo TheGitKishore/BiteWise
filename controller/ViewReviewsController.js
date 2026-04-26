@@ -18,34 +18,36 @@ class ViewReviewsController {
     } catch (error) {
       console.error('[ViewReviewsController]', error);
       return {
-        success:       false,
-        data:          [],
+        success: false,
+        data: [],
         averageRating: 0,
-        message:       'Unable to load reviews. Please try again.',
+        message: 'Unable to load reviews. Please try again.',
       };
     }
   }
 
   async fetchAllReviews() {
     return this._safeCall(async () => {
-      const all      = await Review.fetchAll();
-      const approved = Review.getApprovedReviews(all);
+      const all = await Review.fetchAll();
 
-      // Alt Flow 1a: no approved reviews
-      if (!Review.hasApprovedReviews(all)) {
+      // No approval filtering anymore
+      if (!all || all.length === 0) {
         return {
-          success:       false,
-          data:          [],
+          success: false,
+          data: [],
           averageRating: 0,
-          message:       'No reviews are currently available.',
+          message: 'No reviews are currently available.',
         };
       }
 
+      const averageRating =
+        all.reduce((sum, r) => sum + r.rating, 0) / all.length;
+
       return {
-        success:       true,
-        data:          approved,
-        averageRating: Review.getAverageRating(all),
-        message:       '',
+        success: true,
+        data: all,
+        averageRating: Math.round(averageRating * 10) / 10,
+        message: '',
       };
     });
   }

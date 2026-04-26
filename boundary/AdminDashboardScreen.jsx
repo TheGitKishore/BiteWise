@@ -110,8 +110,8 @@ const ReviewsTab = ({ adminId }) => {
             <View style={c.reviewInfo}>
               <Text style={c.reviewAuthor}>{r.reviewerName} — {'★'.repeat(r.rating)}</Text>
               <Text style={c.reviewTitle}>{r.title}</Text>
-              <View style={[c.statusBadge, r.isApproved ? c.statusActive : c.statusInactive]}>
-                <Text style={[c.statusTxt, r.isApproved ? c.statusActiveTxt : c.statusInactiveTxt]}>{r.isApproved ? 'Approved' : 'Pending'}</Text>
+              <View style={c.statusBadge}>
+                <Text style={c.statusTxt}>Published</Text>
               </View>
             </View>
             <TouchableOpacity style={c.removeBtn} onPress={() => handleRemove(r.reviewId, r.reviewerName)}>
