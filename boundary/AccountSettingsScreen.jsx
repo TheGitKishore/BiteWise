@@ -178,7 +178,7 @@ const fld = StyleSheet.create({
 
 
 // MAIN SCREEN
-// Covers UC #11, #12, #13, #14, #46, #47, #48, #49
+// Covers UC #11, #12, #13, #14, #44, #46, #47, #48, #49, #97
 
 const AccountSettingsScreen = ({ navigation, route }) => {
   const [user,         setUser]         = useState(route?.params?.user || null);
@@ -500,6 +500,25 @@ const AccountSettingsScreen = ({ navigation, route }) => {
 
         </Section>
 
+        {/* UC #44, #97 — Write a Review */}
+        <Section>
+          <SectionHead
+            title="Feedback"
+            subtitle="Share your BiteWise experience with the community"
+          />
+          <TouchableOpacity
+            style={styles.reviewBtn}
+            onPress={() => navigation.navigate('WriteReviewScreen', { user })}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Write a Review"
+          >
+            <Text style={styles.reviewBtnIcon}>⭐</Text>
+            <Text style={styles.reviewBtnText}>Write a Review</Text>
+            <Text style={styles.reviewBtnArrow}>›</Text>
+          </TouchableOpacity>
+        </Section>
+
         {/* UC #11, #46 — Log Out */}
         <TouchableOpacity
           style={[styles.logOutBtn, isLoggingOut && styles.btnDisabled]}
@@ -621,6 +640,29 @@ const styles = StyleSheet.create({
     color:      C.dangerText,
   },
   btnDisabled: { opacity: 0.6 },
+  reviewBtn: {
+    flexDirection:     'row',
+    alignItems:        'center',
+    gap:               12,
+    backgroundColor:   '#FAF5FF',
+    borderRadius:      10,
+    paddingHorizontal: 16,
+    paddingVertical:   14,
+    borderWidth:       1,
+    borderColor:       '#EDE9FE',
+  },
+  reviewBtnIcon: { fontSize: 20 },
+  reviewBtnText: {
+    flex:       1,
+    fontSize:   15,
+    fontWeight: '600',
+    color:      C.purple,
+  },
+  reviewBtnArrow: {
+    fontSize:   20,
+    color:      C.purple,
+    fontWeight: '300',
+  },
   // Profile Type section styles
   profileCurrentWrap:      { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#FAF5FF', borderRadius: 10, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#EDE9FE' },
   profileCurrentEmoji:     { fontSize: 28 },

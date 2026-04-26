@@ -1,118 +1,354 @@
 // MindfulSnackingScreen.jsx — UC #75 Premium User – View Mindful Snacking Recommendations
-// Premium User only
+// Sprint 9: Full UI rewrite — 6-section layout matching design screenshots.
+// Premium User only.
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import ViewMindfulSnackingController from '../controller/ViewMindfulSnackingController';
 
 const ctrl = new ViewMindfulSnackingController();
 
 const C = {
-  purple: '#7C3AED', purpleLight: '#EDE9FE', dark: '#111827', mid: '#374151',
-  subtle: '#6B7280', white: '#FFFFFF', border: '#E5E7EB', bg: '#F9FAFB',
-  green: '#16A34A', amber: '#D97706', amberBg: '#FFFBEB', amberBorder: '#FDE68A',
+  purple:      '#7C3AED',
+  purpleLight: '#EDE9FE',
+  dark:        '#111827',
+  mid:         '#374151',
+  body:        '#4B5563',
+  subtle:      '#6B7280',
+  white:       '#FFFFFF',
+  border:      '#E5E7EB',
+  bg:          '#F9FAFB',
+  green:       '#16A34A',
+  orange:      '#EA580C',
+  orangeBg:    '#FFF7ED',
+  orangeBorder:'#FED7AA',
 };
 
-const CATEGORY_COLORS = {
-  Planning:        { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8' },
-  Nutrition:       { bg: '#F0FDF4', border: '#BBF7D0', text: '#15803D' },
-  Mindfulness:     { bg: '#FDF4FF', border: '#E9D5FF', text: '#7C3AED' },
-  'Portion Control':{ bg: '#FFF7ED', border: '#FED7AA', text: '#C2410C' },
-  'Goal-Based':    { bg: '#ECFDF5', border: '#A7F3D0', text: '#047857' },
-  Timing:          { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309' },
-};
+const SNACK_FILTERS = ['All', 'Morning', 'Afternoon', 'Evening'];
 
-const TipCard = ({ tip }) => {
-  const [expanded, setExpanded] = useState(false);
-  const col = CATEGORY_COLORS[tip.category] || { bg: C.purpleLight, border: '#C4B5FD', text: C.purple };
-
-  return (
-    <TouchableOpacity
-      style={[tc.card, expanded && tc.cardExpanded]}
-      onPress={() => setExpanded(!expanded)}
-      activeOpacity={0.85}
-    >
-      <View style={tc.header}>
-        <Text style={tc.icon}>{tip.icon}</Text>
-        <View style={tc.titleArea}>
-          <Text style={tc.title}>{tip.title}</Text>
-          <View style={[tc.catBadge, { backgroundColor: col.bg, borderColor: col.border }]}>
-            <Text style={[tc.catText, { color: col.text }]}>{tip.category}</Text>
-          </View>
-        </View>
-        <Text style={tc.chevron}>{expanded ? '▲' : '▼'}</Text>
-      </View>
-      {expanded && <Text style={tc.content}>{tip.content}</Text>}
+// ── NavBar ───────────────────────────────────────────────────────────────────
+const NavBar = ({ onMenuPress }) => (
+  <View style={nav.bar}>
+    <View style={nav.brand}>
+      <Text style={nav.icon}>🍴</Text>
+      <Text style={nav.brandName}>BiteWise</Text>
+    </View>
+    <TouchableOpacity onPress={onMenuPress} style={nav.menuBtn} accessibilityRole="button">
+      <View style={nav.menuLine} />
+      <View style={[nav.menuLine, { width: 18 }]} />
+      <View style={nav.menuLine} />
     </TouchableOpacity>
-  );
-};
-const tc = StyleSheet.create({
-  card:         { backgroundColor: C.white, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: C.border, marginBottom: 10 },
-  cardExpanded: { borderColor: C.purple },
-  header:       { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  icon:         { fontSize: 28, width: 36 },
-  titleArea:    { flex: 1, gap: 4 },
-  title:        { fontSize: 15, fontWeight: '700', color: C.dark },
-  catBadge:     { alignSelf: 'flex-start', borderRadius: 20, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2 },
-  catText:      { fontSize: 10, fontWeight: '600' },
-  chevron:      { fontSize: 12, color: C.subtle },
-  content:      { fontSize: 14, color: C.mid, lineHeight: 22, marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: C.border },
+  </View>
+);
+const nav = StyleSheet.create({
+  bar:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
+  brand:     { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  icon:      { fontSize: 20 },
+  brandName: { fontSize: 20, fontWeight: '800', color: C.dark, letterSpacing: -0.3 },
+  menuBtn:   { padding: 6, gap: 4, alignItems: 'flex-end' },
+  menuLine:  { width: 22, height: 2.5, backgroundColor: C.dark, borderRadius: 2 },
 });
 
+// ── Section 1: Core Principles ───────────────────────────────────────────────
+const CorePrinciplesCard = ({ principles }) => (
+  <View style={ss.card}>
+    <View style={ss.cardHeader}>
+      <Text style={ss.cardHeaderIcon}>🧠</Text>
+      <Text style={ss.cardHeaderTitle}>Core Principles of Mindful Snacking</Text>
+    </View>
+    {principles.map((p) => (
+      <View key={p.id} style={cp.row}>
+        <View style={cp.checkCircle}>
+          <Text style={cp.checkMark}>✓</Text>
+        </View>
+        <View style={cp.textWrap}>
+          <Text style={cp.title}>{p.title}</Text>
+          <Text style={cp.desc}>{p.description}</Text>
+        </View>
+      </View>
+    ))}
+  </View>
+);
+const cp = StyleSheet.create({
+  row:         { flexDirection: 'row', gap: 12, paddingVertical: 10, borderTopWidth: 1, borderTopColor: C.border },
+  checkCircle: { width: 28, height: 28, borderRadius: 14, backgroundColor: C.purpleLight, borderWidth: 2, borderColor: C.purple, alignItems: 'center', justifyContent: 'center', marginTop: 2, flexShrink: 0 },
+  checkMark:   { fontSize: 13, color: C.purple, fontWeight: '800' },
+  textWrap:    { flex: 1 },
+  title:       { fontSize: 15, fontWeight: '700', color: C.dark, marginBottom: 3 },
+  desc:        { fontSize: 13, color: C.body, lineHeight: 19 },
+});
+
+// ── Section 2: Managing Cravings ──────────────────────────────────────────────
+const ManagingCravingsCard = ({ cravings }) => (
+  <View style={ss.card}>
+    <View style={ss.cardHeader}>
+      <Text style={ss.cardHeaderIcon}>🎯</Text>
+      <Text style={ss.cardHeaderTitle}>Managing Cravings</Text>
+    </View>
+    {cravings.map((c) => (
+      <View key={c.id} style={[mc.item, { borderLeftColor: c.borderColor }]}>
+        <Text style={mc.title}>{c.title}</Text>
+        <Text style={mc.desc}>{c.description}</Text>
+      </View>
+    ))}
+  </View>
+);
+const mc = StyleSheet.create({
+  item:  { borderLeftWidth: 4, paddingLeft: 12, paddingVertical: 8, marginBottom: 4 },
+  title: { fontSize: 15, fontWeight: '700', color: C.dark, marginBottom: 3 },
+  desc:  { fontSize: 13, color: C.body, lineHeight: 19 },
+});
+
+// ── Section 3: When to Snack ─────────────────────────────────────────────────
+const WhenToSnackCard = ({ slots }) => (
+  <View style={ss.card}>
+    <View style={ss.cardHeader}>
+      <Text style={ss.cardHeaderIcon}>🕐</Text>
+      <Text style={ss.cardHeaderTitle}>When to Snack</Text>
+    </View>
+    {slots.map((slot) => (
+      <View key={slot.id} style={[wts.slot, { backgroundColor: slot.bg }]}>
+        <Text style={wts.period}>{slot.period}</Text>
+        <Text style={wts.desc}>{slot.description}</Text>
+        <Text style={[wts.best, { color: slot.bestColor }]}>Best: {slot.best}</Text>
+      </View>
+    ))}
+  </View>
+);
+const wts = StyleSheet.create({
+  slot:   { borderRadius: 10, padding: 14, marginBottom: 8 },
+  period: { fontSize: 15, fontWeight: '700', color: C.dark, marginBottom: 4 },
+  desc:   { fontSize: 13, color: C.mid, lineHeight: 19, marginBottom: 6 },
+  best:   { fontSize: 13, fontWeight: '600' },
+});
+
+// ── Section 4: Smart Snack Ideas ─────────────────────────────────────────────
+const SnackIdeasCard = ({ snackIdeas, activeFilter, onFilterChange }) => {
+  const displayed = ctrl.filterSnackIdeas(snackIdeas, activeFilter);
+  return (
+    <View style={ss.card}>
+      <View style={ss.cardHeader}>
+        <Text style={ss.cardHeaderIcon}>🍎</Text>
+        <Text style={ss.cardHeaderTitle}>Smart Snack Ideas</Text>
+      </View>
+
+      {/* Filter chips */}
+      <View style={si.chipRow}>
+        {SNACK_FILTERS.map((f) => (
+          <TouchableOpacity
+            key={f}
+            style={[si.chip, activeFilter === f && si.chipActive]}
+            onPress={() => onFilterChange(f)}
+          >
+            <Text style={[si.chipTxt, activeFilter === f && si.chipTxtActive]}>{f}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Snack cards */}
+      {displayed.map((snack) => (
+        <View key={snack.id} style={si.snackCard}>
+          <Text style={si.snackName}>{snack.name}</Text>
+
+          {/* Macro chips */}
+          <View style={si.macroRow}>
+            <View style={si.macroChip}>
+              <Text style={si.macroVal}>{snack.calories}</Text>
+              <Text style={si.macroLbl}>cal</Text>
+            </View>
+            <View style={si.macroChip}>
+              <Text style={si.macroVal}>{snack.protein}g</Text>
+              <Text style={si.macroLbl}>protein</Text>
+            </View>
+            <View style={si.macroChip}>
+              <Text style={si.macroVal}>{snack.fiber}g</Text>
+              <Text style={si.macroLbl}>fiber</Text>
+            </View>
+          </View>
+
+          {/* Timing badge */}
+          <View style={si.timingBadge}>
+            <Text style={si.timingIcon}>🕐 </Text>
+            <Text style={si.timingTxt}>{snack.timing}</Text>
+          </View>
+
+          {/* Benefits */}
+          <View style={si.divider} />
+          <Text style={si.benefitsLabel}>Benefits:</Text>
+          {snack.benefits.map((b) => (
+            <Text key={b} style={si.benefit}>✓ {b}</Text>
+          ))}
+
+          {/* View Recipe button */}
+          <View style={si.divider} />
+          <TouchableOpacity style={si.viewRecipeBtn}>
+            <Text style={si.viewRecipeIcon}>👑 </Text>
+            <Text style={si.viewRecipeTxt}>View Recipe</Text>
+          </TouchableOpacity>
+        </View>
+      ))}
+    </View>
+  );
+};
+const si = StyleSheet.create({
+  chipRow:       { flexDirection: 'row', gap: 8, marginBottom: 14 },
+  chip:          { borderWidth: 1, borderColor: C.border, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, backgroundColor: C.white },
+  chipActive:    { backgroundColor: C.purple, borderColor: C.purple },
+  chipTxt:       { fontSize: 13, color: C.mid, fontWeight: '500' },
+  chipTxtActive: { color: C.white, fontWeight: '700' },
+  snackCard:     { backgroundColor: C.bg, borderRadius: 12, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: C.border },
+  snackName:     { fontSize: 16, fontWeight: '700', color: C.dark, marginBottom: 10 },
+  macroRow:      { flexDirection: 'row', gap: 8, marginBottom: 10 },
+  macroChip:     { flex: 1, backgroundColor: C.purpleLight, borderRadius: 8, paddingVertical: 8, alignItems: 'center' },
+  macroVal:      { fontSize: 15, fontWeight: '700', color: C.purple },
+  macroLbl:      { fontSize: 11, color: C.purple, marginTop: 1 },
+  timingBadge:   { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', backgroundColor: C.purpleLight, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5, marginBottom: 10 },
+  timingIcon:    { fontSize: 12, color: C.purple },
+  timingTxt:     { fontSize: 12, fontWeight: '600', color: C.purple },
+  divider:       { height: 1, backgroundColor: C.border, marginVertical: 10 },
+  benefitsLabel: { fontSize: 13, fontWeight: '700', color: C.dark, marginBottom: 4 },
+  benefit:       { fontSize: 13, color: C.body, marginBottom: 2 },
+  viewRecipeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 4 },
+  viewRecipeIcon:{ fontSize: 14, color: C.purple },
+  viewRecipeTxt: { fontSize: 14, fontWeight: '600', color: C.purple },
+});
+
+// ── Section 5: Portion Control ───────────────────────────────────────────────
+const PortionControlCard = ({ portionControl }) => (
+  <View style={ss.card}>
+    <View style={ss.cardHeader}>
+      <Text style={ss.cardHeaderIcon}>〽</Text>
+      <Text style={ss.cardHeaderTitle}>Portion Control Made Easy</Text>
+    </View>
+
+    <Text style={pc.subTitle}>Visual Portion Guides</Text>
+    {portionControl.visualGuides.map((g) => (
+      <View key={g.food} style={pc.bulletRow}>
+        <View style={pc.dot} />
+        <Text style={pc.bulletTxt}>
+          <Text style={pc.foodBold}>{g.food}:</Text> {g.size}
+        </Text>
+      </View>
+    ))}
+
+    <Text style={[pc.subTitle, { marginTop: 14 }]}>Pre-Portioning Strategies</Text>
+    {portionControl.prePortioningStrategies.map((s) => (
+      <View key={s} style={pc.bulletRow}>
+        <View style={pc.dot} />
+        <Text style={pc.bulletTxt}>{s}</Text>
+      </View>
+    ))}
+  </View>
+);
+const pc = StyleSheet.create({
+  subTitle:  { fontSize: 15, fontWeight: '700', color: C.dark, marginBottom: 8, marginTop: 4 },
+  bulletRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 6 },
+  dot:       { width: 6, height: 6, borderRadius: 3, backgroundColor: C.purple, marginTop: 6, flexShrink: 0 },
+  bulletTxt: { flex: 1, fontSize: 13, color: C.body, lineHeight: 19 },
+  foodBold:  { fontWeight: '700', color: C.dark },
+});
+
+// ── Section 6: Warning Card ───────────────────────────────────────────────────
+const WarningCard = ({ warningSign }) => (
+  <View style={wc.card}>
+    <View style={wc.header}>
+      <Text style={wc.icon}>⚠️</Text>
+      <Text style={wc.title}>{warningSign.title}</Text>
+    </View>
+    <Text style={wc.intro}>{warningSign.intro}</Text>
+    {warningSign.signs.map((s) => (
+      <Text key={s} style={wc.sign}>• {s}</Text>
+    ))}
+    <Text style={wc.footer}>{warningSign.footer}</Text>
+  </View>
+);
+const wc = StyleSheet.create({
+  card:   { backgroundColor: C.orangeBg, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: C.orangeBorder, marginBottom: 8 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+  icon:   { fontSize: 20 },
+  title:  { fontSize: 15, fontWeight: '800', color: C.orange, flex: 1 },
+  intro:  { fontSize: 13, color: C.mid, lineHeight: 19, marginBottom: 8 },
+  sign:   { fontSize: 13, color: C.mid, lineHeight: 19, marginBottom: 4 },
+  footer: { fontSize: 13, color: C.mid, lineHeight: 19, marginTop: 8, fontStyle: 'italic' },
+});
+
+// ── Shared card header style ─────────────────────────────────────────────────
+const ss = StyleSheet.create({
+  card:            { backgroundColor: C.white, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: C.border, marginBottom: 14 },
+  cardHeader:      { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
+  cardHeaderIcon:  { fontSize: 18 },
+  cardHeaderTitle: { fontSize: 16, fontWeight: '800', color: C.dark, flex: 1 },
+});
+
+// ── Main Screen ───────────────────────────────────────────────────────────────
 const MindfulSnackingScreen = ({ navigation, route }) => {
   const user = route?.params?.user || null;
-  const [tips,    setTips]    = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState('');
+  const [content,      setContent]      = useState(null);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState('');
+  const [activeFilter, setActiveFilter] = useState('All');
 
-  useEffect(() => {
-    ctrl.fetchSnackingTips().then(r => {
-      if (r.success) setTips(r.data);
-      else           setError(r.message);
-      setLoading(false);
-    });
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      ctrl.fetchSnackingContent().then((r) => {
+        if (r.success) setContent(r.data);
+        else           setError(r.message);
+        setLoading(false);
+      });
+    }, [])
+  );
+
+  const onMenuPress = () => navigation.goBack();
 
   return (
     <SafeAreaView style={s.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
-      <View style={s.nav}>
-        <TouchableOpacity onPress={() => navigation.goBack()}><Text style={s.back}>← Back</Text></TouchableOpacity>
-        <Text style={s.navTitle}>Mindful Snacking</Text>
-        <View style={{ width: 60 }} />
-      </View>
+      <NavBar onMenuPress={onMenuPress} />
 
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+        {/* Page header */}
         <View style={s.header}>
-          <View style={s.badge}><Text style={s.badgeTxt}>☆ Premium</Text></View>
+          <View style={s.premBadge}><Text style={s.premBadgeTxt}>👑 Premium</Text></View>
           <Text style={s.pageTitle}>Mindful Snacking Guide</Text>
-          <Text style={s.pageSub}>Smart strategies to manage cravings and stay on track with your goals</Text>
-        </View>
-
-        {/* Quick stats banner */}
-        <View style={s.statsBanner}>
-          <View style={s.stat}><Text style={s.statNum}>6</Text><Text style={s.statLbl}>Tips</Text></View>
-          <View style={s.divider} />
-          <View style={s.stat}><Text style={s.statNum}>150–250</Text><Text style={s.statLbl}>Ideal snack kcal</Text></View>
-          <View style={s.divider} />
-          <View style={s.stat}><Text style={s.statNum}>2–3h</Text><Text style={s.statLbl}>Between snacks</Text></View>
+          <Text style={s.pageSub}>Master your cravings and maintain your dietary goals with smart snacking strategies</Text>
         </View>
 
         {loading ? (
-          <Text style={s.empty}>Loading tips...</Text>
+          <Text style={s.empty}>Loading...</Text>
         ) : error ? (
           <Text style={s.empty}>{error}</Text>
-        ) : (
+        ) : content ? (
           <>
-            <Text style={s.sectionLabel}>Tap any tip to expand</Text>
-            {tips.map(tip => <TipCard key={tip.tipId} tip={tip} />)}
+            {/* S1 */}
+            <CorePrinciplesCard principles={content.corePrinciples} />
+
+            {/* S2 */}
+            <ManagingCravingsCard cravings={content.managingCravings} />
+
+            {/* S3 */}
+            <WhenToSnackCard slots={content.whenToSnack} />
+
+            {/* S4 */}
+            <SnackIdeasCard
+              snackIdeas={content.snackIdeas}
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+            />
+
+            {/* S5 */}
+            <PortionControlCard portionControl={content.portionControl} />
+
+            {/* S6 */}
+            <WarningCard warningSign={content.warningSign} />
           </>
-        )}
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -120,21 +356,12 @@ const MindfulSnackingScreen = ({ navigation, route }) => {
 
 const s = StyleSheet.create({
   safe:        { flex: 1, backgroundColor: C.bg },
-  nav:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
-  back:        { fontSize: 14, color: C.purple, fontWeight: '600' },
-  navTitle:    { fontSize: 17, fontWeight: '700', color: C.dark },
   scroll:      { paddingHorizontal: 16, paddingBottom: 40 },
   header:      { paddingVertical: 20 },
-  badge:       { alignSelf: 'flex-start', backgroundColor: C.purple, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, marginBottom: 8 },
-  badgeTxt:    { fontSize: 11, fontWeight: '700', color: C.white },
-  pageTitle:   { fontSize: 26, fontWeight: '800', color: C.dark, letterSpacing: -0.5, marginBottom: 6 },
-  pageSub:     { fontSize: 14, color: C.subtle, lineHeight: 20 },
-  statsBanner: { flexDirection: 'row', backgroundColor: C.white, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: C.border, marginBottom: 20, justifyContent: 'space-around', alignItems: 'center' },
-  stat:        { alignItems: 'center', flex: 1 },
-  statNum:     { fontSize: 18, fontWeight: '800', color: C.purple, marginBottom: 2 },
-  statLbl:     { fontSize: 11, color: C.subtle, textAlign: 'center' },
-  divider:     { width: 1, height: 32, backgroundColor: C.border },
-  sectionLabel:{ fontSize: 13, color: C.subtle, marginBottom: 12 },
+  premBadge:   { alignSelf: 'flex-start', backgroundColor: C.purple, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 10 },
+  premBadgeTxt:{ fontSize: 12, fontWeight: '700', color: C.white },
+  pageTitle:   { fontSize: 28, fontWeight: '800', color: C.dark, letterSpacing: -0.5, marginBottom: 6 },
+  pageSub:     { fontSize: 14, color: C.subtle, lineHeight: 21 },
   empty:       { textAlign: 'center', color: C.subtle, paddingTop: 40 },
 });
 

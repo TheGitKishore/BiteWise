@@ -1,20 +1,26 @@
-// MyRecipesScreen.jsx — UC #27, #70
+// MyRecipesScreen.jsx — UC #27, #70, Sprint 9 Task 5 (Edit + Delete)
 // Boundary only: no axios, no api_config.
-// All data access goes through ViewMyRecipesController → Recipe entity.
+// All data access goes through controllers → Recipe entity.
+//
+// Sprint 9 additions:
+//   - ✏️ Edit button on each recipe card → navigates to EditMyRecipeScreen
+//   - 🗑️ Delete button on each recipe card → Alert.alert confirm → deletes + removes card
 
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, StatusBar, ActivityIndicator,
+  StyleSheet, StatusBar, ActivityIndicator, Alert,
 } from 'react-native';
 import { SafeAreaView }   from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
-import ViewMyRecipesController from '../controller/ViewMyRecipesController';
+import ViewMyRecipesController    from '../controller/ViewMyRecipesController';
+import DeleteCustomRecipeController from '../controller/DeleteCustomRecipeController';
 
-const controller = new ViewMyRecipesController();
+const viewCtrl   = new ViewMyRecipesController();
+const deleteCtrl = new DeleteCustomRecipeController();
 
-// Design Tokens
+// ── Design Tokens ─────────────────────────────────────────────────────────────
 const C = {
   purple:        '#7C3AED',
   purpleLight:   '#EDE9FE',
@@ -25,14 +31,15 @@ const C = {
   white:         '#FFFFFF',
   border:        '#E5E7EB',
   bg:            '#F9FAFB',
+  red:           '#DC2626',
+  redLight:      '#FEF2F2',
+  redBorder:     '#FECACA',
   successBg:     '#F0FDF4',
   successBorder: '#BBF7D0',
   successText:   '#15803D',
 };
 
-
-// ─── SUB-COMPONENTS ──────────────────────────────────────────────────────────
-
+// ── NavBar ────────────────────────────────────────────────────────────────────
 const NavBar = ({ onMenu }) => (
   <View style={nav.bar}>
     <View style={nav.brand}>
@@ -55,6 +62,7 @@ const nav = StyleSheet.create({
   menuLine:  { width: 22, height: 2.5, backgroundColor: C.dark, borderRadius: 2 },
 });
 
+// ── Success Banner ────────────────────────────────────────────────────────────
 const Banner = ({ message }) => {
   if (!message) return null;
   return (
@@ -70,12 +78,15 @@ const bn = StyleSheet.create({
   text: { flex: 1, fontSize: 14, fontWeight: '500', color: C.successText },
 });
 
-const RecipeCard = ({ recipe }) => (
+// ── Recipe Card (with Edit + Delete) ─────────────────────────────────────────
+const RecipeCard = ({ recipe, onEdit, onDelete }) => (
   <View style={rc.card}>
+    {/* Recipe info */}
     <Text style={rc.title}>{recipe.title}</Text>
     <Text style={rc.meta}>
       ⏱ {recipe.prepTimeMins} min  •  {recipe.calories} kcal  •  {recipe.difficulty}
     </Text>
+
     {recipe.tags?.length > 0 && (
       <View style={rc.tagRow}>
         {recipe.tags.map((t, i) => (
@@ -85,17 +96,35 @@ const RecipeCard = ({ recipe }) => (
         ))}
       </View>
     )}
+
+    {/* Edit + Delete action row — separated by top border */}
+    <View style={rc.actionRow}>
+      <TouchableOpacity style={rc.editBtn} onPress={onEdit} activeOpacity={0.8}>
+        <Text style={rc.editBtnText}>✏️  Edit</Text>
+      </TouchableOpacity>
+      <View style={rc.actionDivider} />
+      <TouchableOpacity style={rc.deleteBtn} onPress={onDelete} activeOpacity={0.8}>
+        <Text style={rc.deleteBtnText}>🗑️  Delete</Text>
+      </TouchableOpacity>
+    </View>
   </View>
 );
 const rc = StyleSheet.create({
-  card:    { backgroundColor: C.white, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: C.border, marginBottom: 12 },
-  title:   { fontSize: 16, fontWeight: '700', color: C.dark, marginBottom: 4 },
-  meta:    { fontSize: 13, color: C.subtle, marginBottom: 6 },
-  tagRow:  { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  tag:     { backgroundColor: C.purpleLight, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
-  tagText: { fontSize: 11, color: C.purple },
+  card:         { backgroundColor: C.white, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: C.border, marginBottom: 12 },
+  title:        { fontSize: 16, fontWeight: '700', color: C.dark, marginBottom: 4 },
+  meta:         { fontSize: 13, color: C.subtle, marginBottom: 6 },
+  tagRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 },
+  tag:          { backgroundColor: C.purpleLight, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
+  tagText:      { fontSize: 11, color: C.purple },
+  actionRow:    { flexDirection: 'row', borderTopWidth: 1, borderTopColor: C.border, marginTop: 4, paddingTop: 10 },
+  editBtn:      { flex: 1, alignItems: 'center', paddingVertical: 4 },
+  editBtnText:  { fontSize: 13, fontWeight: '600', color: C.purple },
+  actionDivider:{ width: 1, backgroundColor: C.border, marginHorizontal: 4 },
+  deleteBtn:    { flex: 1, alignItems: 'center', paddingVertical: 4 },
+  deleteBtnText:{ fontSize: 13, fontWeight: '600', color: C.red },
 });
 
+// ── Empty State ───────────────────────────────────────────────────────────────
 const EmptyState = ({ onCreate }) => (
   <View style={em.wrap}>
     <Text style={em.emoji}>👨‍🍳</Text>
@@ -115,9 +144,7 @@ const em = StyleSheet.create({
   btnText: { fontSize: 13, fontWeight: '700', color: C.white },
 });
 
-
-// ─── MAIN SCREEN ─────────────────────────────────────────────────────────────
-
+// ── Main Screen ───────────────────────────────────────────────────────────────
 const MyRecipesScreen = ({ navigation, route }) => {
   const user = route?.params?.user || null;
 
@@ -125,11 +152,15 @@ const MyRecipesScreen = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [banner,    setBanner]    = useState(route?.params?.banner || '');
 
-  // UC #27, #70 — re-fetch every time the screen comes into focus so a newly
-  // created recipe appears immediately on return from CreateRecipeScreen.
+  // Re-fetch on every focus so edits/creates show immediately on return
   useFocusEffect(
     useCallback(() => {
-      if (banner) setTimeout(() => setBanner(''), 4000);
+      // Show incoming banner (from EditMyRecipeScreen or CreateRecipeScreen)
+      const incomingBanner = route?.params?.banner || '';
+      if (incomingBanner) {
+        setBanner(incomingBanner);
+        setTimeout(() => setBanner(''), 4000);
+      }
 
       if (!user?.userId) {
         setIsLoading(false);
@@ -138,27 +169,62 @@ const MyRecipesScreen = ({ navigation, route }) => {
 
       const load = async () => {
         setIsLoading(true);
-        const result = await controller.fetchMyRecipes(user.userId);
+        const result = await viewCtrl.fetchMyRecipes(user.userId);
         if (result.success) setRecipes(result.data);
         setIsLoading(false);
       };
 
       load();
-    }, [user?.userId])
+    }, [user?.userId, route?.params?.banner])
   );
+
+  // ── Edit handler ────────────────────────────────────────────────────────────
+  const handleEdit = (recipe) => {
+    navigation.navigate('EditMyRecipeScreen', { user, recipe });
+  };
+
+  // ── Delete handler ──────────────────────────────────────────────────────────
+  const handleDelete = (recipe) => {
+    const recipeId = recipe.recipeId || recipe._id;
+
+    Alert.alert(
+      'Delete Recipe',
+      `Are you sure you want to delete "${recipe.title}"? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const result = await deleteCtrl.deleteRecipe(recipeId, user?.userId);
+            if (result.success) {
+              // Optimistically remove from list without re-fetching
+              setRecipes((prev) =>
+                prev.filter((r) => (r.recipeId || r._id) !== recipeId)
+              );
+              setBanner(result.message);
+              setTimeout(() => setBanner(''), 4000);
+            } else {
+              Alert.alert('Error', result.message || 'Failed to delete recipe.');
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   const goToCreate = () => navigation.navigate('CreateRecipeScreen', { user });
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
-
       <NavBar onMenu={() => navigation.navigate('AccountSettingsScreen', { user })} />
       <Banner message={banner} />
 
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
 
-        {/* Header */}
+        {/* Header row */}
         <View style={styles.headerRow}>
           <View>
             <Text style={styles.pageTitle}>My Custom Recipes</Text>
@@ -176,15 +242,20 @@ const MyRecipesScreen = ({ navigation, route }) => {
         ) : recipes.length === 0 ? (
           <EmptyState onCreate={goToCreate} />
         ) : (
-          recipes.map((r) => <RecipeCard key={r.recipeId ?? r.title} recipe={r} />)
+          recipes.map((r) => (
+            <RecipeCard
+              key={r.recipeId ?? r._id ?? r.title}
+              recipe={r}
+              onEdit={() => handleEdit(r)}
+              onDelete={() => handleDelete(r)}
+            />
+          ))
         )}
 
       </ScrollView>
     </SafeAreaView>
   );
 };
-
-// ─── STYLES ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   safe:         { flex: 1, backgroundColor: C.bg },

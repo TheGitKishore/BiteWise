@@ -180,11 +180,13 @@ const getPremiumBrandName = (profileType) => {
 
 // ─── SPRINT 7: Ordered premium tile configs by profile (Step 6) ──────────────
 const PREMIUM_TILES = {
+  // Health Oriented — habit builders, weight management
   HEALTH_ORIENTED: [
     { icon: '🍴',  title: 'Food Tracking',    subtitle: 'Log your meals and track calories',      screen: 'FoodTrackingLandingScreen' },
     { icon: '⚖️',  title: 'Weight Tracking',  subtitle: 'Monitor weight progress',                screen: 'WeightTrackingScreen' },
     { icon: '📈',  title: 'Reports',           subtitle: 'View your progress over time',           screen: 'ReportsScreen' },
     { icon: '🎯',  title: 'Nutrition Targets', subtitle: 'Personalized macro goals',               screen: 'NutritionTargetsScreen' },
+    { icon: '🍽️', title: "Today's Menu",      subtitle: 'Recipes matched to your budget',         screen: 'TodaysMenuScreen' },
     { icon: '📔',  title: 'Health Diary',      subtitle: 'Document your journey',                  screen: 'DiaryScreen' },
     { icon: '🥦',  title: 'Food Alternatives', subtitle: 'Healthier substitutes',                  screen: 'FoodAlternativesScreen' },
     { icon: '🍎',  title: 'Mindful Snacking',  subtitle: 'Smart snacking guidance',                screen: 'MindfulSnackingScreen' },
@@ -192,16 +194,18 @@ const PREMIUM_TILES = {
     { icon: '🔖',  title: 'Saved Recipes',     subtitle: 'Your recipe collection',                 screen: 'SavedRecipesScreen' },
     { icon: '📅',  title: 'Meal Plans',        subtitle: 'Create and manage meal plans',           screen: 'MealPlansScreen' },
     { icon: '🛒',  title: 'Grocery List',      subtitle: 'Auto-generate from recipes',             screen: 'GroceryListScreen' },
-    { icon: '👨‍🍳', title: 'My Recipes',       subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
+    { icon: '👨‍🍳', title: 'My Recipes',        subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
     { icon: '🏃',  title: 'Activity Tracking', subtitle: 'Log exercise & sync devices',            screen: 'ActivityTrackingScreen' },
     { icon: '👤',  title: 'Account',           subtitle: 'Manage your profile and settings',       screen: 'AccountSettingsScreen' },
     { icon: '⭐',  title: 'Curator Program',   subtitle: 'Become a curator',                       screen: 'CuratorProgramScreen', premium: true },
   ],
+  // Athlete — performance, macro nutrients
   ATHLETE: [
     { icon: '🍴',  title: 'Food Tracking',    subtitle: 'Log your meals and track calories',      screen: 'FoodTrackingLandingScreen' },
     { icon: '🎯',  title: 'Nutrition Targets', subtitle: 'Personalized macro goals',               screen: 'NutritionTargetsScreen' },
     { icon: '🏃',  title: 'Activity Tracking', subtitle: 'Log exercise & sync devices',            screen: 'ActivityTrackingScreen' },
     { icon: '📈',  title: 'Reports',           subtitle: 'View your progress over time',           screen: 'ReportsScreen' },
+    { icon: '🍽️', title: "Today's Menu",      subtitle: 'Recipes matched to your budget',         screen: 'TodaysMenuScreen' },
     { icon: '📅',  title: 'Meal Plans',        subtitle: 'Create and manage meal plans',           screen: 'MealPlansScreen' },
     { icon: '⚖️',  title: 'Weight Tracking',  subtitle: 'Monitor weight progress',                screen: 'WeightTrackingScreen' },
     { icon: '📖',  title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',            screen: 'RecipesScreen' },
@@ -210,16 +214,18 @@ const PREMIUM_TILES = {
     { icon: '🛒',  title: 'Grocery List',      subtitle: 'Auto-generate from recipes',             screen: 'GroceryListScreen' },
     { icon: '📔',  title: 'Health Diary',      subtitle: 'Document your journey',                  screen: 'DiaryScreen' },
     { icon: '🍎',  title: 'Mindful Snacking',  subtitle: 'Smart snacking guidance',                screen: 'MindfulSnackingScreen' },
-    { icon: '👨‍🍳', title: 'My Recipes',       subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
+    { icon: '👨‍🍳', title: 'My Recipes',        subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
     { icon: '👤',  title: 'Account',           subtitle: 'Manage your profile and settings',       screen: 'AccountSettingsScreen' },
     { icon: '⭐',  title: 'Curator Program',   subtitle: 'Become a curator',                       screen: 'CuratorProgramScreen', premium: true },
   ],
+  // Meal Planner — organisation, prepping
   MEAL_PLANNER: [
     { icon: '📅',  title: 'Meal Plans',        subtitle: 'Create and manage meal plans',           screen: 'MealPlansScreen' },
+    { icon: '🍽️', title: "Today's Menu",      subtitle: 'Recipes matched to your budget',         screen: 'TodaysMenuScreen' },
     { icon: '📖',  title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',            screen: 'RecipesScreen' },
     { icon: '🔖',  title: 'Saved Recipes',     subtitle: 'Your recipe collection',                 screen: 'SavedRecipesScreen' },
     { icon: '🛒',  title: 'Grocery List',      subtitle: 'Auto-generate from recipes',             screen: 'GroceryListScreen' },
-    { icon: '👨‍🍳', title: 'My Recipes',       subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
+    { icon: '👨‍🍳', title: 'My Recipes',        subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
     { icon: '🍴',  title: 'Food Tracking',    subtitle: 'Log your meals and track calories',      screen: 'FoodTrackingLandingScreen' },
     { icon: '🥦',  title: 'Food Alternatives', subtitle: 'Healthier substitutes',                  screen: 'FoodAlternativesScreen' },
     { icon: '🍎',  title: 'Mindful Snacking',  subtitle: 'Smart snacking guidance',                screen: 'MindfulSnackingScreen' },

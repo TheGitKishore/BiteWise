@@ -1,396 +1,429 @@
 // CuratorDashboardScreen.jsx
-// UC #99 login → handled by existing LoginScreen.jsx (role check: user.role === 'CURATOR')
-// UC #100 logout → LogOutController (same as Free/Premium)
-// UC #109 view own recipes
-// UC #115 view profile
-// Curator role only
+// UC #99  Curator – Login (handled by LoginScreen, role check → CURATOR)
+// UC #100 Curator – Logout (LogOutController)
+// UC #109 Curator – View Own Recipes
+// UC #115 Curator – View Profile
+// Sprint 9: Rewritten as single scrollable page — no tabs.
+//           Role check fixed: String(user?.role || '').toUpperCase() === 'CURATOR'
+//           Hero banner, stats cards, recipe management, blog post management,
+//           curator profile section — all in one scroll.
 
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet, StatusBar } from 'react-native';
+import {
+  View, Text, ScrollView, TouchableOpacity,
+  Alert, StyleSheet, StatusBar,
+} from 'react-native';
 import { SafeAreaView }   from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
-import ViewCuratorRecipesController from '../controller/ViewCuratorRecipesController';
-import ViewCuratorProfileController  from '../controller/ViewCuratorProfileController';
-import DeleteCuratorRecipeController from '../controller/DeleteCuratorRecipeController';
+import ViewCuratorProfileController from '../controller/ViewCuratorProfileController';
 import LogOutController              from '../controller/LogOutController';
-import ViewBlogPostsController      from '../controller/ViewBlogPostsController';
-import PublishCuratorRecipeController   from '../controller/PublishCuratorRecipeController';
-import UnpublishCuratorRecipeController from '../controller/UnpublishCuratorRecipeController';
 
-
-const recipesCtrl = new ViewCuratorRecipesController();
 const profileCtrl = new ViewCuratorProfileController();
-const deleteCtrl  = new DeleteCuratorRecipeController();
-const logoutCtrl    = new LogOutController();
-const publishRecipeCtrl   = new PublishCuratorRecipeController();
-const unpublishRecipeCtrl = new UnpublishCuratorRecipeController();
+const logoutCtrl  = new LogOutController();
 
-const TABS = ['My Recipes', 'My Blog Posts', 'Profile'];
-const C = { purple: '#7C3AED', purpleLight: '#EDE9FE', dark: '#111827', mid: '#374151', subtle: '#6B7280', white: '#FFFFFF', border: '#E5E7EB', bg: '#F9FAFB', errorText: '#DC2626', errorBg: '#FEF2F2' };
+const C = {
+  purple:      '#7C3AED',
+  purpleLight: '#EDE9FE',
+  dark:        '#111827',
+  mid:         '#374151',
+  body:        '#4B5563',
+  subtle:      '#6B7280',
+  white:       '#FFFFFF',
+  border:      '#E5E7EB',
+  bg:          '#F9FAFB',
+  blue:        '#3B82F6',
+  green:       '#16A34A',
+  greenBg:     '#F0FDF4',
+  greenBorder: '#BBF7D0',
+  orange:      '#D97706',
+  orangeBg:    '#FFF7ED',
+  orangeBorder:'#FDE68A',
+  pink:        '#F43F5E',
+  successBg:   '#F0FDF4',
+  successBorder:'#BBF7D0',
+  successText: '#15803D',
+};
 
-const TabBar = ({ active, onSelect }) => (
-  <View style={tb.bar}>
-    {TABS.map((t) => (
-      <TouchableOpacity key={t} style={[tb.tab, active === t && tb.active]} onPress={() => onSelect(t)}>
-        <Text style={[tb.txt, active === t && tb.activeTxt]}>{t}</Text>
-      </TouchableOpacity>
-    ))}
+// ── NavBar ───────────────────────────────────────────────────────────────────
+const NavBar = ({ onMenuPress }) => (
+  <View style={nav.bar}>
+    <View style={nav.brand}>
+      <Text style={nav.icon}>🍴</Text>
+      <Text style={nav.brandName}>BiteWise</Text>
+    </View>
+    <TouchableOpacity onPress={onMenuPress} style={nav.menuBtn} accessibilityRole="button">
+      <View style={nav.menuLine} />
+      <View style={[nav.menuLine, { width: 18 }]} />
+      <View style={nav.menuLine} />
+    </TouchableOpacity>
   </View>
 );
-const tb = StyleSheet.create({ bar: { flexDirection: 'row', backgroundColor: C.white, borderRadius: 10, borderWidth: 1, borderColor: C.border, marginBottom: 16, overflow: 'hidden' }, tab: { flex: 1, paddingVertical: 10, alignItems: 'center' }, active: { backgroundColor: C.purpleLight }, txt: { fontSize: 13, color: C.subtle }, activeTxt: { color: C.purple, fontWeight: '700' } });
+const nav = StyleSheet.create({
+  bar:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
+  brand:     { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  icon:      { fontSize: 20 },
+  brandName: { fontSize: 20, fontWeight: '800', color: C.dark, letterSpacing: -0.3 },
+  menuBtn:   { padding: 6, gap: 4, alignItems: 'flex-end' },
+  menuLine:  { width: 22, height: 2.5, backgroundColor: C.dark, borderRadius: 2 },
+});
 
-// UC #109 — My Recipes tab
-const MyRecipesTab = ({ userId, navigation, user, route }) => {
-  const [recipes, setRecipes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const refreshKey = route?.params?.refreshKey;
-
-  useFocusEffect(
-    useCallback(() => {
-      setLoading(true);
-      recipesCtrl.fetchCuratorRecipes(userId).then((r) => {
-        if (r.success) setRecipes(r.data);
-        setLoading(false);
-      });
-    }, [userId, refreshKey]) // 🔥 ADD THIS
-  );
-
-  const handleDelete = useCallback((recipeId) => {
-    Alert.alert('Delete Recipe', 'Permanently delete this recipe?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => {
-          const r = await deleteCtrl.deleteRecipe(recipeId, userId);
-          if (r.success) setRecipes((p) => p.filter((rec) => rec._id !== recipeId));
-        }},
-    ]);
-  }, [userId]);
-
-  // UC #111 — publish a draft recipe
-  const handlePublishRecipe = useCallback((recipeId) => {
-    Alert.alert('Publish Recipe', 'Make this recipe visible to all users?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Publish',
-        onPress: async () => {
-          const r = await publishRecipeCtrl.publishRecipe(recipeId, userId);
-          console.log("🧪 PUBLISH RESPONSE:", r);
-          console.log("🧪 RETURNED DATA:", r.data);
-
-          if (r.success) {
-            setRecipes((prev) =>
-              prev.map((rec) =>
-                (rec._id || rec.recipeId) === recipeId
-                  ? {
-                      ...rec,
-                      ...r.data,
-                      recipeId: r.data._id?.toString(),  // 🔥 ADD THIS
-                      isPublished: true,   // 🔥 FORCE THIS
-                    }
-                  : rec
-              )
-            );
-          }
-        },
-      },
-    ]);
-  }, [userId]);
-
-  // UC #112 — unpublish a published recipe
-  const handleUnpublishRecipe = useCallback((recipeId) => {
-    Alert.alert('Unpublish Recipe', 'Remove this recipe from public listing?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Unpublish',
-        onPress: async () => {
-          console.log("➡️ CALLING CONTROLLER unpublishRecipe:", recipeId, userId);
-
-          const r = await unpublishRecipeCtrl.unpublishRecipe(recipeId, userId);
-
-          console.log("⬅️ UNPUBLISH RESPONSE:", r);
-        
-          if (r.success) {
-            setRecipes((prev) =>
-              prev.map((rec) =>
-                rec._id === recipeId
-                  ? {
-                      ...r.data,
-                      recipeId: r.data._id?.toString(), // 🔥 ADD THIS
-                    } // ✅ REPLACE with new draft
-                  : rec
-              )
-            );
-            console.log('Recipe object:', r);
-          }
-        },
-      },
-    ]);
-  }, [userId]);
-
-  if (loading) return <Text style={rs.loading}>Loading...</Text>;
+// ── Welcome Banner (shown when route.params.showWelcome === true) ─────────────
+const WelcomeBanner = ({ visible }) => {
+  if (!visible) return null;
   return (
-    <View>
+    <View style={wb.wrap}>
+      <Text style={wb.icon}>✅</Text>
+      <Text style={wb.text}>Application submitted and approved! Welcome to the Curator Program! 🎉</Text>
+    </View>
+  );
+};
+const wb = StyleSheet.create({
+  wrap: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: C.successBg, borderBottomWidth: 1, borderBottomColor: C.successBorder },
+  icon: { fontSize: 16 },
+  text: { flex: 1, fontSize: 13, fontWeight: '500', color: C.successText },
+});
 
-      {/* Create Button */}
-      <TouchableOpacity
-        style={rs.createBtn}
-        onPress={() =>
-          navigation.navigate('EditCuratorRecipeScreen', {
-            user,
-          })
-        }
-      >
-        <Text style={rs.createBtnTxt}>+ Create Recipe</Text>
+// ── Hero Banner ───────────────────────────────────────────────────────────────
+const HeroBanner = ({ username, onBackToDashboard }) => (
+  <View style={hb.banner}>
+    <View style={hb.avatarCircle}>
+      <Text style={hb.avatarIcon}>👨‍🍳</Text>
+    </View>
+    <Text style={hb.title}>Curator Dashboard</Text>
+    <Text style={hb.subtitle}>Welcome back, {username}!</Text>
+    <TouchableOpacity style={hb.backBtn} onPress={onBackToDashboard}>
+      <Text style={hb.backBtnTxt}>Back to Dashboard</Text>
+    </TouchableOpacity>
+  </View>
+);
+const hb = StyleSheet.create({
+  banner:      { backgroundColor: C.purple, paddingVertical: 28, paddingHorizontal: 20, alignItems: 'center' },
+  avatarCircle:{ width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  avatarIcon:  { fontSize: 30 },
+  title:       { fontSize: 24, fontWeight: '800', color: C.white, marginBottom: 4 },
+  subtitle:    { fontSize: 14, color: 'rgba(255,255,255,0.85)', marginBottom: 18 },
+  backBtn:     { borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.7)', borderRadius: 10, paddingVertical: 9, paddingHorizontal: 32, alignSelf: 'stretch' },
+  backBtnTxt:  { color: C.white, fontWeight: '600', fontSize: 14, textAlign: 'center' },
+});
+
+// ── Stat Card ─────────────────────────────────────────────────────────────────
+const StatCard = ({ label, value, emoji, emojiColor }) => (
+  <View style={sc.card}>
+    <View>
+      <Text style={sc.label}>{label}</Text>
+      <Text style={[sc.value, { color: emojiColor }]}>{value}</Text>
+    </View>
+    <Text style={[sc.emoji, { color: emojiColor }]}>{emoji}</Text>
+  </View>
+);
+const sc = StyleSheet.create({
+  card:  { backgroundColor: C.white, borderRadius: 14, padding: 18, borderWidth: 1, borderColor: C.border, marginBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  label: { fontSize: 13, color: C.subtle, marginBottom: 4 },
+  value: { fontSize: 28, fontWeight: '800' },
+  emoji: { fontSize: 28, opacity: 0.35 },
+});
+
+// ── Management Section ────────────────────────────────────────────────────────
+const ManagementSection = ({
+  title, icon, published, draft,
+  publishedLabel, draftLabel,
+  createLabel, createColor,
+  onViewAll, onCreate,
+}) => (
+  <View style={ms.card}>
+    <View style={ms.header}>
+      <View style={ms.titleRow}>
+        <Text style={ms.icon}>{icon}</Text>
+        <Text style={ms.title}>{title}</Text>
+      </View>
+      <TouchableOpacity style={ms.viewAllBtn} onPress={onViewAll}>
+        <Text style={ms.viewAllTxt}>View All</Text>
       </TouchableOpacity>
-
-      {/* Empty State */}
-      {recipes.length === 0 ? (
-        <View style={rs.empty}>
-          <Text style={rs.emptyEmoji}>👨‍🍳</Text>
-          <Text style={rs.emptyTitle}>No Recipes Yet</Text>
-          <Text style={rs.emptyBody}>
-            Create your first curator recipe to share with the community.
-          </Text>
-        </View>
-      ) : (
-        recipes.map((r) => {
-          const id = r._id || r.recipeId;
-
-          return (
-            <View key={id.toString()} style={rs.card}>
-
-              {/* ───── CARD INFO ───── */}
-              <View style={rs.cardInfo}>
-                <Text style={rs.cardTitle}>{r.title}</Text>
-                <Text style={rs.cardMeta}>
-                  {r.prepTimeMins} min • {r.calories} kcal • {r.difficulty}
-                </Text>
-
-                <View style={rs.tagRow}>
-                  {r.tags?.slice(0, 3).map((t) => (
-                    <View key={t} style={rs.tag}>
-                      <Text style={rs.tagTxt}>{t}</Text>
-                    </View>
-                  ))}
-                </View>
-
-                <Text style={{ fontSize: 11, color: '#6B7280', marginTop: 4 }}>
-                  {r.isPublished ? 'Published' : 'Draft'}
-                </Text>
-              </View>
-
-              {/* ───── ACTIONS ───── */}
-              <View style={rs.actions}>
-
-                {/* ONLY SHOW EDIT + DELETE IF NOT PUBLISHED */}
-                {!r.isPublished && (
-                  <>
-                    <TouchableOpacity
-                      style={rs.editBtn}
-                      onPress={() => {
-                        if (r.isPublished) {
-                          Alert.alert('Cannot edit', 'Unpublish the recipe first.');
-                          return;
-                        }
-                        navigation.navigate('EditCuratorRecipeScreen', {
-                          user,
-                          recipe: r
-                        });
-                      }}
-                    >
-                      <Text style={rs.editBtnTxt}>Edit</Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity
-                      style={rs.delBtn}
-                      onPress={() => handleDelete(id)}
-                    >
-                      <Text style={rs.delBtnTxt}>Delete</Text>
-                    </TouchableOpacity>
-                  </>
-                )}
-
-                {/* PUBLISH / UNPUBLISH */}
-                {r.isPublished ? (
-                  <TouchableOpacity
-                    style={rs.unpubBtn}
-                    onPress={() => handleUnpublishRecipe(id)}
-                  >
-                    <Text style={rs.unpubBtnTxt}>Unpublish</Text>
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    style={rs.pubBtn}
-                    onPress={() => handlePublishRecipe(id)}
-                  >
-                    <Text style={rs.pubBtnTxt}>Publish</Text>
-                  </TouchableOpacity>
-                )}
-
-              </View>
-
-            </View>
-          );
-        })
-      )}
-
     </View>
-  );
-};
-const rs = StyleSheet.create({
-  loading:       { textAlign: 'center', color: C.subtle, paddingTop: 40 },
-  createBtn:     { backgroundColor: C.purple, borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginBottom: 16 },
-  createBtnTxt:  { fontSize: 15, fontWeight: '700', color: C.white },
-  empty:         { backgroundColor: C.white, borderRadius: 14, padding: 32, alignItems: 'center', borderWidth: 1, borderColor: C.border },
-  emptyEmoji:    { fontSize: 48, marginBottom: 12 },
-  emptyTitle:    { fontSize: 18, fontWeight: '700', color: C.dark, marginBottom: 6 },
-  emptyBody:     { fontSize: 13, color: C.subtle, textAlign: 'center' },
-  card:          { backgroundColor: C.white, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: C.border, marginBottom: 12, flexDirection: 'row', gap: 10 },
-  cardInfo:      { flex: 1 },
-  cardTitle:     { fontSize: 15, fontWeight: '700', color: C.dark, marginBottom: 2 },
-  cardMeta:      { fontSize: 12, color: C.subtle, marginBottom: 6 },
-  tagRow:        { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
-  tag:           { backgroundColor: C.purpleLight, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2 },
-  tagTxt:        { fontSize: 10, color: C.purple },
-  actions:       { justifyContent: 'center', gap: 6 },
-  editBtn:       { backgroundColor: C.purpleLight, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12 },
-  editBtnTxt:    { fontSize: 12, fontWeight: '600', color: C.purple },
-  delBtn:        { backgroundColor: C.errorBg, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12 },
-  delBtnTxt:     { fontSize: 12, fontWeight: '600', color: C.errorText },
-  publishRow:    { marginTop: 8 },
-  pubBtn:        { backgroundColor: '#F0FDF4', borderRadius: 8, paddingVertical: 7, alignItems: 'center', borderWidth: 1, borderColor: '#BBF7D0' },
-  pubBtnTxt:     { fontSize: 12, fontWeight: '600', color: '#15803D' },
-  unpubBtn:      { backgroundColor: '#FFFBEB', borderRadius: 8, paddingVertical: 7, alignItems: 'center', borderWidth: 1, borderColor: '#FDE68A' },
-  unpubBtnTxt:   { fontSize: 12, fontWeight: '600', color: '#B45309' },
+
+    {/* Published row */}
+    <View style={[ms.statRow, { backgroundColor: C.greenBg }]}>
+      <View>
+        <Text style={ms.statLabel}>{publishedLabel}</Text>
+        <Text style={[ms.statNum, { color: C.green }]}>{published}</Text>
+      </View>
+      <View style={[ms.badge, { backgroundColor: C.green }]}>
+        <Text style={ms.badgeTxt}>Live</Text>
+      </View>
+    </View>
+
+    {/* Draft row */}
+    <View style={[ms.statRow, { backgroundColor: C.orangeBg }]}>
+      <View>
+        <Text style={ms.statLabel}>{draftLabel}</Text>
+        <Text style={[ms.statNum, { color: C.orange }]}>{draft}</Text>
+      </View>
+      <View style={[ms.badge, { backgroundColor: C.orange }]}>
+        <Text style={ms.badgeTxt}>Draft</Text>
+      </View>
+    </View>
+
+    {/* Create button */}
+    <TouchableOpacity style={[ms.createBtn, { backgroundColor: createColor }]} onPress={onCreate}>
+      <Text style={ms.createBtnTxt}>+ {createLabel}</Text>
+    </TouchableOpacity>
+  </View>
+);
+const ms = StyleSheet.create({
+  card:       { backgroundColor: C.white, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: C.border, marginBottom: 14 },
+  header:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
+  titleRow:   { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  icon:       { fontSize: 18 },
+  title:      { fontSize: 16, fontWeight: '800', color: C.dark },
+  viewAllBtn: { borderWidth: 1, borderColor: C.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
+  viewAllTxt: { fontSize: 13, fontWeight: '600', color: C.mid },
+  statRow:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 10, padding: 12, marginBottom: 8 },
+  statLabel:  { fontSize: 12, color: C.subtle, marginBottom: 2 },
+  statNum:    { fontSize: 22, fontWeight: '800' },
+  badge:      { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
+  badgeTxt:   { fontSize: 12, fontWeight: '700', color: C.white },
+  createBtn:  { borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginTop: 4 },
+  createBtnTxt:{ fontSize: 15, fontWeight: '700', color: C.white },
 });
 
-// UC #115 — Profile tab
-const ProfileTab = ({ userId }) => {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+// ── Curator Profile Section ───────────────────────────────────────────────────
+const CuratorProfileSection = ({ profileData, onEditProfile }) => {
+  const { user, expertise, bio } = profileData;
+  const initial = (user?.username || user?.firstName || 'C')[0].toUpperCase();
+  const username = user?.username || user?.firstName || 'Curator';
+  const email    = user?.email || '';
 
-  useFocusEffect(useCallback(() => {
-    setLoading(true);
-    profileCtrl.fetchProfile(userId).then((r) => { if (r.success) setProfile(r.data); setLoading(false); });
-  }, [userId]));
-
-  if (loading) return <Text style={{ textAlign: 'center', color: C.subtle, paddingTop: 40 }}>Loading...</Text>;
-  if (!profile) return <Text style={{ textAlign: 'center', color: C.subtle, paddingTop: 40 }}>Unable to load profile.</Text>;
-
-  const { user, recipeCount } = profile;
   return (
-    <View>
-      <View style={ps.card}>
-        <View style={ps.avatar}><Text style={ps.avatarTxt}>{(user.firstName || user.username || 'C')[0].toUpperCase()}</Text></View>
-        <Text style={ps.name}>{user.firstName} {user.lastName}</Text>
-        <Text style={ps.username}>@{user.username}</Text>
-        <View style={ps.curatorBadge}><Text style={ps.curatorBadgeTxt}>✓ Curator</Text></View>
+    <View style={cp.card}>
+      <View style={cp.header}>
+        <View style={cp.titleRow}>
+          <Text style={cp.icon}>👤</Text>
+          <Text style={cp.title}>Curator Profile</Text>
+        </View>
+        <TouchableOpacity style={cp.editBtn} onPress={onEditProfile}>
+          <Text style={cp.editBtnTxt}>⚙️ Edit Profile</Text>
+        </TouchableOpacity>
       </View>
-      <View style={ps.statsRow}>
-        <View style={ps.stat}><Text style={ps.statVal}>{recipeCount}</Text><Text style={ps.statLbl}>Recipes</Text></View>
-        <View style={ps.stat}><Text style={ps.statVal}>{user.profileType?.replace('_', ' ') || '—'}</Text><Text style={ps.statLbl}>Profile</Text></View>
+
+      <View style={cp.profileRow}>
+        <View style={cp.avatar}>
+          <Text style={cp.avatarTxt}>{initial}</Text>
+        </View>
+        <View style={cp.infoBlock}>
+          <Text style={cp.username}>{username}</Text>
+          <Text style={cp.email}>{email}</Text>
+        </View>
       </View>
-      <View style={ps.infoCard}>
-        <Text style={ps.infoLbl}>Email</Text><Text style={ps.infoVal}>{user.email}</Text>
-        <Text style={ps.infoLbl}>Member Since</Text><Text style={ps.infoVal}>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' }) : '—'}</Text>
-      </View>
+
+      {expertise ? (
+        <View style={cp.fieldWrap}>
+          <Text style={cp.fieldLabel}>Expertise:</Text>
+          <Text style={cp.fieldVal}>{expertise}</Text>
+        </View>
+      ) : null}
+
+      {bio ? (
+        <View style={cp.fieldWrap}>
+          <Text style={cp.fieldLabel}>Bio:</Text>
+          <Text style={cp.fieldVal}>{bio}</Text>
+        </View>
+      ) : null}
     </View>
   );
 };
-const ps = StyleSheet.create({
-  card:           { backgroundColor: C.white, borderRadius: 14, padding: 24, alignItems: 'center', borderWidth: 1, borderColor: C.border, marginBottom: 12 },
-  avatar:         { width: 72, height: 72, borderRadius: 36, backgroundColor: C.purple, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
-  avatarTxt:      { fontSize: 28, fontWeight: '800', color: C.white },
-  name:           { fontSize: 20, fontWeight: '700', color: C.dark, marginBottom: 2 },
-  username:       { fontSize: 14, color: C.subtle, marginBottom: 8 },
-  curatorBadge:   { backgroundColor: C.purpleLight, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
-  curatorBadgeTxt:{ fontSize: 12, fontWeight: '700', color: C.purple },
-  statsRow:       { flexDirection: 'row', gap: 12, marginBottom: 12 },
-  stat:           { flex: 1, backgroundColor: C.white, borderRadius: 14, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: C.border },
-  statVal:        { fontSize: 24, fontWeight: '800', color: C.dark, marginBottom: 2 },
-  statLbl:        { fontSize: 12, color: C.subtle },
-  infoCard:       { backgroundColor: C.white, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: C.border },
-  infoLbl:        { fontSize: 12, color: C.subtle, marginBottom: 2 },
-  infoVal:        { fontSize: 15, fontWeight: '600', color: C.dark, marginBottom: 12 },
+const cp = StyleSheet.create({
+  card:       { backgroundColor: C.white, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: C.border, marginBottom: 14 },
+  header:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
+  titleRow:   { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  icon:       { fontSize: 18, color: C.purple },
+  title:      { fontSize: 16, fontWeight: '800', color: C.dark },
+  editBtn:    { borderWidth: 1, borderColor: C.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
+  editBtnTxt: { fontSize: 13, fontWeight: '600', color: C.mid },
+  profileRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 14 },
+  avatar:     { width: 60, height: 60, borderRadius: 30, backgroundColor: C.purple, alignItems: 'center', justifyContent: 'center' },
+  avatarTxt:  { fontSize: 24, fontWeight: '800', color: C.white },
+  infoBlock:  { flex: 1 },
+  username:   { fontSize: 18, fontWeight: '800', color: C.dark, marginBottom: 2 },
+  email:      { fontSize: 13, color: C.subtle },
+  fieldWrap:  { marginBottom: 8 },
+  fieldLabel: { fontSize: 13, fontWeight: '700', color: C.dark, marginBottom: 1 },
+  fieldVal:   { fontSize: 13, color: C.body },
 });
 
-// ── Main Screen ──────────────────────────────────────────────────────────────
-const CuratorDashboardScreen = ({ navigation, route }) => {
-  const user = route?.params?.user || null;
-  const [activeTab, setActiveTab] = useState('My Recipes');
+// ── Nav Tile ──────────────────────────────────────────────────────────────────
+const NavTile = ({ icon, label, onPress }) => (
+  <TouchableOpacity style={nt.tile} onPress={onPress}>
+    <Text style={nt.icon}>{icon}</Text>
+    <Text style={nt.label}>{label}</Text>
+  </TouchableOpacity>
+);
+const nt = StyleSheet.create({
+  tile:  { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: C.white, borderRadius: 14, paddingHorizontal: 18, paddingVertical: 16, borderWidth: 1, borderColor: C.border, marginBottom: 10 },
+  icon:  { fontSize: 20 },
+  label: { fontSize: 15, fontWeight: '600', color: C.dark },
+});
 
-  // Role guard
-  if (user?.role !== 'curator') {
+// ── Main Screen ───────────────────────────────────────────────────────────────
+const CuratorDashboardScreen = ({ navigation, route }) => {
+  const user         = route?.params?.user || null;
+  const showWelcome  = route?.params?.showWelcome === true;
+
+  const [profileData, setProfileData] = useState(null);
+  const [loading,     setLoading]     = useState(true);
+
+  // Role guard — fixed: compare uppercase
+  if (String(user?.role || '').toUpperCase() !== 'CURATOR') {
     return (
       <SafeAreaView style={s.safe}>
-        <View style={s.gateWrap}><Text style={s.gateTitle}>Curator Access Only</Text><Text style={s.gateBody}>This dashboard is for approved Curators only.</Text></View>
+        <View style={s.gateWrap}>
+          <Text style={s.gateTitle}>Curator Access Only</Text>
+          <Text style={s.gateBody}>This dashboard is for approved Curators only.</Text>
+        </View>
       </SafeAreaView>
     );
   }
 
-  // UC #100 — log out (reuses shared LogOutController)
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      profileCtrl.fetchProfile(user.userId).then((r) => {
+        if (r.success) setProfileData(r.data);
+        setLoading(false);
+      });
+    }, [user?.userId])
+  );
+
   const handleLogout = useCallback(async () => {
     const r = await logoutCtrl.logout();
     if (r.success) navigation.replace('LoginScreen');
   }, [navigation]);
 
-  const handleBackToPremium = useCallback(() => {
+  const handleBackToDashboard = useCallback(() => {
     navigation.navigate('PremiumUserDashboardScreen', { user });
   }, [navigation, user]);
+
+  const handleMenuPress = () => handleBackToDashboard();
 
   return (
     <SafeAreaView style={s.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
-      <View style={s.nav}>
-        <View style={s.brand}>
-          <TouchableOpacity style={s.backBtn} onPress={handleBackToPremium} accessibilityRole="button" accessibilityLabel="Back to premium dashboard">
-            <Text style={s.backTxt}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={s.navTitle}>Curator</Text>
-        </View>
-        <TouchableOpacity style={s.logoutBtn} onPress={handleLogout}><Text style={s.logoutTxt}>Log Out</Text></TouchableOpacity>
-      </View>
-      <ScrollView contentContainerStyle={s.scroll}>
-        <View style={s.header}>
-          <View style={s.badge}><Text style={s.badgeTxt}>✓ Curator</Text></View>
-          <Text style={s.pageTitle}>Curator Dashboard</Text>
-          <Text style={s.pageSub}>Manage your recipes and profile</Text>
-        </View>
-        <TabBar active={activeTab} onSelect={setActiveTab} />
-        {activeTab === 'My Recipes'    && <MyRecipesTab  userId={user.userId} navigation={navigation} user={user} route={route}/>}
-        {activeTab === 'My Blog Posts' && (
+      <NavBar onMenuPress={handleMenuPress} />
+      <WelcomeBanner visible={showWelcome} />
+
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+
+        {/* Hero Banner */}
+        <HeroBanner
+          username={user?.username || user?.firstName || 'Curator'}
+          onBackToDashboard={handleBackToDashboard}
+        />
+
+        <View style={s.content}>
+
+          {/* + Create Recipe */}
           <TouchableOpacity
-            style={{ backgroundColor: '#7C3AED', borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginTop: 8 }}
-            onPress={() => navigation.navigate('BlogPostsScreen', { user })}
-            activeOpacity={0.85}
+            style={s.createRecipeBtn}
+            onPress={() => navigation.navigate('EditCuratorRecipeScreen', { user })}
           >
-            <Text style={{ fontSize: 15, fontWeight: '700', color: '#FFFFFF' }}>Open Blog Posts</Text>
+            <Text style={s.createBtnTxt}>+ Create Recipe</Text>
           </TouchableOpacity>
-        )}
-        {activeTab === 'Profile'       && <ProfileTab   userId={user.userId} />}
+
+          {/* + Create Blog Post */}
+          <TouchableOpacity
+            style={s.createBlogBtn}
+            onPress={() => navigation.navigate('BlogPostsScreen', { user })}
+          >
+            <Text style={s.createBtnTxt}>+ Create Blog Post</Text>
+          </TouchableOpacity>
+
+          {/* My Recipes nav tile */}
+          <NavTile
+            icon="📄"
+            label="My Recipes"
+            onPress={() => navigation.navigate('EditCuratorRecipeScreen', { user })}
+          />
+
+          {/* My Blog Posts nav tile */}
+          <NavTile
+            icon="📖"
+            label="My Blog Posts"
+            onPress={() => navigation.navigate('BlogPostsScreen', { user })}
+          />
+
+          {/* Stats */}
+          {loading ? (
+            <Text style={s.loading}>Loading...</Text>
+          ) : profileData ? (
+            <>
+              <StatCard label="Total Views"  value={profileData.curatorStats.views}     emoji="👁"  emojiColor={C.purple} />
+              <StatCard label="Total Likes"  value={profileData.curatorStats.likes}     emoji="🤍"  emojiColor={C.pink}   />
+              <StatCard label="Comments"     value={profileData.curatorStats.comments}  emoji="💬"  emojiColor={C.blue}   />
+              <StatCard label="Followers"    value={profileData.curatorStats.followers} emoji="📈"  emojiColor={C.purple} />
+
+              {/* Recipe Management */}
+              <ManagementSection
+                title="Recipe Management"
+                icon="👨‍🍳"
+                published={profileData.recipes.published}
+                draft={profileData.recipes.draft}
+                publishedLabel="Published Recipes"
+                draftLabel="Draft Recipes"
+                createLabel="Create New Recipe"
+                createColor={C.purple}
+                onViewAll={() => navigation.navigate('EditCuratorRecipeScreen', { user })}
+                onCreate={() => navigation.navigate('EditCuratorRecipeScreen', { user })}
+              />
+
+              {/* Blog Post Management */}
+              <ManagementSection
+                title="Blog Post Management"
+                icon="📖"
+                published={profileData.blogPosts.published}
+                draft={profileData.blogPosts.draft}
+                publishedLabel="Published Posts"
+                draftLabel="Draft Posts"
+                createLabel="Create New Blog Post"
+                createColor={C.blue}
+                onViewAll={() => navigation.navigate('BlogPostsScreen', { user })}
+                onCreate={() => navigation.navigate('BlogPostsScreen', { user })}
+              />
+
+              {/* Curator Profile */}
+              <CuratorProfileSection
+                profileData={profileData}
+                onEditProfile={() => Alert.alert('Edit Profile', 'Profile editing coming soon.')}
+              />
+            </>
+          ) : (
+            <Text style={s.error}>Unable to load dashboard data.</Text>
+          )}
+
+          {/* Logout */}
+          <TouchableOpacity style={s.logoutBtn} onPress={handleLogout}>
+            <Text style={s.logoutTxt}>Log Out</Text>
+          </TouchableOpacity>
+
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const s = StyleSheet.create({
-  safe:      { flex: 1, backgroundColor: C.bg },
-  nav:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
-  brand:     { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  backBtn:   { backgroundColor: C.bg, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: C.border },
-  backTxt:   { fontSize: 13, fontWeight: '600', color: C.mid },
-  navTitle:  { fontSize: 20, fontWeight: '800', color: C.dark },
-  logoutBtn: { backgroundColor: C.bg, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: C.border },
-  logoutTxt: { fontSize: 13, fontWeight: '600', color: C.mid },
-  scroll:    { paddingHorizontal: 16, paddingBottom: 32 },
-  header:    { paddingVertical: 20 },
-  badge:     { alignSelf: 'flex-start', backgroundColor: C.purple, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, marginBottom: 8 },
-  badgeTxt:  { fontSize: 11, fontWeight: '700', color: C.white },
-  pageTitle: { fontSize: 28, fontWeight: '800', color: C.dark, letterSpacing: -0.5, marginBottom: 4 },
-  pageSub:   { fontSize: 14, color: C.subtle },
-  gateWrap:  { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
-  gateTitle: { fontSize: 20, fontWeight: '700', color: C.dark, marginBottom: 8 },
-  gateBody:  { fontSize: 14, color: C.subtle, textAlign: 'center' },
+  safe:            { flex: 1, backgroundColor: C.bg },
+  gateWrap:        { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
+  gateTitle:       { fontSize: 20, fontWeight: '700', color: C.dark, marginBottom: 8 },
+  gateBody:        { fontSize: 14, color: C.subtle, textAlign: 'center' },
+  scroll:          { paddingBottom: 40 },
+  content:         { paddingHorizontal: 16, paddingTop: 16 },
+  createRecipeBtn: { borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginBottom: 10, backgroundColor: C.purple },
+  createBlogBtn:   { borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginBottom: 10, backgroundColor: C.blue },
+  createBtnTxt:    { fontSize: 16, fontWeight: '700', color: C.white },
+  loading:         { textAlign: 'center', color: C.subtle, paddingVertical: 24 },
+  error:           { textAlign: 'center', color: '#DC2626', paddingVertical: 16 },
+  logoutBtn:       { backgroundColor: C.white, borderRadius: 12, borderWidth: 1, borderColor: C.border, paddingVertical: 13, alignItems: 'center', marginTop: 4 },
+  logoutTxt:       { fontSize: 15, fontWeight: '600', color: C.mid },
 });
 
 export default CuratorDashboardScreen;
