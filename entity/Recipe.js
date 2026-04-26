@@ -24,6 +24,7 @@ class Recipe {
     likeCount = 0,
     createdByUserId = null,
     createdAt = null,
+    isPublished = false,
   } = {}) {
     this._id = _id;
     this.title = title;
@@ -44,6 +45,7 @@ class Recipe {
     this.likeCount = Number(likeCount || 0);
     this.createdByUserId = createdByUserId;
     this.createdAt = createdAt;
+    this.isPublished = isPublished;
   }
 
   getSummaryLine() {
@@ -68,14 +70,15 @@ class Recipe {
     const lower = query.trim().toLowerCase();
     return recipes.filter(
       (r) =>
-        r.title.toLowerCase().includes(lower) ||
-        r.ingredients.some((ing) => ing.toLowerCase().includes(lower))
+        String(r.title || '').toLowerCase().includes(lower) ||
+        (Array.isArray(r.ingredients) &&
+          r.ingredients.some((ing) => String(ing).toLowerCase().includes(lower)))
     );
   }
 
   static filterByTag(recipes, tag) {
     if (!tag || tag === 'All') return recipes;
-    return recipes.filter((r) => r.tags.includes(tag.toLowerCase()));
+    return recipes.filter((r) => Array.isArray(r.tags) && r.tags.includes(tag.toLowerCase()));
   }
 
   static filterMealPrep(recipes) {
@@ -88,7 +91,7 @@ class Recipe {
 
   static filterByPrepTime(recipes, maxMins) {
     if (!maxMins) return recipes;
-    return recipes.filter((r) => r.prepTimeMins <= maxMins);
+    return recipes.filter((r) => Number(r.prepTimeMins) <= Number(maxMins));
   }
 
   static filterByUser(recipes, userId) {
@@ -97,12 +100,9 @@ class Recipe {
   }
 
   static hasRecipes(recipes) {
-    return recipes.length > 0;
+    return Array.isArray(recipes) && recipes.length > 0;
   }
 
-  // Optional query:
-  // - no query => return Mongo recipes
-  // - with query => backend does Mongo-first, API fallback, and caching
   static async fetchAll(query = '') {
     const res = await axios.get(API_URL, {
       params: query && query.trim().length > 0 ? { q: query.trim() } : {},
@@ -110,12 +110,13 @@ class Recipe {
 
     return {
       success: true,
-      data: res.data.map((r) =>
-        new Recipe({
-          ...r,
-          _id: r._id,
-          isPublished: r.isPublished ?? false, // 🔥 ADD THIS
-        })
+      data: (Array.isArray(res.data) ? res.data : []).map(
+        (r) =>
+          new Recipe({
+            ...r,
+            _id: r._id,
+            isPublished: r.isPublished ?? false,
+          })
       ),
     };
   }
@@ -224,7 +225,7 @@ class Recipe {
       const res = await axios.get(`${API_URL}/saved/${userId}`);
       return {
         success: true,
-        data: res.data.map((r) => new Recipe(r)),
+        data: (Array.isArray(res.data) ? res.data : []).map((r) => new Recipe(r)),
         message: '',
       };
     } catch (err) {
@@ -269,84 +270,18 @@ class Recipe {
         message: err.message || 'Recipe not found',
       };
     }
-  }  
-
-  // ─── SPRINT 6 ADDITIONS ────────────────────────────────────────────────────
+  }
 
   static async unpublish(recipeId, userId) {
-    const res = await axios.post(`${API_URL}/${recipeId}/unpublish`, {
-      userId,
-    });
-  
+    const res = await axios.post(`${API_URL}/${recipeId}/unpublish`, { userId });
     return res.data;
   }
 
-  // ─── SPRINT 9 TASK 5 ADDITIONS ───────────────────────────────────────────────
-
-  // UC (Sprint 9 Task 5) — Update a custom recipe owned by the user.
-  // Validates fields first, then returns a seeded success response.
-  // Backend wiring to be done separately — no axios in this stub.
-  //
-  // @param  {string|number} recipeId
-  // @param  {string|number} userId        — must match createdByUserId
-  // @param  {object}        fields        — same shape as Recipe.create()
-  // @return {Promise<{ success, field, message, data: Recipe|null }>}
-  static async updateCustomRecipe(recipeId, userId, fields) {
-    const check = Recipe.validateRecipe({
-      title:        fields.title,
-      ingredients:  fields.ingredients,
-      instructions: fields.instructions,
-    });
-    if (!check.valid) {
-      return { success: false, field: check.field, message: check.message, data: null };
-    }
-
-    // Seeded stub — returns the updated recipe object (no axios)
-    const updated = new Recipe({
-      _id:             recipeId,
-      createdByUserId: userId,
-      ...fields,
-    });
-
-    return {
-      success: true,
-      field:   null,
-      message: 'Recipe updated successfully!',
-      data:    updated,
-    };
-  }
-
-  // UC (Sprint 9 Task 5) — Delete a custom recipe owned by the user.
-  // Seeded stub — returns success without touching the server.
-  // Backend wiring to be done separately — no axios in this stub.
-  //
-  // @param  {string|number} recipeId
-  // @param  {string|number} userId  — must match createdByUserId
-  // @return {Promise<{ success, message }>}
-  static async deleteCustomRecipe(recipeId, userId) {
-    return {
-      success: true,
-      message: 'Recipe deleted successfully!',
-    };
-  }
-
-  // ─── SPRINT 9 TODAY'S MENU ADDITIONS ─────────────────────────────────────
-
-  // UC T4 — Filter and sort recipes that fit within a calorie budget.
-  // Used by ViewTodaysMenuController to recommend recipes for Today's Menu.
-  //
-  // Filter rule:  recipe.calories <= remainingCalories * 1.1  (10% tolerance)
-  // Sort rule:    ascending distance from sweetSpot (remainingCalories * 0.4)
-  //               — surfaces snack-sized options when budget is low,
-  //                 full-meal options when budget is generous.
-  //
-  // @param  {Recipe[]} recipes           — full recipe list from fetchAll()
-  // @param  {number}   remainingCalories — kcal left in user's daily budget
-  // @return {Recipe[]} filtered + sorted list (pure computation, no axios)
+  // Today's Menu helpers
   static filterByCalorieBudget(recipes, remainingCalories) {
     if (!Array.isArray(recipes) || remainingCalories <= 0) return [];
 
-    const budget    = remainingCalories * 1.1;
+    const budget = remainingCalories * 1.1;
     const sweetSpot = remainingCalories * 0.4;
 
     return recipes
@@ -358,17 +293,6 @@ class Recipe {
       });
   }
 
-  // UC T4 — Score how well a recipe's macros match the user's remaining targets.
-  // Higher score = better macro alignment (0.0 – 1.0 scale).
-  // Used by the boundary to display a "fit" indicator on each recipe card.
-  //
-  // Scoring: each macro contributes equally (25%).
-  //   - Per macro: score = 1 - min(1, |recipe_macro - remaining_macro| / remaining_macro)
-  //   - Macros evaluated: calories, protein, carbs, fat
-  //
-  // @param  {Recipe} recipe    — the candidate recipe
-  // @param  {{ calories, protein, carbs, fat }} remaining — user's remaining macros
-  // @return {number} score 0.0–1.0 (pure computation, no axios)
   static getMacroMatchScore(recipe, remaining) {
     if (!recipe || !remaining) return 0;
 
@@ -378,25 +302,22 @@ class Recipe {
       return Math.max(0, 1 - diff / remainingVal);
     };
 
-    const calScore     = score(recipe.calories, remaining.calories);
-    const proteinScore = score(recipe.protein,  remaining.protein);
-    const carbsScore   = score(recipe.carbs,    remaining.carbs);
-    const fatScore     = score(recipe.fat,      remaining.fat);
+    const calScore = score(recipe.calories, remaining.calories);
+    const proteinScore = score(recipe.protein, remaining.protein);
+    const carbsScore = score(recipe.carbs, remaining.carbs);
+    const fatScore = score(recipe.fat, remaining.fat);
 
     return (calScore + proteinScore + carbsScore + fatScore) / 4;
   }
-  // GET custom recipes (all or by user)
+
+  // Custom recipe endpoints
   static async fetchCustom(userId = null) {
     try {
-      const url = userId
-        ? `${API_URL}/custom/${userId}`
-        : `${API_URL}/custom`;
-
+      const url = userId ? `${API_URL}/custom/${userId}` : `${API_URL}/custom`;
       const res = await axios.get(url);
-
       return {
         success: true,
-        data: res.data.map((r) => new Recipe(r)),
+        data: (Array.isArray(res.data) ? res.data : []).map((r) => new Recipe(r)),
         message: '',
       };
     } catch (err) {
@@ -410,11 +331,7 @@ class Recipe {
 
   static async updateCustomRecipe(recipeId, userId, fields) {
     try {
-      const res = await axios.put(`${API_URL}/custom/${recipeId}`, {
-        userId,
-        fields,
-      });
-
+      const res = await axios.put(`${API_URL}/custom/${recipeId}`, { userId, fields });
       return {
         success: true,
         field: null,
@@ -436,7 +353,6 @@ class Recipe {
       const res = await axios.delete(`${API_URL}/custom/${recipeId}`, {
         data: { userId },
       });
-
       return {
         success: true,
         message: res.data.message,
@@ -451,4 +367,3 @@ class Recipe {
 }
 
 export default Recipe;
-

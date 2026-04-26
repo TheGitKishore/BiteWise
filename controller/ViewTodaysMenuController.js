@@ -82,8 +82,14 @@ class ViewTodaysMenuController {
       // 5. Fetch + filter recipes — delegates logic to Recipe entity
       let matchedRecipes = [];
       if (!isNearlyFull && remaining.calories > 50) {
-        const recipesResult = await Recipe.fetchAll();
-        const allRecipes    = recipesResult.success ? (recipesResult.data || []) : [];
+        const [recipesResult, customRecipesResult] = await Promise.all([
+          Recipe.fetchAll(),
+          Recipe.fetchCustom(userId),
+        ]);
+
+        const libraryRecipes = recipesResult.success ? (recipesResult.data || []) : [];
+        const customRecipes = customRecipesResult.success ? (customRecipesResult.data || []) : [];
+        const allRecipes = [...libraryRecipes, ...customRecipes];
 
         // Entity handles the filter (≤ remaining × 1.1) and sort (by sweetSpot proximity)
         matchedRecipes = Recipe.filterByCalorieBudget(allRecipes, remaining.calories);
