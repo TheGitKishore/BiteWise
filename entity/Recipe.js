@@ -5,6 +5,7 @@ const API_URL = `${API_CONFIG}/recipes`;
 
 class Recipe {
   constructor({
+    recipeId = null,
     _id = null,
     title = '',
     description = '',
@@ -27,6 +28,7 @@ class Recipe {
     isPublished = false,
   } = {}) {
     this._id = _id;
+    this.recipeId = recipeId || (_id ? String(_id) : null);
     this.title = title;
     this.description = description;
     this.prepTimeMins = prepTimeMins;
@@ -114,6 +116,7 @@ class Recipe {
         (r) =>
           new Recipe({
             ...r,
+            recipeId: r.recipeId || (r._id ? String(r._id) : null),
             _id: r._id,
             isPublished: r.isPublished ?? false,
           })
@@ -260,6 +263,7 @@ class Recipe {
         success: true,
         data: new Recipe({
           ...res.data,
+          recipeId: res.data.recipeId || (res.data._id ? String(res.data._id) : null),
           _id: res.data._id,
           isPublished: res.data.isPublished ?? false,
         }),

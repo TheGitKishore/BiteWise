@@ -784,9 +784,9 @@ const RecipesScreen = ({ navigation, route }) => {
             <Text style={styles.emptyText}>No recipes found.</Text>
           </View>
         ) : (
-          visibleRecipes.map((recipe) => (
+          visibleRecipes.map((recipe, idx) => (
             <RecipeCard
-              key={recipe.recipeId}
+              key={recipe.recipeId || recipe._id || `${recipe.title || 'recipe'}-${idx}`}
               recipe={recipe}
               onPress={() => setSelectedRecipe(recipe)}
               isLiked={Boolean(likedRecipes[recipe.recipeId])}
