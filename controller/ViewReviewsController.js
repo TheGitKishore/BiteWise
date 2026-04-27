@@ -40,13 +40,12 @@ class ViewReviewsController {
         };
       }
 
-      const averageRating =
-        all.reduce((sum, r) => sum + r.rating, 0) / all.length;
-
+      const averageRating = Review.getAverageRating(all);
+          
       return {
         success: true,
         data: all,
-        averageRating: Math.round(averageRating * 10) / 10,
+        averageRating,
         message: '',
       };
     });

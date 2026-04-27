@@ -480,7 +480,7 @@ const ReviewsSection = ({ navigation, averageRating, totalReviews }) => (
     <View style={rv.ratingRow}>
       <StarRow count={Math.round(averageRating)} />
         <Text style={rv.ratingText}>
-          {averageRating.toFixed(1)} out of 5
+          {Math.floor(averageRating)} out of 5
         </Text>
     </View>
 

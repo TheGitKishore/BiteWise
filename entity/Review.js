@@ -56,9 +56,11 @@ class Review {
     const total = reviews.reduce((sum, r) => {
       return sum + Number(r.rating || 0);
     }, 0);
-  
+
     const avg = total / reviews.length;
-    return Math.round(avg * 10) / 10;
+    console.log("AVG BEFORE:", avg);
+    console.log("AVG AFTER:", Math.floor(avg));
+    return Math.floor(avg);
   }
 
   
