@@ -322,18 +322,6 @@ const ViewReviewsScreen = ({ navigation }) => {
             totalCount={reviews.length}
           />
 
-          {/* Write a Review — requires account, routes to sign up (UC #08) */}
-          <TouchableOpacity
-            style={styles.writeBtn}
-            onPress={() => navigation.navigate('SignUpScreen')}
-            activeOpacity={0.85}
-            accessibilityRole="button"
-            accessibilityLabel="Write a review"
-          >
-            <Text style={styles.writeBtnIcon}>☆</Text>
-            <Text style={styles.writeBtnText}>Write a Review</Text>
-          </TouchableOpacity>
-
         </ScrollView>
       )}
     </SafeAreaView>
@@ -371,25 +359,6 @@ const styles = StyleSheet.create({
     color:      C.subtle,
     textAlign:  'center',
     lineHeight: 22,
-  },
-  writeBtn: {
-    flexDirection:   'row',
-    alignItems:      'center',
-    justifyContent:  'center',
-    gap:             8,
-    backgroundColor: C.purple,
-    borderRadius:    12,
-    paddingVertical: 16,
-    marginTop:       4,
-  },
-  writeBtnIcon: {
-    fontSize: 16,
-    color:    C.white,
-  },
-  writeBtnText: {
-    fontSize:   16,
-    fontWeight: '700',
-    color:      C.white,
   },
 });
 
