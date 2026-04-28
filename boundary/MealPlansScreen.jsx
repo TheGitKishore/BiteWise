@@ -576,25 +576,7 @@ const MealPlansScreen = ({ navigation, route }) => {
                   <Text style={{ fontSize:13, color:C.dark }}>{day[slot.toLowerCase()]}</Text>
                 </View>
               ) : null)}
-              {/* UC #76 — Dine-Out Alternatives (Premium only) */}
-              {isPremium && (
-                <View style={{ marginTop:10, borderTopWidth:1, borderTopColor:C.border, paddingTop:10 }}>
-                  <Text style={{ fontSize:12, fontWeight:'700', color:C.purple, marginBottom:6 }}>🍽️  Dine-Out Alternatives</Text>
-                  {[
-                    { name:'Salad House',    cuisine:'Healthy', distance:'0.3 km', cal:'~350 kcal' },
-                    { name:'Grain Bowl Co.', cuisine:'Bowls',   distance:'0.7 km', cal:'~420 kcal' },
-                    { name:'Green Kitchen',  cuisine:'Vegan',   distance:'1.1 km', cal:'~290 kcal' },
-                  ].map((r, ri) => (
-                    <View key={ri} style={{ flexDirection:'row', justifyContent:'space-between', alignItems:'center', paddingVertical:5, borderTopWidth:ri===0?0:1, borderTopColor:C.border }}>
-                      <View>
-                        <Text style={{ fontSize:13, fontWeight:'600', color:C.dark }}>{r.name}</Text>
-                        <Text style={{ fontSize:11, color:C.subtle }}>{r.cuisine} · {r.distance}</Text>
-                      </View>
-                      <Text style={{ fontSize:12, color:C.purple, fontWeight:'600' }}>{r.cal}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
+
             </View>
           ))}
         </ScrollView>

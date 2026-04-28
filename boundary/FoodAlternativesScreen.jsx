@@ -55,10 +55,9 @@ const nav = StyleSheet.create({
 // ── Alternative Card (inside a food group) ───────────────────────────────────
 const AlternativeCard = ({ item }) => (
   <View style={ac.card}>
-    {/* Name + purple arrow */}
+    {/* Name row */}
     <View style={ac.nameRow}>
       <Text style={ac.name}>{item.name}</Text>
-      <Text style={ac.arrow}>→</Text>
     </View>
 
     {/* Goal badge */}
@@ -98,7 +97,6 @@ const ac = StyleSheet.create({
   card:         { backgroundColor: C.white, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: C.border, marginBottom: 10 },
   nameRow:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
   name:         { fontSize: 16, fontWeight: '700', color: C.dark },
-  arrow:        { fontSize: 18, color: C.purple, fontWeight: '700' },
   goalBadge:    { alignSelf: 'flex-start', backgroundColor: C.purpleLight, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, marginBottom: 12 },
   goalTxt:      { fontSize: 12, fontWeight: '600', color: C.purple },
   macroRow:     { flexDirection: 'row', marginBottom: 6 },

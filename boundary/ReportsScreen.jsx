@@ -53,14 +53,41 @@ const Banner = ({ msg }) => !msg ? null : (
 );
 
 const TabBar = ({ active, onSelect }) => (
-  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{backgroundColor:C.white,borderBottomWidth:1,borderBottomColor:C.border}} contentContainerStyle={{paddingHorizontal:16}}>
+  <View style={{
+    flexDirection:     'row',
+    backgroundColor:   C.white,
+    borderBottomWidth: 1,
+    borderBottomColor: C.border,
+  }}>
     {TABS.map((t) => (
-      <TouchableOpacity key={t} onPress={() => onSelect(t)}
-        style={{paddingVertical:12,paddingHorizontal:14,borderBottomWidth:2,borderBottomColor:active===t?C.purple:'transparent',marginRight:4}}>
-        <Text style={{fontSize:13,fontWeight:active===t?'700':'500',color:active===t?C.purple:C.subtle}}>{t}</Text>
+      <TouchableOpacity
+        key={t}
+        onPress={() => onSelect(t)}
+        style={{
+          flex:              1,
+          paddingVertical:   11,
+          paddingHorizontal: 4,
+          alignItems:        'center',
+          borderBottomWidth: 2,
+          borderBottomColor: active === t ? C.purple : 'transparent',
+        }}
+      >
+        <Text
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.7}
+          style={{
+            fontSize:   12,
+            fontWeight: active === t ? '700' : '500',
+            color:      active === t ? C.purple : C.subtle,
+            textAlign:  'center',
+          }}
+        >
+          {t}
+        </Text>
       </TouchableOpacity>
     ))}
-  </ScrollView>
+  </View>
 );
 
 const StatCard = ({ label, value, sub }) => (
