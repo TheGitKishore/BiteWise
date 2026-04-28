@@ -185,7 +185,7 @@ const PostDetail = ({ post, onBack, isLiked, likeCount, onToggleLike }) => (
 );
 
 const pd = StyleSheet.create({
-  scroll: { paddingHorizontal: 16, paddingBottom: 60 },
+  scroll: { flexGrow: 1, paddingHorizontal: 16, paddingBottom: 60 },
   backBtn: { paddingVertical: 16 },
   backTxt: { fontSize: 14, color: C.purple, fontWeight: '600' },
   banner: { width: '100%', height: 190, borderRadius: 12, marginBottom: 14 },
@@ -200,7 +200,7 @@ const pd = StyleSheet.create({
   tagRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', flex: 1 },
   tag: { backgroundColor: C.purpleLight, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
   tagTxt: { fontSize: 11, color: C.purple },
-  content: { fontSize: 15, color: C.mid, lineHeight: 24 },
+  content: { flexGrow: 1, fontSize: 15, color: C.mid, lineHeight: 24 },
 });
 
 const CuratorBlogsScreen = ({ navigation, route }) => {
@@ -440,7 +440,7 @@ const s = StyleSheet.create({
   },
   back: { fontSize: 14, color: C.purple, fontWeight: '600' },
   navTitle: { fontSize: 17, fontWeight: '700', color: C.dark },
-  scroll: { paddingHorizontal: 16, paddingBottom: 40 },
+  scroll: { flexGrow: 1, paddingHorizontal: 16, paddingBottom: 40 },
   header: { paddingVertical: 20 },
   badge: {
     alignSelf: 'flex-start',

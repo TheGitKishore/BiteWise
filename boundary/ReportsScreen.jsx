@@ -613,7 +613,7 @@ const DailyProgressTab = ({ userId }) => {
   const macroData   = report?.weeklyMacros   || [];
 
   return (
-    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}
+    <ScrollView contentContainerStyle={{flexGrow: 1, paddingHorizontal:16,paddingBottom:32}}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >
@@ -728,7 +728,7 @@ const BodyMetricsTab = ({ userId, navigation, user, onBanner }) => {
   }, [goal, userId]);
   console.log("GoalModal render, handleGoalSave:", !!handleGoalSave);
   return (
-    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}
+    <ScrollView contentContainerStyle={{flexGrow: 1, paddingHorizontal:16,paddingBottom:32}}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >
@@ -858,7 +858,7 @@ const HistoryTab = ({ userId }) => {
   );
 
   return (
-    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}
+    <ScrollView contentContainerStyle={{flexGrow: 1, paddingHorizontal:16,paddingBottom:32}}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >
@@ -900,7 +900,7 @@ const MonthlySummaryTab = ({ userId }) => {
   if (loading) return <ActivityIndicator size="large" color={C.purple} style={{marginTop:40}}/>;
 
   return (
-    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}
+    <ScrollView contentContainerStyle={{flexGrow: 1, paddingHorizontal:16,paddingBottom:32}}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >

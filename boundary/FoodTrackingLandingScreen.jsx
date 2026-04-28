@@ -986,7 +986,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   safe:        { flex: 1, backgroundColor: C.bg },
-  list:        { paddingHorizontal: 16, paddingBottom: 32 },
+  list: { flexGrow: 1, paddingHorizontal: 16, paddingBottom: 32 },
   titleRow:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 20 },
   pageTitle:   { fontSize: 26, fontWeight: '800', color: C.dark, letterSpacing: -0.3 },
   goalBtn:     {},

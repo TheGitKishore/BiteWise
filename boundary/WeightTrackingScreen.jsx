@@ -161,7 +161,7 @@ const WeightTrackingScreen = ({ navigation, route }) => {
       <Banner msg={banner} />
       <UpdateModal visible={showModal} onClose={() => setShowModal(false)} onSubmit={handleSubmit} isLoading={isSaving} error={fieldError} />
 
-      <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}} showsVerticalScrollIndicator={false}
+      <ScrollView contentContainerStyle={{flexGrow: 1, paddingHorizontal:16,paddingBottom:32}} showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >

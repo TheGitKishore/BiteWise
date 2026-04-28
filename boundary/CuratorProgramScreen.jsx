@@ -113,7 +113,7 @@ const CuratorProgramScreen = ({ navigation, route }) => {
       <NavBar onMenu={() => navigation.navigate('AccountSettingsScreen', { user })}/>
       <Banner msg={banner}/>
 
-      <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}
+      <ScrollView contentContainerStyle={{flexGrow: 1, paddingHorizontal:16,paddingBottom:32}}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >

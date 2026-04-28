@@ -273,7 +273,7 @@ const pk = StyleSheet.create({
 
 const styles = StyleSheet.create({
   safe:         { flex:1, backgroundColor:C.bg },
-  list:         { paddingHorizontal:16, paddingBottom:32 },
+  list: { flexGrow: 1, paddingHorizontal:16, paddingBottom:32 },
   gateWrap:     { flex:1, alignItems:'center', justifyContent:'center', paddingHorizontal:32 },
   gateIcon:     { fontSize:48, marginBottom:16 },
   gateTitle:    { fontSize:20, fontWeight:'800', color:C.dark, marginBottom:8 },

@@ -241,7 +241,7 @@ const FoodAlternativesScreen = ({ navigation, route }) => {
 
 const s = StyleSheet.create({
   safe:         { flex: 1, backgroundColor: C.bg },
-  scroll:       { paddingHorizontal: 16, paddingBottom: 40 },
+  scroll: { flexGrow: 1, paddingHorizontal: 16, paddingBottom: 40 },
   header:       { paddingVertical: 20 },
   premBadge:    { alignSelf: 'flex-start', backgroundColor: C.purple, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 10 },
   premBadgeTxt: { fontSize: 12, fontWeight: '700', color: C.white },

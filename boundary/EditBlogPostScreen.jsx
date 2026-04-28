@@ -198,7 +198,7 @@ const s = StyleSheet.create({
   deleteNav:   { fontSize: 14, color: C.errorText, fontWeight: '600' },
   bannerBar:   { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: C.greenBg, borderBottomWidth: 1, borderBottomColor: C.greenBorder },
   bannerTxt:   { fontSize: 14, fontWeight: '500', color: C.green },
-  scroll:      { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 48 },
+  scroll: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 20, paddingBottom: 48 },
   label:       { fontSize: 13, fontWeight: '600', color: C.dark, marginBottom: 6 },
   err:         { fontSize: 12, color: C.errorText, marginBottom: 4 },
   input:       { backgroundColor: C.white, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: C.dark, borderWidth: 1, borderColor: C.border },

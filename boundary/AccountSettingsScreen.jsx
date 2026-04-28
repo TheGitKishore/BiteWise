@@ -568,8 +568,7 @@ const styles = StyleSheet.create({
     flex:            1,
     backgroundColor: C.bg,
   },
-  list: {
-    paddingHorizontal: 16,
+  list: { flexGrow: 1, paddingHorizontal: 16,
     paddingBottom:     40,
   },
   pageTitle: {

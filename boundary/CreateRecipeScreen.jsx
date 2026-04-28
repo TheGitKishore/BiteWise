@@ -269,7 +269,7 @@ const ch = StyleSheet.create({
 
 const styles = StyleSheet.create({
   safe:          { flex:1, backgroundColor:C.bg },
-  list:          { paddingHorizontal:16, paddingBottom:32 },
+  list: { flexGrow: 1, paddingHorizontal:16, paddingBottom:32 },
   pageTitle:     { fontSize:26, fontWeight:'800', color:C.dark, letterSpacing:-0.3, paddingTop:20, marginBottom:4 },
   pageSubtitle:  { fontSize:13, color:C.subtle, marginBottom:16 },
   card:          { backgroundColor:C.white, borderRadius:14, padding:16, marginBottom:14, borderWidth:1, borderColor:C.border },

@@ -226,7 +226,7 @@ const s = StyleSheet.create({
   delNav:      { fontSize: 14, color: C.errorText, fontWeight: '600' },
   bannerBar:   { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: C.greenBg, borderBottomWidth: 1, borderBottomColor: C.greenBorder },
   bannerTxt:   { fontSize: 14, fontWeight: '500', color: C.green },
-  scroll:      { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 40 },
+  scroll: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 20, paddingBottom: 40 },
   diffChip:    { borderWidth: 1, borderColor: C.border, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7 },
   diffActive:  { backgroundColor: C.purple, borderColor: C.purple },
   diffTxt:     { fontSize: 13, color: C.mid },

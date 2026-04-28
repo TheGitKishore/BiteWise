@@ -416,7 +416,7 @@ const s = StyleSheet.create({
   navTitle: { fontSize: 17, fontWeight: '700', color: C.dark },
   bannerBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: C.greenBg, borderBottomWidth: 1, borderBottomColor: C.greenBorder },
   bannerTxt: { fontSize: 14, fontWeight: '500', color: C.green },
-  list: { paddingHorizontal: 16, paddingBottom: 32 },
+  list: { flexGrow: 1, paddingHorizontal: 16, paddingBottom: 32 },
   header: { paddingVertical: 20 },
   badge: { alignSelf: 'flex-start', backgroundColor: C.purple, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, marginBottom: 8 },
   badgeTxt: { fontSize: 11, fontWeight: '700', color: C.white },

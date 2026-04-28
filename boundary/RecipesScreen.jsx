@@ -838,7 +838,7 @@ const dt = StyleSheet.create({
 
 const styles = StyleSheet.create({
   safe:         { flex:1, backgroundColor:C.bg },
-  list:         { paddingHorizontal:16, paddingBottom:32 },
+  list: { flexGrow: 1, paddingHorizontal:16, paddingBottom:32 },
   pageTitle:    { fontSize:28, fontWeight:'800', color:C.dark, letterSpacing:-0.5, paddingVertical:20 },
   tabScroll:    { marginBottom:12 },
   tabContent:   { paddingRight:16 },

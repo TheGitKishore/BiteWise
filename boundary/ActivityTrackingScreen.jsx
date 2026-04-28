@@ -453,7 +453,7 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   safe:         { flex: 1, backgroundColor: C.bg },
-  list:         { paddingHorizontal: 16, paddingBottom: 32 },
+  list: { flexGrow: 1, paddingHorizontal: 16, paddingBottom: 32 },
   header:       { paddingVertical: 20 },
   pageTitle:    { fontSize: 28, fontWeight: '800', color: C.dark, letterSpacing: -0.5, marginBottom: 4 },
   pageSubtitle: { fontSize: 14, color: C.subtle },

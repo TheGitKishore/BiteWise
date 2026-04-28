@@ -233,7 +233,7 @@ const drd = StyleSheet.create({
   btnText:         { flex: 1, fontSize: 14, color: C.dark, marginRight: 4 },
   btnTextDisabled: { color: C.disabledText },
   arrow:           { fontSize: 11, color: C.subtle },
-  list:            { backgroundColor: C.white, borderRadius: 8, borderWidth: 1, borderColor: C.border, marginTop: 2, zIndex: 999, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+  list: { flexGrow: 1, backgroundColor: C.white, borderRadius: 8, borderWidth: 1, borderColor: C.border, marginTop: 2, zIndex: 999, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
   item:            { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: C.border },
   itemActive:      { backgroundColor: C.purpleLight },
   itemText:        { fontSize: 14, color: C.dark },
@@ -633,7 +633,7 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
 // ─── Styles ─────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   safe:         { flex: 1, backgroundColor: C.bg },
-  list:         { paddingHorizontal: 16, paddingBottom: 40 },
+  list: { flexGrow: 1, paddingHorizontal: 16, paddingBottom: 40 },
   header:       { paddingVertical: 20 },
   pageTitle:    { fontSize: 28, fontWeight: '800', color: C.dark, letterSpacing: -0.5, marginBottom: 6, lineHeight: 34 },
   pageSub:      { fontSize: 14, color: C.subtle, marginBottom: 16 },

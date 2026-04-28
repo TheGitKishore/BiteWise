@@ -67,7 +67,7 @@ const WriteReviewScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={{padding:4}}><Text style={{fontSize:14,color:C.mid,fontWeight:'500'}}>← Back</Text></TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}} keyboardShouldPersistTaps="handled"
+      <ScrollView contentContainerStyle={{flexGrow: 1, paddingHorizontal:16,paddingBottom:32}} keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag">
         <Text style={{fontSize:26,fontWeight:'800',color:C.dark,paddingTop:20,marginBottom:4}}>Write a Review</Text>
         <Text style={{fontSize:13,color:C.subtle,marginBottom:20}}>Share your BiteWise experience with the community</Text>
