@@ -37,15 +37,8 @@ const NavBar = ({ onMenuPress }) => (
       <Text style={nav.icon}>🍴</Text>
       <Text style={nav.brandName}>BiteWise</Text>
     </View>
-    <TouchableOpacity
-      onPress={onMenuPress}
-      style={nav.menuBtn}
-      accessibilityRole="button"
-      accessibilityLabel="Open menu"
-    >
-      <View style={nav.menuLine} />
-      <View style={[nav.menuLine, { width: 18 }]} />
-      <View style={nav.menuLine} />
+    <TouchableOpacity onPress={onMenuPress} style={nav.backBtn}>
+      <Text style={nav.backText}>← Back</Text>
     </TouchableOpacity>
   </View>
 );
@@ -84,6 +77,8 @@ const nav = StyleSheet.create({
     backgroundColor: C.dark,
     borderRadius:    2,
   },
+  backBtn:  { padding: 6 },
+  backText: { fontSize: 14, fontWeight: '500', color: '#374151' },
 });
 
 // Labelled input with optional error box
@@ -330,7 +325,7 @@ const CreateAccountScreen = ({ navigation, route }) => {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
 
-      <NavBar onMenuPress={() => navigation.navigate('MainLandingScreen')} />
+      <NavBar onMenuPress={() => navigation.goBack()} />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -339,6 +334,7 @@ const CreateAccountScreen = ({ navigation, route }) => {
         <ScrollView
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
         >
           {/* Account details card */}
           <View style={styles.card}>

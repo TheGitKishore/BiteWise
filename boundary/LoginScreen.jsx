@@ -32,15 +32,8 @@ const NavBar = ({ onMenuPress }) => (
       <Text style={nav.icon}>🍴</Text>
       <Text style={nav.brandName}>BiteWise</Text>
     </View>
-    <TouchableOpacity
-      onPress={onMenuPress}
-      style={nav.menuBtn}
-      accessibilityRole="button"
-      accessibilityLabel="Open menu"
-    >
-      <View style={nav.menuLine} />
-      <View style={[nav.menuLine, { width: 18 }]} />
-      <View style={nav.menuLine} />
+    <TouchableOpacity onPress={onMenuPress} style={nav.backBtn}>
+      <Text style={nav.backText}>← Back</Text>
     </TouchableOpacity>
   </View>
 );
@@ -79,6 +72,8 @@ const nav = StyleSheet.create({
     backgroundColor: C.dark,
     borderRadius:    2,
   },
+  backBtn:  { padding: 6 },
+  backText: { fontSize: 14, fontWeight: '500', color: '#374151' },
 });
 
 // Top banner — success (green) or error (red)
@@ -157,7 +152,7 @@ const LoginScreen = ({ navigation, route }) => {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
 
-      <NavBar onMenuPress={() => navigation.navigate('MainLandingScreen')} />
+      <NavBar onMenuPress={() => navigation.goBack()} />
 
       {/* Success or error banner */}
       <Banner message={banner.message} type={banner.type} />
@@ -169,6 +164,7 @@ const LoginScreen = ({ navigation, route }) => {
         <ScrollView
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
         >
           <View style={styles.card}>
             <Text style={styles.title}>Welcome Back</Text>
