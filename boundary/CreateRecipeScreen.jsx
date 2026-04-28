@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar,
-} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CreateRecipeController from '../controller/CreateRecipeController';
@@ -146,11 +146,16 @@ const CreateRecipeScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <NavBar onBack={() => navigation.goBack()} />
       <Banner message={banner} />
 
-      <ScrollView contentContainerStyle={styles.list} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.list} keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag">
 
         <Text style={styles.pageTitle}>Create Recipe</Text>
         <Text style={styles.pageSubtitle}>Add your own custom recipe to your collection</Text>
@@ -250,6 +255,7 @@ const CreateRecipeScreen = ({ navigation, route }) => {
         </TouchableOpacity>
 
       </ScrollView>
+          </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

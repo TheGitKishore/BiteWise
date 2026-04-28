@@ -2,7 +2,8 @@
 // Premium User only
 
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, StatusBar, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, StatusBar, Modal,
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView }   from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -102,6 +103,10 @@ const GroceryListScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={s.safe}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <View style={s.nav}>
         <TouchableOpacity onPress={() => navigation.goBack()}><Text style={s.back}>← Back</Text></TouchableOpacity>
@@ -110,7 +115,10 @@ const GroceryListScreen = ({ navigation, route }) => {
       </View>
       {banner ? <View style={s.bannerBar}><Text style={s.bannerTxt}>✅  {banner}</Text></View> : null}
       <AddItemModal visible={showAdd} onClose={() => setShowAdd(false)} onAdd={handleAdd} />
-      <ScrollView contentContainerStyle={s.scroll}>
+      <ScrollView contentContainerStyle={s.scroll}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
         <View style={s.header}>
           <View style={s.badge}><Text style={s.badgeTxt}>☆ Premium</Text></View>
           <Text style={s.pageTitle}>Grocery List</Text>
@@ -119,7 +127,10 @@ const GroceryListScreen = ({ navigation, route }) => {
         {savedRecipes.length > 0 && (
           <View style={s.section}>
             <Text style={s.secTitle}>Generate from Saved Recipe</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
               {savedRecipes.map((r) => (
                 <TouchableOpacity key={r.recipeId} style={s.recipeChip} onPress={() => handleGenerate(r)}>
                   <Text style={s.recipeChipTxt}>{r.title}</Text>
@@ -162,6 +173,7 @@ const GroceryListScreen = ({ navigation, route }) => {
           </View>
         )}
       </ScrollView>
+          </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

@@ -13,7 +13,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, Modal, ActivityIndicator,
-} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -352,7 +352,8 @@ const EditTargetsModal = ({ visible, targets, isPremium, user, onClose, onSaved 
             </TouchableOpacity>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag">
 
             {/* Activity Level + Goal dropdowns — Premium only */}
             {isPremium && (
@@ -519,6 +520,10 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={s.safe}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <NavBar onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user })} />
 
@@ -532,7 +537,10 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
         onSaved={handleSaved}
       />
 
-      <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
 
         {/* Header */}
         <View style={s.header}>
@@ -617,6 +625,7 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
         )}
 
       </ScrollView>
+          </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

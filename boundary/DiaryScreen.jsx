@@ -10,7 +10,7 @@ import {
   Modal,
   Alert,
   Image,
-} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
@@ -353,6 +353,10 @@ const DiaryScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={s.safe}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <View style={s.nav}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -375,7 +379,10 @@ const DiaryScreen = ({ navigation, route }) => {
         onSaved={handleSaved}
       />
 
-      <ScrollView contentContainerStyle={s.list}>
+      <ScrollView contentContainerStyle={s.list}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
         <View style={s.header}>
           <View style={s.badge}><Text style={s.badgeTxt}>Premium</Text></View>
           <Text style={s.pageTitle}>Health Diary</Text>
@@ -397,6 +404,7 @@ const DiaryScreen = ({ navigation, route }) => {
           <EntryCard key={e.entryId} entry={e} onDelete={handleDelete} />
         ))}
       </ScrollView>
+          </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

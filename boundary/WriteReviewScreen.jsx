@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, StatusBar,
-} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import WriteReviewController from '../controller/WriteReviewController';
 
@@ -57,13 +57,18 @@ const WriteReviewScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={{flex:1,backgroundColor:C.bg}}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <StatusBar barStyle="dark-content" backgroundColor={C.white}/>
       <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',paddingHorizontal:20,paddingVertical:14,backgroundColor:C.white,borderBottomWidth:1,borderBottomColor:C.border}}>
         <View style={{flexDirection:'row',alignItems:'center',gap:6}}><Text style={{fontSize:20}}>🍴</Text><Text style={{fontSize:20,fontWeight:'800',color:C.dark}}>BiteWise</Text></View>
         <TouchableOpacity onPress={() => navigation.goBack()} style={{padding:4}}><Text style={{fontSize:14,color:C.mid,fontWeight:'500'}}>← Back</Text></TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}} keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag">
         <Text style={{fontSize:26,fontWeight:'800',color:C.dark,paddingTop:20,marginBottom:4}}>Write a Review</Text>
         <Text style={{fontSize:13,color:C.subtle,marginBottom:20}}>Share your BiteWise experience with the community</Text>
 
@@ -116,6 +121,7 @@ const WriteReviewScreen = ({ navigation, route }) => {
           <Text style={{fontSize:16,fontWeight:'700',color:C.white}}>{isLoading ? 'Submitting...' : 'Submit Review'}</Text>
         </TouchableOpacity>
       </ScrollView>
+          </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

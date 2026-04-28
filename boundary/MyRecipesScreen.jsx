@@ -46,11 +46,9 @@ const NavBar = ({ onMenu }) => (
       <Text style={nav.icon}>🍴</Text>
       <Text style={nav.brandName}>BiteWise</Text>
     </View>
-    <TouchableOpacity onPress={onMenu} style={nav.menuBtn} accessibilityRole="button">
-      <View style={nav.menuLine} />
-      <View style={[nav.menuLine, { width: 18 }]} />
-      <View style={nav.menuLine} />
-    </TouchableOpacity>
+    <TouchableOpacity onPress={onMenu} style={nav.backBtn}>
+          <Text style={nav.backText}>← Back</Text>
+        </TouchableOpacity>
   </View>
 );
 const nav = StyleSheet.create({
@@ -60,6 +58,8 @@ const nav = StyleSheet.create({
   brandName: { fontSize: 20, fontWeight: '800', color: C.dark },
   menuBtn:   { padding: 6, gap: 4, alignItems: 'flex-end' },
   menuLine:  { width: 22, height: 2.5, backgroundColor: C.dark, borderRadius: 2 },
+  backBtn:  { padding: 6 },
+  backText: { fontSize: 14, fontWeight: '500', color: '#374151' },
 });
 
 // ── Success Banner ────────────────────────────────────────────────────────────
@@ -219,7 +219,7 @@ const MyRecipesScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
-      <NavBar onMenu={() => navigation.navigate('AccountSettingsScreen', { user })} />
+      <NavBar onMenu={() => navigation.goBack()} />
       <Banner message={banner} />
 
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>

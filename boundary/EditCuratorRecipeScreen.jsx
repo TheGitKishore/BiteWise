@@ -3,7 +3,8 @@
 // Curator role only
 
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, StatusBar, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, StatusBar, Alert,
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CreateCuratorRecipeController from '../controller/CreateCuratorRecipeController';
@@ -169,6 +170,10 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={s.safe}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <View style={s.nav}>
         <TouchableOpacity onPress={() => navigation.goBack()}><Text style={s.back}>← Back</Text></TouchableOpacity>
@@ -176,7 +181,8 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
         {isEdit ? <TouchableOpacity onPress={handleDelete}><Text style={s.delNav}>Delete</Text></TouchableOpacity> : <View style={{ width: 50 }} />}
       </View>
       {banner ? <View style={s.bannerBar}><Text style={s.bannerTxt}>✅  {banner}</Text></View> : null}
-      <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag">
         <Field label="Recipe Name *" value={title} onChangeText={setTitle} placeholder="e.g. High-Protein Chicken Bowl" error={errors.title} />
         <Field label="Description" value={description} onChangeText={setDescription} placeholder="Brief description of the recipe" multiline />
         <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -207,6 +213,7 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
           <Text style={s.saveBtnTxt}>{saving ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Recipe'}</Text>
         </TouchableOpacity>
       </ScrollView>
+          </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

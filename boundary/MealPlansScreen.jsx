@@ -16,7 +16,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Modal, Alert,
-} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ViewMealPlansController       from '../controller/ViewMealPlansController';
@@ -253,7 +253,8 @@ const CreatePlanModal = ({ visible, userId, isPremium, onClose, onSuccess }) => 
 
   return (
     <ModalSheet visible={visible} title="Create Meal Plan" subtitle="Start a new custom meal plan for your week" onClose={resetAndClose}>
-      <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: 500 }}>
+      <ScrollView keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag" style={{ maxHeight: 500 }}>
         <Field label="Plan Name" value={name} onChangeText={setName} placeholder="My Weekly Plan" error={fieldError} />
         <Field label="Description (Optional)" value={description} onChangeText={setDescription} placeholder="Describe your meal plan..." multiline />
         <DayPicker numDays={numDays} onSelect={setNumDays} />
@@ -382,7 +383,8 @@ const EditCustomMealPlanModal = ({ visible, plan, onClose, onSuccess }) => {
       subtitle="Update your custom meal plan details"
       onClose={onClose}
     >
-      <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: 500 }}>
+      <ScrollView keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag" style={{ maxHeight: 500 }}>
         <Field label="Plan Name *" value={name} onChangeText={setName} placeholder="My Weekly Plan" error={fieldError} />
         <Field label="Description (Optional)" value={description} onChangeText={setDescription} placeholder="Describe your meal plan..." multiline />
         <DayPicker numDays={numDays} onSelect={setNumDays} />
@@ -457,7 +459,8 @@ const EditAutoMealPlanModal = ({ visible, plan, onClose, onSuccess }) => {
       subtitle="Change plan type or adjust individual meal slots"
       onClose={onClose}
     >
-      <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: 500 }}>
+      <ScrollView keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag" style={{ maxHeight: 500 }}>
 
         {/* Auto badge context */}
         <View style={ea.contextRow}>
@@ -653,7 +656,10 @@ const MealPlansScreen = ({ navigation, route }) => {
     return (
       <SafeAreaView style={styles.safe}>
         <NavBar onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user })} />
-        <ScrollView contentContainerStyle={styles.list}>
+        <ScrollView contentContainerStyle={styles.list}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
           <TouchableOpacity onPress={() => setViewingPlan(null)} style={{ paddingVertical: 14 }}>
             <Text style={{ fontSize:14, color:C.mid, fontWeight:'500' }}>← Back to Meal Plans</Text>
           </TouchableOpacity>
@@ -679,6 +685,10 @@ const MealPlansScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <NavBar onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user })} />
       <Banner message={banner} />
@@ -716,7 +726,10 @@ const MealPlansScreen = ({ navigation, route }) => {
         onSuccess={handleAutoEditSuccess}
       />
 
-      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
         <Text style={styles.pageTitle}>Meal Plans</Text>
         <Text style={styles.pageSubtitle}>Create and manage your weekly meal plans</Text>
 
@@ -761,6 +774,7 @@ const MealPlansScreen = ({ navigation, route }) => {
           ))
         )}
       </ScrollView>
+          </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

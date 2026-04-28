@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Modal, Dimensions,
-} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -37,11 +37,9 @@ const NavBar = ({ onMenu }) => (
       <Text style={{fontSize:20}}>🍴</Text>
       <Text style={{fontSize:20,fontWeight:'800',color:C.dark}}>BiteWise</Text>
     </View>
-    <TouchableOpacity onPress={onMenu} style={{padding:6,gap:4,alignItems:'flex-end'}}>
-      <View style={{width:22,height:2.5,backgroundColor:C.dark,borderRadius:2}}/>
-      <View style={{width:18,height:2.5,backgroundColor:C.dark,borderRadius:2}}/>
-      <View style={{width:22,height:2.5,backgroundColor:C.dark,borderRadius:2}}/>
-    </TouchableOpacity>
+    <TouchableOpacity onPress={onMenu} style={nav.backBtn}>
+          <Text style={nav.backText}>← Back</Text>
+        </TouchableOpacity>
   </View>
 );
 
@@ -534,7 +532,8 @@ const GoalModal = ({ visible, existingGoal, onClose, onSave, isLoading, errors }
           <Text style={{fontSize:16,fontWeight:'700',color:C.dark,marginBottom:4}}>{existingGoal?'Update Goal':'Set Health Goal'}</Text>
           <Text style={{fontSize:13,color:C.subtle,marginBottom:18}}>Define your goal to get personalised recommendations</Text>
 
-          <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <ScrollView keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false}>
             <Text style={{fontSize:13,fontWeight:'600',color:C.dark,marginBottom:8}}>Goal Type *</Text>
             <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,marginBottom:errors?.goalType?0:14}}>
               {Object.values(GOAL_TYPES).map((g) => (
@@ -614,7 +613,10 @@ const DailyProgressTab = ({ userId }) => {
   const macroData   = report?.weeklyMacros   || [];
 
   return (
-    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}>
+    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
       <View style={{height:20}}/>
       {calorieData.length > 0
         ? <LineChart data={calorieData} label="7-Day Calorie Trend"/>
@@ -726,7 +728,10 @@ const BodyMetricsTab = ({ userId, navigation, user, onBanner }) => {
   }, [goal, userId]);
   console.log("GoalModal render, handleGoalSave:", !!handleGoalSave);
   return (
-    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}>
+    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
       <View style={{height:20}}/>
 
       {/* Health Goal — UC #38, #39, #40, #90 */}
@@ -853,7 +858,10 @@ const HistoryTab = ({ userId }) => {
   );
 
   return (
-    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}>
+    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
       <View style={{height:20}}/>
       <Section title="Weight History" entries={weightEntries} unit="kg" chartData={wData}/>
       <Section title="Height History" entries={heightEntries} unit="cm" chartData={hData}/>
@@ -892,7 +900,10 @@ const MonthlySummaryTab = ({ userId }) => {
   if (loading) return <ActivityIndicator size="large" color={C.purple} style={{marginTop:40}}/>;
 
   return (
-    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}>
+    <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
       <View style={{height:20}}/>
       <StatCard label="Total Entries"   value={summary?.totalEntries   ?? 0} sub="Food items logged"/>
       <StatCard label="Total Calories"  value={summary?.totalCalories  ?? 0} sub="Calories tracked"/>
@@ -920,8 +931,12 @@ const ReportsScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={{flex:1,backgroundColor:C.bg}}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <StatusBar barStyle="dark-content" backgroundColor={C.white}/>
-      <NavBar onMenu={() => navigation.navigate('AccountSettingsScreen', { user })}/>
+      <NavBar onMenu={() => navigation.goBack()}/>
       <Banner msg={banner}/>
       <View style={{paddingHorizontal:16,paddingTop:16,paddingBottom:8,backgroundColor:C.white}}>
         <Text style={{fontSize:24,fontWeight:'800',color:C.dark}}>Health Reports & Metrics</Text>
@@ -931,6 +946,7 @@ const ReportsScreen = ({ navigation, route }) => {
       {activeTab === 'Body Metrics'    && <BodyMetricsTab    userId={user?.userId} navigation={navigation} user={user} onBanner={handleBanner}/>}
       {activeTab === 'History'         && <HistoryTab        userId={user?.userId}/>}
       {activeTab === 'Monthly Summary' && <MonthlySummaryTab userId={user?.userId}/>}
+          </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

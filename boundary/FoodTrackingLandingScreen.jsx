@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Modal, Alert,
-} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -58,11 +58,9 @@ const NavBar = ({ onMenuPress }) => (
       <Text style={nav.icon}>🍴</Text>
       <Text style={nav.brandName}>BiteWise</Text>
     </View>
-    <TouchableOpacity onPress={onMenuPress} style={nav.menuBtn} accessibilityRole="button">
-      <View style={nav.menuLine} />
-      <View style={[nav.menuLine, { width: 18 }]} />
-      <View style={nav.menuLine} />
-    </TouchableOpacity>
+    <TouchableOpacity onPress={onMenuPress} style={nav.backBtn}>
+          <Text style={nav.backText}>← Back</Text>
+        </TouchableOpacity>
   </View>
 );
 const nav = StyleSheet.create({
@@ -72,6 +70,8 @@ const nav = StyleSheet.create({
   brandName:{ fontSize: 20, fontWeight: '800', color: C.dark, letterSpacing: -0.3 },
   menuBtn:  { padding: 6, gap: 4, alignItems: 'flex-end' },
   menuLine: { width: 22, height: 2.5, backgroundColor: C.dark, borderRadius: 2 },
+  backBtn:  { padding: 6 },
+  backText: { fontSize: 14, fontWeight: '500', color: '#374151' },
 });
 
 // Banner
@@ -933,9 +933,13 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
 
-      <NavBar onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user: currentUser })} />
+      <NavBar onMenuPress={() => navigation.goBack()} />
       <Banner message={banner} />
 
       {/* SetGoalModal removed Sprint 8 — calorie goals now managed in NutritionTargetsScreen */}
@@ -954,7 +958,10 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
         onSuccess={handleEntryLogged}
       />
 
-      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
 
         <View style={styles.titleRow}>
           <Text style={styles.pageTitle}>Food Tracking</Text>
@@ -972,6 +979,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
         {activeTab === 'History'         && <HistoryTab pastEntries={pastEntries} isLoading={histLoading} errorMsg={histError} />}
 
       </ScrollView>
+          </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

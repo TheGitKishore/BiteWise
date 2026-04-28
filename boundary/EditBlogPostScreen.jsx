@@ -8,7 +8,7 @@ import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, Alert,
-} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CreateBlogPostController from '../controller/CreateBlogPostController';
@@ -95,6 +95,10 @@ const EditBlogPostScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={s.safe}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <View style={s.nav}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -112,7 +116,8 @@ const EditBlogPostScreen = ({ navigation, route }) => {
         <View style={s.bannerBar}><Text style={s.bannerTxt}>✅  {banner}</Text></View>
       ) : null}
 
-      <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag">
 
         {/* Title */}
         <Text style={s.label}>Title *</Text>
@@ -180,6 +185,7 @@ const EditBlogPostScreen = ({ navigation, route }) => {
         </TouchableOpacity>
 
       </ScrollView>
+          </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

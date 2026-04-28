@@ -10,7 +10,7 @@ import {
   StatusBar,
   TextInput,
   Image,
-} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ViewCuratorBlogsController from '../controller/ViewCuratorBlogsController';
@@ -134,7 +134,10 @@ const pc = StyleSheet.create({
 });
 
 const PostDetail = ({ post, onBack, isLiked, likeCount, onToggleLike }) => (
-  <ScrollView contentContainerStyle={pd.scroll} showsVerticalScrollIndicator={false}>
+  <ScrollView contentContainerStyle={pd.scroll} showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
     <TouchableOpacity style={pd.backBtn} onPress={onBack}>
       <Text style={pd.backTxt}>{'< Back to blogs'}</Text>
     </TouchableOpacity>
@@ -325,6 +328,10 @@ const CuratorBlogsScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={s.safe}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
 
       {!selectedPost && (
@@ -344,7 +351,10 @@ const CuratorBlogsScreen = ({ navigation, route }) => {
           onToggleLike={toggleLike}
         />
       ) : (
-        <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
           <View style={s.header}>
             <View style={s.badge}><Text style={s.badgeTxt}>Premium</Text></View>
             <Text style={s.pageTitle}>Blogs</Text>
@@ -367,7 +377,10 @@ const CuratorBlogsScreen = ({ navigation, route }) => {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={s.tagRow}
-          >
+          
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
             {tags.map((tag) => (
               <TouchableOpacity
                 key={tag}
@@ -408,6 +421,7 @@ const CuratorBlogsScreen = ({ navigation, route }) => {
           </View>
         </ScrollView>
       )}
+          </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

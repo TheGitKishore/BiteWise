@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, Alert, Modal,
-} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import LogWeightController        from '../controller/LogWeightController';
@@ -152,12 +152,19 @@ const WeightTrackingScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={{flex:1,backgroundColor:C.bg}}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <NavBar onMenu={() => navigation.navigate('AccountSettingsScreen', { user })} />
       <Banner msg={banner} />
       <UpdateModal visible={showModal} onClose={() => setShowModal(false)} onSubmit={handleSubmit} isLoading={isSaving} error={fieldError} />
 
-      <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{paddingHorizontal:16,paddingBottom:32}} showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
         <View style={{paddingTop:20,marginBottom:14}}>
           <View style={{alignSelf:'flex-start',backgroundColor:C.purple,borderRadius:20,paddingHorizontal:10,paddingVertical:3,marginBottom:8}}>
             <Text style={{fontSize:11,fontWeight:'700',color:C.white}}>☆ Premium</Text>
@@ -250,6 +257,7 @@ const WeightTrackingScreen = ({ navigation, route }) => {
           ))}
         </View>
       </ScrollView>
+          </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

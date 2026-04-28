@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Alert, Image,
-} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ViewSavedRecipesController from '../controller/ViewSavedRecipesController';
@@ -173,10 +173,17 @@ const SavedRecipesScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <NavBar onMenuPress={() => navigation.navigate('AccountSettingsScreen', { user })} />
 
-      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
 
         {/* Header */}
         <View style={styles.header}>
@@ -224,7 +231,10 @@ const SavedRecipesScreen = ({ navigation, route }) => {
 
           {/* Dietary Tags — UC #64 */}
           <Text style={styles.filterLabel}>Dietary Tags</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap:6 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap:6 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
             {dietTags.map((t) => (
               <TouchableOpacity key={t} style={[pk.chip, activeDiet === t && pk.chipActive]} onPress={() => setActiveDiet(t)} activeOpacity={0.8}>
                 <Text style={[pk.chipText, activeDiet === t && pk.chipTextActive]}>{t}</Text>
@@ -249,6 +259,7 @@ const SavedRecipesScreen = ({ navigation, route }) => {
         )}
 
       </ScrollView>
+          </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

@@ -7,7 +7,7 @@ import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar,
-} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView }   from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -289,10 +289,17 @@ const DineOutScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={s.safe}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <NavBar onMenuPress={() => navigation.goBack()} />
 
-      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
 
         {/* Page header */}
         <View style={s.header}>
@@ -345,7 +352,10 @@ const DineOutScreen = ({ navigation, route }) => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={s.chipScroll}
               style={s.chipScrollWrap}
-            >
+            
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
               {cuisines.map((c) => (
                 <TouchableOpacity
                   key={c}
@@ -379,6 +389,7 @@ const DineOutScreen = ({ navigation, route }) => {
           </>
         )}
       </ScrollView>
+          </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
