@@ -203,7 +203,7 @@ const s = StyleSheet.create({
   saveBtn:     { backgroundColor: C.purple, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 24 },
   saveBtnTxt:  { fontSize: 16, fontWeight: '700', color: C.white },
   disabled:    { opacity: 0.6 },
-  errorText:   C.errorText,
+  errorText: { color: C.errorText },
 });
 
 export default EditBlogPostScreen;
