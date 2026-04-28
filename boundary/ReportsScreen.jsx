@@ -9,6 +9,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import ViewHealthReportController  from '../controller/ViewHealthReportController';
 import ViewWeightHistoryController from '../controller/ViewWeightHistoryController';
 import ViewHeightHistoryController from '../controller/ViewHeightHistoryController';
+import LogWeightController         from '../controller/LogWeightController';
 import LogHeightController         from '../controller/LogHeightController';
 import ViewHealthGoalController    from '../controller/ViewHealthGoalController';
 import SetHealthGoalController     from '../controller/SetHealthGoalController';
@@ -18,6 +19,7 @@ import { GOAL_TYPES, ACTIVITY_LEVELS } from '../entity/HealthGoal';
 const reportCtrl = new ViewHealthReportController();
 const weightCtrl = new ViewWeightHistoryController();
 const heightCtrl = new ViewHeightHistoryController();
+const logWtCtrl  = new LogWeightController();
 const logHtCtrl  = new LogHeightController();
 const viewGoalCtrl = new ViewHealthGoalController();
 const setGoalCtrl  = new SetHealthGoalController();
@@ -454,8 +456,37 @@ const GroupedMacroBarChart = ({ data, label }) => {
 };
 
 // ────────────────────────────────────────────────────────────────
-// REUSABLE: Height Log Modal (#36, #87 Log / #89 Update)
+// REUSABLE: Metric Log Modals (#34, #36, #84, #87, #89)
 // ────────────────────────────────────────────────────────────────
+const WeightModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
+  const [weight, setWeight] = useState('');
+  const handleClose = () => { setWeight(''); onClose(); };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
+      <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.45)',justifyContent:'center',paddingHorizontal:16}}>
+        <View style={{backgroundColor:C.white,borderRadius:16,padding:22,paddingTop:40}}>
+          <TouchableOpacity onPress={handleClose} style={{position:'absolute',top:12,right:16}}>
+            <Text style={{fontSize:16,color:C.subtle}}>âœ•</Text>
+          </TouchableOpacity>
+          <Text style={{fontSize:16,fontWeight:'700',color:C.dark,textAlign:'center',marginBottom:18}}>Update Weight</Text>
+          <Text style={{fontSize:13,fontWeight:'600',color:C.dark,marginBottom:4}}>Weight (kg) *</Text>
+          <TextInput
+            style={{backgroundColor:C.bg,borderRadius:8,paddingHorizontal:12,paddingVertical:10,fontSize:14,color:C.dark,borderWidth:1,borderColor:error?'#FECACA':C.border,marginBottom:4}}
+            value={weight} onChangeText={setWeight} placeholder="e.g., 70.5" keyboardType="numeric" placeholderTextColor={C.subtle}
+          />
+          {error ? <Text style={{fontSize:12,color:C.red,marginBottom:8}}>{error}</Text> : <View style={{marginBottom:12}}/>}
+          <TouchableOpacity
+            style={{backgroundColor:C.purple,borderRadius:10,paddingVertical:14,alignItems:'center',opacity:isLoading?0.6:1}}
+            onPress={() => onSubmit(weight)} disabled={isLoading} activeOpacity={0.85}>
+            <Text style={{fontSize:15,fontWeight:'700',color:C.white}}>{isLoading?'Saving...':'Update Weight'}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
 const HeightModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
   const [height, setHeight] = useState('');
   const [notes,  setNotes]  = useState('');
@@ -653,12 +684,15 @@ const DailyProgressTab = ({ userId }) => {
 };
 
 // ── BODY METRICS TAB — #34-37, #41-42, #84-87, #89, #91-92, goal #38-40, #90 ─
-const BodyMetricsTab = ({ userId, navigation, user, onBanner }) => {
+const BodyMetricsTab = ({ userId, onBanner }) => {
   const [weightData,  setWeightData]  = useState({ latest: null, loading: true });
   const [heightData,  setHeightData]  = useState({ latest: null, loading: true });
   const [goal,        setGoal]        = useState(null);
+  const [showWtModal, setShowWtModal] = useState(false);
   const [showHtModal, setShowHtModal] = useState(false);
   const [showGoalModal,setShowGoalModal]=useState(false);
+  const [wtError,     setWtError]     = useState('');
+  const [wtLoading,   setWtLoading]   = useState(false);
   const [htError,     setHtError]     = useState('');
   const [htLoading,   setHtLoading]   = useState(false);
   const [goalLoading, setGoalLoading] = useState(false);
@@ -690,6 +724,21 @@ const BodyMetricsTab = ({ userId, navigation, user, onBanner }) => {
   const bmi    = WeightEntry.calculateBMI(weight, height);
   const bmiCat = WeightEntry.getBMICategory(bmi);
   const bmiColor = !bmi ? C.subtle : bmi < 18.5 ? C.orange : bmi < 25 ? C.green : bmi < 30 ? C.orange : C.red;
+
+  // UC #34, #84, #86 - log/update weight
+  const handleWeightSubmit = useCallback(async (wt) => {
+    setWtError('');
+    setWtLoading(true);
+    const result = await logWtCtrl.logWeight(userId, { weightKg: wt });
+    setWtLoading(false);
+    if (result.success) {
+      setWeightData({ latest: result.data, loading: false });
+      setShowWtModal(false);
+      onBanner('Weight updated successfully');
+    } else {
+      setWtError(result.message);
+    }
+  }, [userId]);
 
   // UC #36, #87, #89 — log/update height
   const handleHeightSubmit = useCallback(async (ht, notes) => {
@@ -769,7 +818,7 @@ const BodyMetricsTab = ({ userId, navigation, user, onBanner }) => {
               {weight ? `${weight} kg` : '—'}
             </Text>
             <TouchableOpacity style={{backgroundColor:C.purple,borderRadius:8,paddingVertical:11,alignItems:'center'}}
-              onPress={() => navigation.navigate('WeightTrackingScreen', { user })} activeOpacity={0.85}>
+              onPress={() => { setWtError(''); setShowWtModal(true); }} activeOpacity={0.85}>
               <Text style={{fontSize:14,fontWeight:'700',color:C.white}}>Update Weight</Text>
             </TouchableOpacity>
           </>
@@ -805,6 +854,7 @@ const BodyMetricsTab = ({ userId, navigation, user, onBanner }) => {
       </View>
 
       {/* Modals */}
+      <WeightModal visible={showWtModal} onClose={() => setShowWtModal(false)} onSubmit={handleWeightSubmit} isLoading={wtLoading} error={wtError}/>
       <HeightModal visible={showHtModal} onClose={() => setShowHtModal(false)} onSubmit={handleHeightSubmit} isLoading={htLoading} error={htError}/>
       <GoalModal   visible={showGoalModal} existingGoal={goal} onClose={() => setShowGoalModal(false)} onSave={handleGoalSave} isLoading={goalLoading} errors={goalErrors}/>
     </ScrollView>
@@ -943,7 +993,7 @@ const ReportsScreen = ({ navigation, route }) => {
       </View>
       <TabBar active={activeTab} onSelect={setActiveTab}/>
       {activeTab === 'Daily Progress'  && <DailyProgressTab  userId={user?.userId}/>}
-      {activeTab === 'Body Metrics'    && <BodyMetricsTab    userId={user?.userId} navigation={navigation} user={user} onBanner={handleBanner}/>}
+      {activeTab === 'Body Metrics'    && <BodyMetricsTab    userId={user?.userId} onBanner={handleBanner}/>}
       {activeTab === 'History'         && <HistoryTab        userId={user?.userId}/>}
       {activeTab === 'Monthly Summary' && <MonthlySummaryTab userId={user?.userId}/>}
           </KeyboardAvoidingView>
