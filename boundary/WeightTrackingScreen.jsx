@@ -23,9 +23,9 @@ const C = {
 const NavBar = ({ onMenu }) => (
   <View style={nav.bar}>
     <View style={nav.brand}><Text style={nav.icon}>🍴</Text><Text style={nav.name}>BiteWise</Text></View>
-    <TouchableOpacity onPress={onMenu} style={nav.btn}>
-      <View style={nav.line}/><View style={[nav.line,{width:18}]}/><View style={nav.line}/>
-    </TouchableOpacity>
+    <TouchableOpacity onPress={onMenu} style={{padding: 6}}>
+          <Text style={{fontSize: 14, fontWeight: '500', color: '#374151'}}>← Back</Text>
+        </TouchableOpacity>
   </View>
 );
 const nav = StyleSheet.create({
@@ -157,7 +157,7 @@ const WeightTrackingScreen = ({ navigation, route }) => {
         style={{ flex: 1 }}
       >
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
-      <NavBar onMenu={() => navigation.navigate('AccountSettingsScreen', { user })} />
+      <NavBar onMenu={() => navigation.goBack()} />
       <Banner msg={banner} />
       <UpdateModal visible={showModal} onClose={() => setShowModal(false)} onSubmit={handleSubmit} isLoading={isSaving} error={fieldError} />
 

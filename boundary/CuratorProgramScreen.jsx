@@ -23,9 +23,9 @@ const C = {
 const NavBar = ({ onMenu }) => (
   <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',paddingHorizontal:20,paddingVertical:14,backgroundColor:C.white,borderBottomWidth:1,borderBottomColor:C.border}}>
     <View style={{flexDirection:'row',alignItems:'center',gap:6}}><Text style={{fontSize:20}}>🍴</Text><Text style={{fontSize:20,fontWeight:'800',color:C.dark}}>BiteWise</Text></View>
-    <TouchableOpacity onPress={onMenu} style={{padding:6,gap:4,alignItems:'flex-end'}}>
-      <View style={{width:22,height:2.5,backgroundColor:C.dark,borderRadius:2}}/><View style={{width:18,height:2.5,backgroundColor:C.dark,borderRadius:2}}/><View style={{width:22,height:2.5,backgroundColor:C.dark,borderRadius:2}}/>
-    </TouchableOpacity>
+    <TouchableOpacity onPress={onMenu} style={{padding: 6}}>
+          <Text style={{fontSize: 14, fontWeight: '500', color: '#374151'}}>← Back</Text>
+        </TouchableOpacity>
   </View>
 );
 
@@ -110,7 +110,7 @@ const CuratorProgramScreen = ({ navigation, route }) => {
         style={{ flex: 1 }}
       >
       <StatusBar barStyle="dark-content" backgroundColor={C.white}/>
-      <NavBar onMenu={() => navigation.navigate('AccountSettingsScreen', { user })}/>
+      <NavBar onMenu={() => navigation.goBack()}/>
       <Banner msg={banner}/>
 
       <ScrollView contentContainerStyle={{flexGrow: 1, paddingHorizontal:16,paddingBottom:32}}

@@ -37,8 +37,8 @@ const NavBar = ({ onMenu }) => (
       <Text style={{fontSize:20}}>🍴</Text>
       <Text style={{fontSize:20,fontWeight:'800',color:C.dark}}>BiteWise</Text>
     </View>
-    <TouchableOpacity onPress={onMenu} style={nav.backBtn}>
-          <Text style={nav.backText}>← Back</Text>
+    <TouchableOpacity onPress={onMenu} style={{padding: 6}}>
+          <Text style={{fontSize: 14, fontWeight: '500', color: '#374151'}}>← Back</Text>
         </TouchableOpacity>
   </View>
 );

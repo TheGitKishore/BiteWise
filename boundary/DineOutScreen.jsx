@@ -42,11 +42,9 @@ const NavBar = ({ onMenuPress }) => (
       <Text style={nav.icon}>🍴</Text>
       <Text style={nav.brandName}>BiteWise</Text>
     </View>
-    <TouchableOpacity onPress={onMenuPress} style={nav.menuBtn} accessibilityRole="button">
-      <View style={nav.menuLine} />
-      <View style={[nav.menuLine, { width: 18 }]} />
-      <View style={nav.menuLine} />
-    </TouchableOpacity>
+    <TouchableOpacity onPress={onMenuPress} style={{padding: 6}}>
+          <Text style={{fontSize: 14, fontWeight: '500', color: '#374151'}}>← Back</Text>
+        </TouchableOpacity>
   </View>
 );
 const nav = StyleSheet.create({
