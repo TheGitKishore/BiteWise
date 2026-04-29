@@ -1,31 +1,25 @@
 import { MongoClient } from 'mongodb';
 
-//const uri = process.env.MONGODB_URI || 'mongodb://zm:FYP-26-S1-17 BiteWise@ac-dbzb1mg-shard-00-00.hjry7gx.mongodb.net:27017,ac-dbzb1mg-shard-00-01.hjry7gx.mongodb.net:27017,ac-dbzb1mg-shard-00-02.hjry7gx.mongodb.net:27017/?ssl=true&replicaSet=atlas-rxz00p-shard-0&authSource=admin&appName=cluster1';
+const uri = process.env.MONGODB_URI;
 
-//Leonards IP Mongo
-const uri = process.env.MONGODB_URI || 'mongodb://leonardpoonkokwei_db_user:1234@ac-dbzb1mg-shard-00-00.hjry7gx.mongodb.net:27017,ac-dbzb1mg-shard-00-01.hjry7gx.mongodb.net:27017,ac-dbzb1mg-shard-00-02.hjry7gx.mongodb.net:27017/?ssl=true&replicaSet=atlas-rxz00p-shard-0&authSource=admin&appName=cluster1';
-
-//const client = new MongoClient(uri);
-
-//Leonard
 const client = new MongoClient(uri);
 
-let db;
+let mongoDB;
 
 export const connectDB = async () => {
-  if (!db) {
+  if (!mongoDB) {
     await client.connect();
-    db = client.db('fyp');
+    mongoDB = client.db('fyp');
     console.log('MongoDB connected');
   }
-  return db;
+  return mongoDB;
 };
 
 export const getDB = () => {
-  if (!db) {
+  if (!mongoDB) {
     throw new Error('MongoDB not initialized. Call connectDB first.');
   }
-  return db;
+  return mongoDB;
 };
 
 export default client;

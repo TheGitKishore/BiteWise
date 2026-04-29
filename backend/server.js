@@ -68,10 +68,14 @@ app.use('/api/dine-out', dineoutRoute);
 // ? Initialize DB before server starts
 const startServer = async () => {
   try {
-    await initializeDatabases();   // ?? THIS IS WHAT YOU WERE MISSING
+    initializeDatabases().catch(err =>
+      console.error("DB init failed:", err)
+    );
 
-    app.listen(3000, () => {
-      console.log('Server running on port 3000');
+    const PORT = process.env.PORT || 3000;
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
     });
 
   } catch (error) {
