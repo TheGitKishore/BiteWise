@@ -10,14 +10,12 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import AdminManageUsersController          from '../controller/AdminManageUsersController';
 import AdminRemoveReviewController         from '../controller/AdminRemoveReviewController';
-import ViewCuratorApplicationsController   from '../controller/ViewCuratorApplicationsController';
-import ApproveCuratorApplicationController from '../controller/ApproveCuratorApplicationController';
+import AdminCuratorApplicationsController from '../controller/AdminCuratorApplicationsController';
 import LogOutController                    from '../controller/LogOutController';
 
 const usersCtrl    = new AdminManageUsersController();
 const reviewsCtrl  = new AdminRemoveReviewController();
-const viewAppsCtrl    = new ViewCuratorApplicationsController();
-const approveAppsCtrl = new ApproveCuratorApplicationController();
+const curatorAppsCtrl = new AdminCuratorApplicationsController();
 const logoutCtrl   = new LogOutController();
 
 const TABS = ['Users', 'Reviews', 'Curator Apps'];
@@ -132,27 +130,67 @@ const CuratorAppsTab = ({ adminId }) => {
 
   useFocusEffect(useCallback(() => {
     setLoading(true);
-    viewAppsCtrl.fetchApplications().then((r) => { if (r.success) setApps(r.data); setLoading(false); });
+    curatorAppsCtrl.fetchApplications().then((r) => { if (r.success) setApps(r.data); setLoading(false); });
   }, []));
 
   const STATUS_COLOR = { PENDING: { bg: C.amberBg, border: C.amberBorder, txt: C.amber }, APPROVED: { bg: C.greenBg, border: C.greenBorder, txt: C.green }, REJECTED: { bg: C.errorBg, border: C.errorBorder, txt: C.errorText } };
 
   const handleApprove = useCallback((app) => {
-    Alert.alert('Approve Application', `Approve @${app.username} as a Curator?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Approve', onPress: async () => {
-          const r = await approveAppsCtrl.approveApplication(app.applicationId, adminId);
-          if (r.success) setApps((p) => p.map((a) => a.applicationId === app.applicationId ? { ...a, status: 'APPROVED' } : a));
-        }},
-    ]);
+    Alert.alert(
+      'Approve Application',
+      `Approve @${app.username} as a Curator?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Approve',
+          onPress: async () => {
+            const r = await curatorAppsCtrl.approveApplication(
+              app.applicationId,
+              adminId
+            );
+          
+            if (r.success) {
+              const updated = await curatorAppsCtrl.fetchApplications();
+              if (updated.success) {
+                setApps(updated.data);
+              }
+            } else {
+              Alert.alert('Error', r.message || 'Failed to approve application');
+            }
+          }
+        }
+      ]
+    );
   }, [adminId]);
 
   const handleReject = useCallback((app) => {
-    Alert.prompt('Reject Application', `Reason for rejecting @${app.username}:`, async (reason) => {
-      if (!reason) return;
-      const r = await approveAppsCtrl.rejectApplication(app.applicationId, adminId, reason);
-      if (r.success) setApps((p) => p.map((a) => a.applicationId === app.applicationId ? { ...a, status: 'REJECTED' } : a));
-    }, 'plain-text', '', 'default');
+    Alert.alert(
+      'Reject Application',
+      `Reject @${app.username}'s application?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reject',
+          style: 'destructive',
+          onPress: async () => {
+            const r = await curatorAppsCtrl.rejectApplication(
+              app.applicationId,
+              adminId,
+              'Rejected by admin'
+            );
+          
+            if (r.success) {
+              const updated = await curatorAppsCtrl.fetchApplications();
+              if (updated.success) {
+                setApps(updated.data);
+              }
+            } else {
+              Alert.alert('Error', r.message || 'Failed to reject application');
+            }
+          }
+        }
+      ]
+    );
   }, [adminId]);
 
   if (loading) return <Text style={c.loading}>Loading...</Text>;

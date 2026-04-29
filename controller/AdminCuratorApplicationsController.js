@@ -5,8 +5,8 @@
 //   4. On approval, controller also promotes user role to CURATOR
 // System Admin only (#105, #106)
 
+import Admin from '../entity/Admin';
 import CuratorApplication from '../entity/CuratorApplication';
-import User               from '../entity/User';
 
 class AdminCuratorApplicationsController {
   constructor() {}
@@ -18,15 +18,15 @@ class AdminCuratorApplicationsController {
   // UC #106 — approve + promote user to CURATOR
   async approveApplication(applicationId, adminId) {
     return this._safeCall(async () => {
-      const result = await CuratorApplication.approve(applicationId, adminId);
-      if (result.success && result.data) await User.promoteToMinuteCurator(result.data.userId);
-      return result;
+      return await Admin.approve(applicationId, adminId);
     });
   }
 
   // UC #106 — reject application
   async rejectApplication(applicationId, adminId, reason) {
-    return this._safeCall(async () => CuratorApplication.reject(applicationId, adminId, reason));
+    return this._safeCall(async () => {
+      return await Admin.reject(applicationId, adminId, reason);
+    });
   }
 }
 

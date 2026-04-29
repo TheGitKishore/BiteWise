@@ -122,4 +122,99 @@ router.put('/reactivate', async (req, res) => {
   }
 });
 
+// ================= UC #106 — APPROVE =================
+router.put('/:id/approve', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adminId } = req.body;
+
+    // 1. get userId from application
+    const [appRows] = await db.query(
+      'SELECT user_id FROM curator_applications WHERE application_id = ?',
+      [id]
+    );
+
+    if (!appRows.length) {
+      return res.status(404).json({
+        success: false,
+        message: 'Application not found'
+      });
+    }
+
+    const userId = appRows[0].user_id;
+
+    // 2. approve application
+    await db.query(`
+      UPDATE curator_applications
+      SET status = 'APPROVED',
+          reviewed_by_admin_id = ?,
+          reviewed_at = NOW()
+      WHERE application_id = ?
+    `, [adminId, id]);
+
+    // 3. promote user
+    await db.query(`
+      UPDATE users
+      SET role = 'curator',
+          updated_at = NOW()
+      WHERE user_id = ?
+    `, [userId]);
+
+    return res.json({
+      success: true,
+      message: 'Application approved and user promoted',
+      data: { applicationId: id, userId }
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
+// ================= UC #106 — REJECT =================
+router.put('/:id/reject', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adminId, reason } = req.body;
+
+    const [result] = await db.query(`
+      UPDATE curator_applications
+      SET status = 'REJECTED',
+          reviewed_by_admin_id = ?,
+          reviewed_at = NOW(),
+          rejection_reason = ?
+      WHERE application_id = ?
+    `, [adminId, reason || 'Does not meet requirements', id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Application not found'
+      });
+    }
+
+    const [rows] = await db.query(
+      'SELECT * FROM curator_applications WHERE application_id = ?',
+      [id]
+    );
+
+    res.json({
+      success: true,
+      message: 'Application rejected',
+      data: rows[0]
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
 export default router;

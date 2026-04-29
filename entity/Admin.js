@@ -66,6 +66,37 @@ class Admin {
     }
  }
 
+   // ================= UC #106 — APPROVE =================
+  static async approve(applicationId, adminId) {
+    try {
+      const res = await axios.put(`${API_URL}/${applicationId}/approve`, {
+        adminId
+      });
+      return res.data;
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || err.message
+      };
+    }
+  }
+
+  // ================= UC #106 — REJECT =================
+  static async reject(applicationId, adminId, reason) {
+    try {
+      const res = await axios.put(`${API_URL}/${applicationId}/reject`, {
+        adminId,
+        reason
+      });
+      return res.data;
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || err.message
+      };
+    }
+  }
+
 }
 
 export default Admin;
