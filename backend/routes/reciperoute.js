@@ -546,8 +546,47 @@ router.get('/saved/:userId', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────
-// UC #112 — UNPUBLISH (MOVE recipe → draft)
+// SAVED RECIPES
 // ─────────────────────────────────────────────
+// DELETE /api/recipes/saved/:userId/:recipeId
+router.delete('/saved/:userId/:recipeId', async (req, res) => {
+  try {
+    const { savedRecipes } = getCollections();
+    const { userId, recipeId } = req.params;
+
+    if (!ObjectId.isValid(recipeId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid recipeId',
+      });
+    }
+
+    const [result] = await db.execute(
+      `DELETE FROM saved_recipes
+       WHERE user_id = ? AND recipe_mongo_id = ?`,
+      [userId, recipeId.toString()]
+    );
+
+    await savedRecipes.deleteMany({
+      recipeId: { $in: [recipeId.toString(), new ObjectId(recipeId)] },
+      ...userIdFilter(userId),
+    });
+
+    return res.json({
+      success: true,
+      message: result.affectedRows > 0 ? 'Recipe removed from saved recipes.' : 'Recipe was not saved.',
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+      sqlMessage: err.sqlMessage,
+      code: err.code,
+    });
+  }
+});
+
+// UC #112 - UNPUBLISH (MOVE recipe to draft)
 router.post('/:id/unpublish', async (req, res) => {
   try {
     const { recipes, drafts } = getCollections();

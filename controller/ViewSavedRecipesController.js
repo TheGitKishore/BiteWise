@@ -35,6 +35,16 @@ class ViewSavedRecipesController {
   // @param  {Recipe[]} recipes
   // @param  {string}   tag
   // @return {Recipe[]}
+  async removeSavedRecipe(userId, recipeId) {
+    return this._safeCall(async () => {
+      if (!userId || !recipeId) {
+        return { success: false, message: 'Unable to remove saved recipe.' };
+      }
+
+      return await Recipe.unsaveRecipe(userId, recipeId);
+    });
+  }
+
   filterByDietaryTag(recipes, tag) {
     return Recipe.filterByTag(recipes, tag);
   }

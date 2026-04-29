@@ -163,7 +163,7 @@ class Recipe {
     try {
       const res = await axios.post(`${API_URL}/save`, {
         userId,
-        recipeId: recipe._id,
+        recipeId: recipe.recipeId || recipe._id,
       });
 
       return {
@@ -236,6 +236,21 @@ class Recipe {
         success: false,
         data: [],
         message: err.message || 'Failed to fetch saved recipes',
+      };
+    }
+  }
+
+  static async unsaveRecipe(userId, recipeId) {
+    try {
+      const res = await axios.delete(`${API_URL}/saved/${userId}/${recipeId}`);
+      return {
+        success: Boolean(res.data?.success ?? true),
+        message: res.data?.message || 'Recipe removed from saved recipes.',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err?.response?.data?.message || err.message || 'Failed to remove saved recipe',
       };
     }
   }

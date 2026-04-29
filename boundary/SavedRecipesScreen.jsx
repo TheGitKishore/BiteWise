@@ -51,8 +51,8 @@ const nav = StyleSheet.create({
 });
 
 // Saved recipe card — rich view with macros, servings, date
-const SavedRecipeCard = ({ recipe, onRemove }) => (
-  <View style={src.card}>
+const SavedRecipeCard = ({ recipe, onPress, onRemove }) => (
+  <TouchableOpacity style={src.card} onPress={onPress} activeOpacity={0.85}>
     {recipe.imageUrl ? (
       <Image source={{ uri: recipe.imageUrl }} style={src.image} resizeMode="cover" />
     ) : (
@@ -77,12 +77,12 @@ const SavedRecipeCard = ({ recipe, onRemove }) => (
       </View>
       <View style={src.footer}>
         <Text style={src.savedDate}>Saved {new Date().toLocaleDateString('en-SG')}</Text>
-        <TouchableOpacity onPress={() => onRemove(recipe.recipeId)} style={src.removeBtn} accessibilityRole="button">
+        <TouchableOpacity onPress={(e) => { e?.stopPropagation?.(); onRemove(recipe.recipeId); }} style={src.removeBtn} accessibilityRole="button">
           <Text style={src.removeIcon}>🗑</Text>
         </TouchableOpacity>
       </View>
     </View>
-  </View>
+  </TouchableOpacity>
 );
 const src = StyleSheet.create({
   card:          { backgroundColor:C.white, borderRadius:14, marginBottom:14, overflow:'hidden', borderWidth:1, borderColor:C.border },
@@ -104,6 +104,68 @@ const src = StyleSheet.create({
   removeBtn:     { padding:4 },
   removeIcon:    { fontSize:18 },
 });
+
+const SavedRecipeDetail = ({ recipe, onBack, onRemove }) => (
+  <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}
+    keyboardShouldPersistTaps="handled"
+    keyboardDismissMode="on-drag"
+  >
+    <TouchableOpacity style={detail.backBtn} onPress={onBack} activeOpacity={0.85}>
+      <Text style={detail.backText}>Back to Saved Recipes</Text>
+    </TouchableOpacity>
+
+    {recipe.imageUrl ? (
+      <Image source={{ uri: recipe.imageUrl }} style={detail.heroImage} resizeMode="cover" />
+    ) : (
+      <View style={detail.heroPlaceholder}><Text style={detail.heroPlaceholderText}>No image</Text></View>
+    )}
+
+    <View style={detail.header}>
+      <Text style={detail.title}>{recipe.title}</Text>
+      <View style={src.metaRow}>
+        <Text style={src.meta}>Prep: {recipe.prepTimeMins} min</Text>
+        <Text style={src.meta}>{recipe.servings} servings</Text>
+        <Text style={src.meta}>{recipe.difficulty}</Text>
+      </View>
+      <View style={src.tagRow}>
+        {recipe.tags.map((t, i) => <View key={i} style={src.tag}><Text style={src.tagText}>{t}</Text></View>)}
+      </View>
+    </View>
+
+    <View style={detail.section}>
+      <Text style={detail.sectionTitle}>Nutrition Facts</Text>
+      <View style={src.nutritionRow}>
+        {[{ l:'cal', v:recipe.calories }, { l:'protein', v:`${recipe.protein}g` }, { l:'carbs', v:`${recipe.carbs}g` }, { l:'fat', v:`${recipe.fat}g` }].map((n) => (
+          <View key={n.l} style={src.nutriItem}>
+            <Text style={src.nutriValue}>{n.v}</Text>
+            <Text style={src.nutriLabel}>{n.l}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+
+    <View style={detail.section}>
+      <Text style={detail.sectionTitle}>Ingredients</Text>
+      {recipe.ingredients.length > 0 ? recipe.ingredients.map((ing, i) => (
+        <Text key={i} style={detail.listItem}>- <Text style={detail.listPurple}>{ing}</Text></Text>
+      )) : <Text style={detail.emptyText}>No ingredients available.</Text>}
+    </View>
+
+    <View style={detail.section}>
+      <Text style={detail.sectionTitle}>Instructions</Text>
+      {recipe.instructions.length > 0 ? recipe.instructions.map((step, i) => (
+        <View key={i} style={detail.stepRow}>
+          <View style={detail.stepNum}><Text style={detail.stepNumText}>{i + 1}</Text></View>
+          <Text style={detail.stepText}>{step}</Text>
+        </View>
+      )) : <Text style={detail.emptyText}>No instructions available.</Text>}
+    </View>
+
+    <TouchableOpacity style={detail.removeBtn} onPress={() => onRemove(recipe.recipeId)} activeOpacity={0.85}>
+      <Text style={detail.removeText}>Remove from Saved Recipes</Text>
+    </TouchableOpacity>
+  </ScrollView>
+);
 
 
 // MAIN SCREEN — Premium only (#65, #64, #68)
@@ -134,6 +196,7 @@ const SavedRecipesScreen = ({ navigation, route }) => {
   const [prepTime,   setPrepTime]   = useState('All Times');
   const [batchSize,  setBatchSize]  = useState('All Sizes');
   const [activeDiet, setActiveDiet] = useState('All');
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
 
   // UC #65 — load on mount
   useEffect(() => {
@@ -143,13 +206,21 @@ const SavedRecipesScreen = ({ navigation, route }) => {
     });
   }, []);
 
-  // Remove from saved list (local only — would call API in production)
+  // Remove from saved list
   const handleRemove = useCallback((recipeId) => {
     Alert.alert('Remove Recipe', 'Remove this recipe from your saved collection?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Remove', style: 'destructive', onPress: () => setAllSaved((prev) => prev.filter((r) => r.recipeId !== recipeId)) },
+      { text: 'Remove', style: 'destructive', onPress: async () => {
+        const result = await controller.removeSavedRecipe(user.userId, recipeId);
+        if (result.success) {
+          setAllSaved((prev) => prev.filter((r) => r.recipeId !== recipeId));
+          setSelectedRecipe((prev) => (prev?.recipeId === recipeId ? null : prev));
+        } else {
+          Alert.alert('Error', result.message || 'Failed to remove saved recipe.');
+        }
+      }},
     ]);
-  }, []);
+  }, [user?.userId]);
 
   // Derive unique tags from saved recipes for the dietary chip row
   const dietTags = ['All', ...new Set(allSaved.flatMap((r) => r.tags))];
@@ -168,6 +239,25 @@ const SavedRecipesScreen = ({ navigation, route }) => {
     }
     return list;
   })();
+
+  if (selectedRecipe) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <StatusBar barStyle="dark-content" backgroundColor={C.white} />
+          <NavBar onMenuPress={() => setSelectedRecipe(null)} />
+          <SavedRecipeDetail
+            recipe={selectedRecipe}
+            onBack={() => setSelectedRecipe(null)}
+            onRemove={handleRemove}
+          />
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -252,7 +342,12 @@ const SavedRecipesScreen = ({ navigation, route }) => {
           </View>
         ) : (
           visible.map((recipe) => (
-            <SavedRecipeCard key={recipe.recipeId} recipe={recipe} onRemove={handleRemove} />
+            <SavedRecipeCard
+              key={recipe.recipeId}
+              recipe={recipe}
+              onPress={() => setSelectedRecipe(recipe)}
+              onRemove={handleRemove}
+            />
           ))
         )}
 
@@ -293,6 +388,27 @@ const styles = StyleSheet.create({
   emptyIcon:    { fontSize:40, marginBottom:12 },
   emptyText:    { fontSize:15, fontWeight:'600', color:C.dark, marginBottom:4 },
   emptySubtext: { fontSize:13, color:C.subtle, textAlign:'center' },
+});
+
+const detail = StyleSheet.create({
+  backBtn:         { alignSelf:'flex-start', paddingVertical:14 },
+  backText:        { fontSize:14, color:C.mid, fontWeight:'600' },
+  heroImage:       { width:'100%', height:220, borderRadius:14, marginBottom:14 },
+  heroPlaceholder: { width:'100%', height:220, borderRadius:14, marginBottom:14, backgroundColor:C.purpleLight, alignItems:'center', justifyContent:'center' },
+  heroPlaceholderText: { fontSize:16, color:C.purple, fontWeight:'700' },
+  header:          { backgroundColor:C.white, borderRadius:14, padding:16, borderWidth:1, borderColor:C.border, marginBottom:12 },
+  title:           { fontSize:24, fontWeight:'800', color:C.dark, marginBottom:8 },
+  section:         { backgroundColor:C.white, borderRadius:14, padding:16, borderWidth:1, borderColor:C.border, marginBottom:12 },
+  sectionTitle:    { fontSize:15, fontWeight:'700', color:C.dark, marginBottom:12 },
+  listItem:        { fontSize:14, color:C.subtle, marginBottom:6 },
+  listPurple:      { color:C.purple },
+  emptyText:       { fontSize:13, color:C.subtle },
+  stepRow:         { flexDirection:'row', alignItems:'flex-start', gap:12, marginBottom:12 },
+  stepNum:         { width:28, height:28, borderRadius:14, backgroundColor:C.purple, alignItems:'center', justifyContent:'center', flexShrink:0 },
+  stepNumText:     { fontSize:13, fontWeight:'700', color:C.white },
+  stepText:        { flex:1, fontSize:14, color:C.body, lineHeight:20 },
+  removeBtn:       { backgroundColor:'#DC2626', borderRadius:10, paddingVertical:14, alignItems:'center', marginTop:4 },
+  removeText:      { fontSize:15, fontWeight:'700', color:C.white },
 });
 
 export default SavedRecipesScreen;
