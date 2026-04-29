@@ -252,6 +252,18 @@ const PremiumUserDashboardScreen = ({ navigation, route }) => {
   // Sprint 2 replaces with real FoodIntakeEntry data
   const [consumed, setConsumed] = useState(0);
   const isCurator = String(currentUser?.role || '').toUpperCase() === 'CURATOR';
+  const tiles = (PREMIUM_TILES[currentUser?.profileType] || PREMIUM_TILES.HEALTH_ORIENTED).map((tile) => {
+    if (tile.screen !== 'CuratorProgramScreen') return tile;
+
+    return isCurator
+      ? {
+          ...tile,
+          title: 'Curator Dashboard',
+          subtitle: 'Manage your recipes and blog posts',
+          screen: 'CuratorDashboardScreen',
+        }
+      : tile;
+  });
 
   const refreshUserData = useCallback(async () => {
     if (!currentUser?.userId) return;
@@ -336,7 +348,7 @@ const PremiumUserDashboardScreen = ({ navigation, route }) => {
         <CalorieProgressCard consumed={consumed} goal={goal} />
 
         {/* Feature tiles — Sprint 7: ordered by profile type (Step 6) */}
-        {(PREMIUM_TILES[currentUser?.profileType] || PREMIUM_TILES.HEALTH_ORIENTED).map((tile) => (
+        {tiles.map((tile) => (
           <FeatureTile
             key={tile.title}
             icon={tile.icon}

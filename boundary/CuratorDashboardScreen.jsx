@@ -118,7 +118,8 @@ const StatCard = ({ label, value, emoji, emojiColor }) => (
   </View>
 );
 const sc = StyleSheet.create({
-  card:  { backgroundColor: C.white, borderRadius: 14, padding: 18, borderWidth: 1, borderColor: C.border, marginBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  grid:  { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
+  card:  { width: '48%', minHeight: 104, backgroundColor: C.white, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: C.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   label: { fontSize: 13, color: C.subtle, marginBottom: 4 },
   value: { fontSize: 28, fontWeight: '800' },
   emoji: { fontSize: 28, opacity: 0.35 },
@@ -329,7 +330,7 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
           {/* + Create Recipe */}
           <TouchableOpacity
             style={s.createRecipeBtn}
-            onPress={() => navigation.navigate('EditCuratorRecipeScreen', { user })}
+            onPress={() => navigation.navigate('EditCuratorRecipeScreen', { user, recipe: null })}
           >
             <Text style={s.createBtnTxt}>+ Create Recipe</Text>
           </TouchableOpacity>
@@ -337,7 +338,7 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
           {/* + Create Blog Post */}
           <TouchableOpacity
             style={s.createBlogBtn}
-            onPress={() => navigation.navigate('BlogPostsScreen', { user })}
+            onPress={() => navigation.navigate('EditBlogPostScreen', { user, post: null })}
           >
             <Text style={s.createBtnTxt}>+ Create Blog Post</Text>
           </TouchableOpacity>
@@ -346,7 +347,7 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
           <NavTile
             icon="📄"
             label="My Recipes"
-            onPress={() => navigation.navigate('EditCuratorRecipeScreen', { user })}
+            onPress={() => navigation.navigate('CuratorRecipesScreen', { user })}
           />
 
           {/* My Blog Posts nav tile */}
@@ -361,10 +362,12 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
             <Text style={s.loading}>Loading...</Text>
           ) : profileData ? (
             <>
-              <StatCard label="Total Views"  value={profileData.curatorStats.views}     emoji="👁"  emojiColor={C.purple} />
-              <StatCard label="Total Likes"  value={profileData.curatorStats.likes}     emoji="🤍"  emojiColor={C.pink}   />
-              <StatCard label="Comments"     value={profileData.curatorStats.comments}  emoji="💬"  emojiColor={C.blue}   />
-              <StatCard label="Followers"    value={profileData.curatorStats.followers} emoji="📈"  emojiColor={C.purple} />
+              <View style={sc.grid}>
+                <StatCard label="Total Views"  value={profileData.curatorStats.views}     emoji="👁"  emojiColor={C.purple} />
+                <StatCard label="Total Likes"  value={profileData.curatorStats.likes}     emoji="🤍"  emojiColor={C.pink}   />
+                <StatCard label="Comments"     value={profileData.curatorStats.comments}  emoji="💬"  emojiColor={C.blue}   />
+                <StatCard label="Followers"    value={profileData.curatorStats.followers} emoji="📈"  emojiColor={C.purple} />
+              </View>
 
               {/* Recipe Management */}
               <ManagementSection
@@ -376,8 +379,8 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
                 draftLabel="Draft Recipes"
                 createLabel="Create New Recipe"
                 createColor={C.purple}
-                onViewAll={() => navigation.navigate('EditCuratorRecipeScreen', { user })}
-                onCreate={() => navigation.navigate('EditCuratorRecipeScreen', { user })}
+                onViewAll={() => navigation.navigate('CuratorRecipesScreen', { user })}
+                onCreate={() => navigation.navigate('EditCuratorRecipeScreen', { user, recipe: null })}
               />
 
               {/* Blog Post Management */}
@@ -391,7 +394,7 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
                 createLabel="Create New Blog Post"
                 createColor={C.blue}
                 onViewAll={() => navigation.navigate('BlogPostsScreen', { user })}
-                onCreate={() => navigation.navigate('BlogPostsScreen', { user })}
+                onCreate={() => navigation.navigate('EditBlogPostScreen', { user, post: null })}
               />
 
               {/* Curator Profile */}

@@ -37,6 +37,7 @@ import MyRecipesScreen               from './boundary/MyRecipesScreen';
 import DiaryScreen                   from './boundary/DiaryScreen';
 import GroceryListScreen             from './boundary/GroceryListScreen';
 import CuratorDashboardScreen        from './boundary/CuratorDashboardScreen';
+import CuratorRecipesScreen          from './boundary/CuratorRecipesScreen';
 import EditCuratorRecipeScreen       from './boundary/EditCuratorRecipeScreen';
 import AdminLoginScreen              from './boundary/AdminLoginScreen';
 import AdminDashboardScreen          from './boundary/AdminDashboardScreen';
@@ -100,6 +101,7 @@ export default function App() {
         <Stack.Screen name="DiaryScreen"                  component={DiaryScreen} />
         <Stack.Screen name="GroceryListScreen"            component={GroceryListScreen} />
         <Stack.Screen name="CuratorDashboardScreen"       component={CuratorDashboardScreen} />
+        <Stack.Screen name="CuratorRecipesScreen"         component={CuratorRecipesScreen} />
         <Stack.Screen name="EditCuratorRecipeScreen"      component={EditCuratorRecipeScreen} />
         <Stack.Screen name="AdminLoginScreen"             component={AdminLoginScreen} />
         <Stack.Screen name="AdminDashboardScreen"         component={AdminDashboardScreen} />
