@@ -251,9 +251,15 @@ const AccountSettingsScreen = ({ navigation, route }) => {
     setIsLoggingOut(false);
 
     if (result.success) {
-      navigation.navigate('LoginScreen', {
-        successMessage: result.message,
-        messageType:    'success',
+      navigation.reset({
+        index: 0,
+        routes: [{
+          name: 'MainLandingScreen',
+          params: {
+            successMessage: result.message,
+            messageType: 'success',
+          },
+        }],
       });
     }
   }, [navigation]);
@@ -271,9 +277,15 @@ const AccountSettingsScreen = ({ navigation, route }) => {
           onPress: async () => {
             const result = await terminateCtrl.terminateAccount(user);
             if (result.success) {
-              navigation.navigate('LoginScreen', {
-                successMessage: result.message,
-                messageType:    'success',
+              navigation.reset({
+                index: 0,
+                routes: [{
+                  name: 'MainLandingScreen',
+                  params: {
+                    successMessage: result.message,
+                    messageType: 'success',
+                  },
+                }],
               });
             } else {
               setBanner({ message: result.message, type: 'error' });

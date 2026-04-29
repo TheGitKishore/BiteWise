@@ -296,7 +296,12 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
 
   const handleLogout = useCallback(async () => {
     const r = await logoutCtrl.logout();
-    if (r.success) navigation.replace('LoginScreen');
+    if (r.success) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MainLandingScreen' }],
+      });
+    }
   }, [navigation]);
 
   const handleBackToDashboard = useCallback(() => {
