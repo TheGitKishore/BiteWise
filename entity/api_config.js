@@ -1,5 +1,5 @@
 // config/api.js
 
-const API_CONFIG = 'http://192.168.xx.xx:3000/api';
+const API_CONFIG = 'https://bitewise-9pol.onrender.com/api';
 
 export default API_CONFIG;
