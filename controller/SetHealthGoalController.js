@@ -30,7 +30,8 @@ class SetHealthGoalController {
       const result = await HealthGoal.create(userId, fields);
 
       return {
-        success: true,
+        success: result.success,
+        field: result.field ?? null,
         data: result.data,   // <-- ALWAYS use data
         message: result.message || 'Goal created'
       };
@@ -46,7 +47,8 @@ class SetHealthGoalController {
       const result = await HealthGoal.update(goalId, fields);
     
       return {
-        success: true,
+        success: result.success,
+        field: result.field ?? null,
         data: result.data,
         message: result.message || 'Goal updated'
       };

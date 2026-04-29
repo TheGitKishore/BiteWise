@@ -19,6 +19,20 @@ export const ACTIVITY_LEVELS = Object.freeze({
   VERY_ACTIVE: 'Very Active',
 });
 
+const normalizeGoal = (row = {}) => new HealthGoal({
+  goalId: row.goalId ?? row.goal_id ?? null,
+  userId: row.userId ?? row.user_id ?? null,
+  goalType: row.goalType ?? row.goal_type ?? '',
+  customGoal: row.customGoal ?? row.custom_goal ?? '',
+  targetWeight: row.targetWeight ?? row.target_weight ?? null,
+  targetCalories: row.targetCalories ?? row.target_calories ?? null,
+  activityLevel: row.activityLevel ?? row.activity_level ?? '',
+  targetDate: row.targetDate ?? row.target_date ?? null,
+  isActive: row.isActive ?? row.is_active ?? true,
+  createdAt: row.createdAt ?? row.created_at ?? null,
+  updatedAt: row.updatedAt ?? row.updated_at ?? null,
+});
+
 class HealthGoal {
   constructor({
     goalId         = null,
@@ -91,19 +105,7 @@ class HealthGoal {
       }
     
       // ✅ MAPPING HAPPENS HERE (IMPORTANT)
-      const goal = new HealthGoal({
-        goalId: row.goalId,
-        userId: row.userId,
-        goalType: row.goalType,
-        customGoal: row.customGoal,
-        targetWeight: row.targetWeight,
-        targetCalories: row.targetCalories,
-        activityLevel: row.activityLevel,
-        targetDate: row.targetDate,
-        isActive: row.isActive,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-      });
+      const goal = normalizeGoal(row);
     
       return {
         success: true,
@@ -134,7 +136,16 @@ class HealthGoal {
 
     try {
       const res = await axios.post(API_URL, { userId, ...fields });
-      return res.data;
+      const data = res.data?.data
+        ? normalizeGoal({ userId, ...fields, ...res.data.data })
+        : null;
+
+      return {
+        success: Boolean(res.data?.success),
+        field: res.data?.field ?? null,
+        message: res.data?.message || 'Health goal created',
+        data,
+      };
     } catch (err) {
       console.log('SET HEALTH GOAL ERROR:', err.response?.data || err.message);
       return {
@@ -157,7 +168,16 @@ class HealthGoal {
 
     try {
       const res = await axios.put(`${API_URL}/${goalId}`, fields);
-      return res.data;
+      const data = res.data?.data
+        ? normalizeGoal({ goalId, ...fields, ...res.data.data })
+        : null;
+
+      return {
+        success: Boolean(res.data?.success),
+        field: res.data?.field ?? null,
+        message: res.data?.message || 'Health goal updated',
+        data,
+      };
     } catch (err) {
       console.log('UPDATE HEALTH GOAL ERROR:', err.response?.data || err.message);
       return {

@@ -117,10 +117,29 @@ router.post('/', async (req, res) => {
       [userId, goalType, customGoal, targetWeight, targetCalories, activityLevel, targetDate]
     );
 
+    const [rows] = await db.query(
+      `SELECT
+        goal_id,
+        user_id,
+        goal_type,
+        custom_goal,
+        target_weight,
+        target_calories,
+        activity_level,
+        DATE_FORMAT(target_date, '%Y-%m-%d') AS target_date,
+        is_active,
+        created_at,
+        updated_at
+       FROM health_goals
+       WHERE goal_id = ?
+       LIMIT 1`,
+      [result.insertId]
+    );
+
     res.json({
       success: true,
       message: 'Health goal created',
-      data: { goalId: result.insertId }
+      data: rows[0] ? mapGoal(rows[0]) : null
     });
 
   } catch (err) {
