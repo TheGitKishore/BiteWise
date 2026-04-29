@@ -17,7 +17,14 @@ router.get('/search', async (req, res) => {
     const data = await searchFoodProduct(q.trim());
 
     console.log("Query:", q);
-    console.log("Products count:", data.products?.length);
+    console.log("Products count:", data?.products?.length);
+
+    if (data?.apiError) {
+      return res.status(503).json({
+        success: false,
+        message: 'Food search is temporarily unavailable. Please try again.',
+      });
+    }
 
     if (!data || !data.products) {
       return res.status(200).json({

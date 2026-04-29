@@ -230,8 +230,8 @@ export const searchFoodProduct = async (productName) => {
   } catch (error) {
     console.error('OFF ERROR STATUS:', error.response?.status);
 
-    // 🔥 retry once for 503
-    if (error.response?.status === 503) {
+    // Retry once for transient OpenFoodFacts failures.
+    if (!error.response || [429, 500, 502, 503, 504].includes(error.response.status)) {
       console.log("Retrying OpenFoodFacts...");
 
       try {
@@ -251,7 +251,12 @@ export const searchFoodProduct = async (productName) => {
       }
     }
 
-    return { products: [] };
+    return {
+      products: [],
+      apiError: true,
+      status: error.response?.status || null,
+      message: error.message || 'OpenFoodFacts search failed',
+    };
   }
 };
 

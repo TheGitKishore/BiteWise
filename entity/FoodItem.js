@@ -89,15 +89,26 @@ class FoodItem {
   // UC #15, #50 — search local first, fall back to Open Food Facts if empty
   // Called by ViewFoodDatabaseController.searchFoodItems()
   static async searchWithFallback(localItems, query) {
+    const trimmedQuery = String(query || '').trim();
+
     // Step 1 — local search
-    const localResults = FoodItem.filterBySearch(localItems, query);
+    const localResults = FoodItem.filterBySearch(localItems, trimmedQuery);
+
+    if (trimmedQuery.length < 2) {
+      return {
+        data: localResults,
+        fromAPI: false,
+        message: localResults.length === 0 ? 'Type at least 2 letters to search.' : '',
+      };
+    }
   
     // Step 2 — API search (ALWAYS run if query exists)
     let apiItems = [];
+    let apiFailed = false;
   
     try {
       const res = await axios.get(`${API_CONFIG}/food-api/search`, {
-        params: { searchTerm: query },
+        params: { searchTerm: trimmedQuery },
       });
     
       const products = res.data?.data || [];
@@ -115,7 +126,8 @@ class FoodItem {
       }));
     
     } catch (err) {
-      console.error('[FoodItem.searchWithFallback]', err);
+      apiFailed = true;
+      console.log('[FoodItem.searchWithFallback] OpenFoodFacts search unavailable:', err.response?.data?.message || err.message);
     }
   
     // Step 3 — merge BOTH results
@@ -133,9 +145,11 @@ class FoodItem {
     return {
       data: deduped,
       fromAPI: apiItems.length > 0,
-      message: deduped.length === 0
-        ? 'No food items found'
-        : '',
+      message: apiFailed
+        ? 'No food items found. Try searching again.'
+        : deduped.length === 0
+          ? 'No food items found. Try another spelling or search term.'
+          : '',
     };
   }
 

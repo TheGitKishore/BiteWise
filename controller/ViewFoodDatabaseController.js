@@ -51,10 +51,13 @@ class ViewFoodDatabaseController {
   // @param  {string}     query
   // @return {Promise<{ data: FoodItem[], fromAPI: boolean, message: string }>}
   async searchFoodItems(items, query) {
-    if (!query || query.trim().length === 0) {
+    const trimmedQuery = String(query || '').trim();
+
+    if (trimmedQuery.length === 0) {
       return { data: items, fromAPI: false, message: '' };
     }
-    return await FoodItem.searchWithFallback(items, query);
+
+    return await FoodItem.searchWithFallback(items, trimmedQuery);
   }
 
   async logFoodItem(item, quantity, userId, meal) {
