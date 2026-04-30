@@ -255,7 +255,7 @@ const UsersTab = ({ adminUser, onBanner }) => {
 
   // UC #101 — Terminate
   const handleTerminate = useCallback((user) => {
-    Alert.alert('Terminate Account', `Permanently terminate ${user.firstName} ${user.lastName}'s account? This cannot be undone.`, [
+    Alert.alert('Terminate Account', `Permanently terminate ${user.username}'s account? This cannot be undone.`, [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Terminate', style: 'destructive', onPress: async () => {
           const r = await terminateCtrl.terminateUser(user.userId);
@@ -274,8 +274,8 @@ const UsersTab = ({ adminUser, onBanner }) => {
     Alert.alert(
       isCurrentlyBanned ? 'Unban Account' : 'Ban Account',
       isCurrentlyBanned
-        ? `Restore access for ${user.firstName}?`
-        : `Temporarily ban ${user.firstName}?`,
+        ? `Restore access for ${user.username}?`
+        : `Temporarily ban ${user.username}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -317,6 +317,12 @@ const UsersTab = ({ adminUser, onBanner }) => {
     return map[plan] || C.subtle;
   };
 
+  const getUserPlan = (user) => {
+    if (user.role === 'premium' || user.role === 'curator') return 'premium';
+    if (user.role === 'free') return 'free';
+    return 'free';
+  };
+
   if (loading) return <Text style={gs.loading}>Loading...</Text>;
 
   return (
@@ -328,15 +334,30 @@ const UsersTab = ({ adminUser, onBanner }) => {
         const sb = statusBadge(user.isActive ? 'active' : 'banned');
         const terminated = user.status === 'terminated';
         const banned = !user.isActive;
+        const plan = getUserPlan(user);
+        const isPremium = plan === 'premium';
         return (
           <View key={user.userId} style={ut.card}>
             <View style={ut.nameRow}>
-              <Text style={ut.name}>{user.firstName} {user.lastName}</Text>
+              <Text style={ut.name}>{user.username}</Text>
               <View style={[ut.badge, { backgroundColor: sb.bg, borderColor: sb.border }]}>
                 <Text style={[ut.badgeTxt, { color: sb.txt }]}>{sb.label}</Text>
               </View>
-              <View style={[ut.badge, ut.planBadge, { backgroundColor: C.purpleLight, borderColor: '#C4B5FD' }]}>
-                <Text style={[ut.badgeTxt, { color: C.purple }]}>{user.plan}</Text>
+              <View
+                style={[
+                  ut.badge,
+                  {
+                    backgroundColor: isPremium ? C.purpleLight : '#F3F4F6',
+                    borderColor: isPremium ? '#C4B5FD' : C.border,
+                  },
+                ]}>
+                <Text
+                  style={[
+                    ut.badgeTxt,
+                    { color: isPremium ? C.purple : C.subtle },
+                  ]}>
+                  {isPremium ? 'Premium' : 'Free'}
+                </Text>
               </View>
             </View>
             <Text style={ut.email}>{user.email}</Text>
