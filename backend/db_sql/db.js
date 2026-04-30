@@ -1,33 +1,19 @@
 // db/db.js
 import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
 import fs from 'fs';
 
-const env = process.env.NODE_ENV || 'development';
-dotenv.config({ path: `.env.${env}` });
+const db = mysql.createPool({
+  host: 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com',      // e.g. gateway01.ap-southeast-1.prod.aws.tidbcloud.com
+  port: 4000,
+  user: '5cYrmxXM5vvUWA9.root',
+  password: 'ygIy5u4lVoppRYtY',
+  database: 'fyp',
 
-const isProduction = env === 'production';
-
-const dbConfig = {
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-};
-
-// IMPORTANT for TiDB Cloud
-// only use SSL for cloud production
-if (isProduction) {
-  dbConfig.ssl = {
+  // IMPORTANT for TiDB Cloud
+  ssl: {
     ca: fs.readFileSync('./certs/isrgrootx1.pem'),
     rejectUnauthorized: true
-  };
-}
-
-const db = mysql.createPool(dbConfig);
+  }
+});
 
 export default db;
