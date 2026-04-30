@@ -2847,4 +2847,191 @@ describe('SmartEatingContent — fetchFoodAlternativesGrouped()', () => {
     expect(result.data.groups).toHaveLength(1);
     expect(result.data.tips).toContain('Eat slowly');
   });
+
+  test('returns EMPTY_ALTERNATIVES_GROUPED when API returns success: false', async () => {
+    axios.get.mockResolvedValue({
+      data: { success: false, message: 'No data available', data: {} },
+    });
+    const result = await SmartEatingContent.fetchFoodAlternativesGrouped();
+    expect(result.success).toBe(false);
+    expect(result.data.groups).toEqual([]);
+    expect(result.data.tips).toEqual([]);
+    expect(result.message).toBe('No data available');
+  });
+
+  test('returns EMPTY_ALTERNATIVES_GROUPED when groups array is empty', async () => {
+    axios.get.mockResolvedValue({
+      data: {
+        success: true,
+        data: { groups: [], tips: ['Eat slowly'] },
+      },
+    });
+    const result = await SmartEatingContent.fetchFoodAlternativesGrouped();
+    expect(result.success).toBe(true);
+    // hasGroups is false → falls back to EMPTY_ALTERNATIVES_GROUPED
+    expect(result.data.groups).toEqual([]);
+  });
+
+  test('returns fallback message on network error with no response', async () => {
+    axios.get.mockRejectedValue(new Error('Network failure'));
+    const result = await SmartEatingContent.fetchFoodAlternativesGrouped();
+    expect(result.success).toBe(false);
+    expect(result.message).toBe('Unable to load food alternatives. Please try again.');
+  });
+
+  test('returns multiple groups correctly', async () => {
+    axios.get.mockResolvedValue({
+      data: {
+        success: true,
+        data: {
+          groups: [
+            { original: 'Chips',     alternatives: [{ name: 'Rice cakes', goal: 'Low calorie' }] },
+            { original: 'Chocolate', alternatives: [{ name: 'Dark chocolate', goal: 'Antioxidant' }] },
+          ],
+          tips: ['Drink water', 'Eat mindfully'],
+        },
+      },
+    });
+    const result = await SmartEatingContent.fetchFoodAlternativesGrouped();
+    expect(result.success).toBe(true);
+    expect(result.data.groups).toHaveLength(2);
+    expect(result.data.tips).toHaveLength(2);
+    expect(result.data.groups[0].original).toBe('Chips');
+    expect(result.data.groups[1].alternatives[0].name).toBe('Dark chocolate');
+  });
+
+  test('normalizes non-array groups field to empty array', async () => {
+    axios.get.mockResolvedValue({
+      data: {
+        success: true,
+        data: { groups: 'not-an-array', tips: [] },
+      },
+    });
+    const result = await SmartEatingContent.fetchFoodAlternativesGrouped();
+    // _normalizeAlternativesGrouped converts non-array to []
+    // hasGroups = false → EMPTY_ALTERNATIVES_GROUPED returned
+    expect(result.data.groups).toEqual([]);
+  });
+});
+
+describe('SmartEatingContent — searchAlternatives()', () => {
+  const groups = [
+    {
+      original: 'Chips',
+      alternatives: [
+        { name: 'Rice cakes', goal: 'Low calorie' },
+        { name: 'Popcorn',    goal: 'High fiber'  },
+      ],
+    },
+    {
+      original: 'Chocolate',
+      alternatives: [
+        { name: 'Dark chocolate', goal: 'Antioxidant' },
+      ],
+    },
+    {
+      original: 'Soda',
+      alternatives: [
+        { name: 'Sparkling water', goal: 'Hydration' },
+        { name: 'Kombucha',        goal: 'Gut health' },
+      ],
+    },
+  ];
+
+  test('returns all groups when query is empty string', () => {
+    expect(SmartEatingContent.searchAlternatives(groups, '')).toHaveLength(3);
+  });
+
+  test('returns all groups when query is null', () => {
+    expect(SmartEatingContent.searchAlternatives(groups, null)).toHaveLength(3);
+  });
+
+  test('returns all groups when query is whitespace only', () => {
+    expect(SmartEatingContent.searchAlternatives(groups, '   ')).toHaveLength(3);
+  });
+
+  test('matches by original food name (case-insensitive)', () => {
+    const result = SmartEatingContent.searchAlternatives(groups, 'chips');
+    expect(result).toHaveLength(1);
+    expect(result[0].original).toBe('Chips');
+  });
+
+  test('returns whole group when original matches — alternatives are not filtered', () => {
+    // When original matches, the entire group is pushed as-is (continue skips alt filter)
+    const result = SmartEatingContent.searchAlternatives(groups, 'soda');
+    expect(result[0].alternatives).toHaveLength(2);
+  });
+
+  test('matches by alternative item name (case-insensitive)', () => {
+    const result = SmartEatingContent.searchAlternatives(groups, 'dark chocolate');
+    expect(result).toHaveLength(1);
+    expect(result[0].original).toBe('Chocolate');
+  });
+
+  test('matches by goal keyword', () => {
+    const result = SmartEatingContent.searchAlternatives(groups, 'high fiber');
+    expect(result).toHaveLength(1);
+    expect(result[0].alternatives[0].name).toBe('Popcorn');
+  });
+
+  test('returns only matching alternatives within a group, not the whole group', () => {
+    // "popcorn" matches one alternative inside the Chips group
+    const result = SmartEatingContent.searchAlternatives(groups, 'popcorn');
+    expect(result).toHaveLength(1);
+    expect(result[0].original).toBe('Chips');
+    expect(result[0].alternatives).toHaveLength(1);
+    expect(result[0].alternatives[0].name).toBe('Popcorn');
+  });
+
+  test('returns empty array when no original or alternative matches', () => {
+    expect(SmartEatingContent.searchAlternatives(groups, 'zzzzz')).toHaveLength(0);
+  });
+
+  test('matches partial query strings', () => {
+    // "choc" matches both "Chocolate" (original) and "Dark chocolate" (alternative)
+    const result = SmartEatingContent.searchAlternatives(groups, 'choc');
+    expect(result).toHaveLength(1);
+    expect(result[0].original).toBe('Chocolate');
+  });
+
+  test('handles groups with no alternatives gracefully', () => {
+    const sparseGroups = [
+      { original: 'Candy', alternatives: [] },
+    ];
+    const result = SmartEatingContent.searchAlternatives(sparseGroups, 'sugar');
+    expect(result).toHaveLength(0);
+  });
+
+  test('handles groups where alternatives items have null/undefined name or goal', () => {
+    const messyGroups = [
+      {
+        original: 'Junk',
+        alternatives: [
+          { name: null, goal: undefined },
+          { name: 'Fruit',  goal: 'Vitamins' },
+        ],
+      },
+    ];
+    // Should not throw — String(null) = "null", String(undefined) = "undefined"
+    expect(() => SmartEatingContent.searchAlternatives(messyGroups, 'fruit')).not.toThrow();
+    const result = SmartEatingContent.searchAlternatives(messyGroups, 'fruit');
+    expect(result[0].alternatives[0].name).toBe('Fruit');
+  });
+
+  test('handles empty groups array', () => {
+    expect(SmartEatingContent.searchAlternatives([], 'chips')).toEqual([]);
+  });
+
+  test('query matching is case-insensitive for both original and alternatives', () => {
+    const result = SmartEatingContent.searchAlternatives(groups, 'KOMBUCHA');
+    expect(result).toHaveLength(1);
+    expect(result[0].alternatives[0].name).toBe('Kombucha');
+  });
+
+  test('goal matching works alongside name matching independently', () => {
+    // "gut health" matches Kombucha's goal, not its name
+    const result = SmartEatingContent.searchAlternatives(groups, 'gut health');
+    expect(result).toHaveLength(1);
+    expect(result[0].alternatives[0].name).toBe('Kombucha');
+  });
 });
