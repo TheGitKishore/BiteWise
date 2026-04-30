@@ -12,7 +12,7 @@
 // Alt Flow: expertise empty → { success: false, message: 'Expertise is required.' }
 // Curator role only
 
-import CuratorApplication from '../entity/CuratorApplication';
+import CuratorProfileEdit from '../entity/CuratorProfileEdit';
 
 class UpdateCuratorProfileController {
   constructor() {}
@@ -31,7 +31,7 @@ class UpdateCuratorProfileController {
   async updateProfile(userId, { expertise, bio }) {
     return this._safe(async () => {
       if (!userId) return { success: false, message: 'Invalid user.', data: null };
-      return CuratorApplication.updateProfile(userId, { expertise, bio });
+      return CuratorProfileEdit.updateProfile(userId, { expertise, bio });
     });
   }
 }

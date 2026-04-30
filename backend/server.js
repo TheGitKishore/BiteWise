@@ -25,6 +25,8 @@ import blogPostRoute from './routes/blogpostroute.js';
 import recipedraftRoute from './routes/recipedraftroute.js';
 import nutritiontargetsRoute from './routes/nutritiontargetsroute.js';
 import dineoutRoute from './routes/dineoutroute.js';
+import curatorprofileRoute from './routes/curatorprofileroute.js';
+
 
 // ? ADD THIS
 import { initializeDatabases } from './routes/apiroute.js';
@@ -64,6 +66,7 @@ app.use('/api/blog-posts', blogPostRoute);
 app.use('/api/recipe-drafts', recipedraftRoute);
 app.use('/api/nutrition-targets', nutritiontargetsRoute);
 app.use('/api/dine-out', dineoutRoute);
+app.use('/api/curator-profiles', curatorprofileRoute);
 
 // ? Initialize DB before server starts
 const startServer = async () => {

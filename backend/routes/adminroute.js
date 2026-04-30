@@ -162,34 +162,57 @@ router.put('/:applicationId/approve', async (req, res) => {
   const { adminId } = req.body;
 
   try {
-    // get userId
+    // 1. get userId + expertise from application
     const [rows] = await db.query(
-      `SELECT user_id FROM curator_applications WHERE application_id = ?`,
+      `SELECT user_id, expertise, journey, motivation
+       FROM curator_applications
+       WHERE application_id = ?`,
       [applicationId]
     );
 
-    const userId = rows[0]?.user_id;
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Application not found'
+      });
+    }
 
-    // approve
-    await db.query(`
-      UPDATE curator_applications
-      SET status = 'APPROVED',
-          reviewed_by_admin_id = ?,
-          reviewed_at = NOW()
-      WHERE application_id = ?
-    `, [adminId, applicationId]);
+    const { user_id, expertise } = rows[0];
 
-    // promote
+    // 2. approve application
     await db.query(
-      `UPDATE users SET role = 'CURATOR' WHERE user_id = ?`,
-      [userId]
+      `UPDATE curator_applications
+       SET status = 'APPROVED',
+           reviewed_by_admin_id = ?,
+           reviewed_at = NOW()
+       WHERE application_id = ?`,
+      [adminId, applicationId]
     );
 
-    res.json({ success: true, message: 'Approved & promoted' });
+    // 3. promote user role
+    await db.query(
+      `UPDATE users SET role = 'CURATOR' WHERE user_id = ?`,
+      [user_id]
+    );
+
+    // 4. create curator profile (IMPORTANT FIX)
+    await db.query(
+      `INSERT INTO curator_profiles (user_id, expertise, bio, created_at, updated_at)
+       VALUES (?, ?, '', NOW(), NOW())`,
+      [user_id, expertise || '']
+    );
+
+    return res.json({
+      success: true,
+      message: 'Approved, promoted, and curator profile created'
+    });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: err.message });
+    console.error('[APPROVE CURATOR]', err);
+    return res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 });
 
