@@ -96,7 +96,6 @@ class ExerciseEntry {
   static getTotalCaloriesBurned(entries) {
     return entries.reduce((sum, e) => sum + e.caloriesBurned, 0);
   }
-}
 
   // ── SPRINT 11 ADDITIONS ───────────────────────────────────────────────────────
 
@@ -129,5 +128,7 @@ class ExerciseEntry {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+
+}
 
 export default ExerciseEntry;

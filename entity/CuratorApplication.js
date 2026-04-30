@@ -91,7 +91,6 @@ class CuratorApplication {
       };
     }
   }
-}
 
   // ── SPRINT 11 ADDITIONS ───────────────────────────────────────────────────────
 
@@ -111,5 +110,7 @@ class CuratorApplication {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+
+}
 
 export default CuratorApplication;

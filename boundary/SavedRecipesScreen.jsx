@@ -172,13 +172,14 @@ const SavedRecipeDetail = ({ recipe, onBack, onRemove }) => (
 
 const SavedRecipesScreen = ({ navigation, route }) => {
   const user = route?.params?.user || null;
+  const [banner, setBanner] = useState('');
 
   // ROLE GATE — redirect Free users immediately
   if (user?.role !== 'premium') {
     return (
       <SafeAreaView style={styles.safe}>
         <NavBar onMenuPress={() => navigation.goBack()} />
-      {banner ? (<View style={{flexDirection:\'row\',alignItems:\'center\',gap:10,paddingHorizontal:16,paddingVertical:12,backgroundColor:\'#F0FDF4\',borderBottomWidth:1,borderBottomColor:\'#BBF7D0\'}}><Text style={{fontSize:16}}>✅</Text><Text style={{flex:1,fontSize:14,fontWeight:\'500\',color:\'#15803D\'}}>{banner}</Text></View>) : null}
+      {banner ? (<View style={{flexDirection:'row',alignItems:'center',gap:10,paddingHorizontal:16,paddingVertical:12,backgroundColor:'#F0FDF4',borderBottomWidth:1,borderBottomColor:'#BBF7D0'}}><Text style={{fontSize:16}}>✅</Text><Text style={{flex:1,fontSize:14,fontWeight:'500',color:'#15803D'}}>{banner}</Text></View>) : null}
         <View style={styles.gateWrap}>
           <Text style={styles.gateIcon}>🔒</Text>
           <Text style={styles.gateTitle}>Premium Feature</Text>
@@ -198,7 +199,6 @@ const SavedRecipesScreen = ({ navigation, route }) => {
   const [batchSize,  setBatchSize]  = useState('All Sizes');
   const [activeDiet, setActiveDiet] = useState('All');
   const [selectedRecipe, setSelectedRecipe] = useState(null);
-  const [banner, setBanner] = useState('');
 
   // UC #65 — load on mount
   useEffect(() => {

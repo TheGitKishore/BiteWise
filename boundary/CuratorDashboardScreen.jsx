@@ -189,7 +189,7 @@ const ms = StyleSheet.create({
 });
 
 // ── Curator Profile Section ───────────────────────────────────────────────────
-const CuratorProfileSection = ({ profileData, onEditProfile }) => {
+const CuratorProfileSection = ({ profileData, onUpdateProfile }) => {
   const { user, expertise, bio } = profileData;
   const initial = (user?.username || user?.firstName || 'C')[0].toUpperCase();
   const username = user?.username || user?.firstName || 'Curator';
