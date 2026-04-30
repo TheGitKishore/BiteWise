@@ -153,6 +153,75 @@ router.put('/:entryId/photo', async (req, res) => {
   }
 });
 
+router.put('/:entryId', async (req, res) => {
+  try {
+    const { entryId } = req.params;
+    const { title, content, mood, weight } = req.body;
+
+    if (!ObjectId.isValid(entryId)) {
+      return res.status(400).json({ success: false, message: 'Invalid diary entry id.', data: null });
+    }
+
+    if (!title || !String(title).trim()) {
+      return res.status(400).json({ success: false, field: 'title', message: 'Title is required.', data: null });
+    }
+
+    if (!content || !String(content).trim()) {
+      return res.status(400).json({ success: false, field: 'content', message: 'Entry content is required.', data: null });
+    }
+
+    const weightText = String(weight ?? '').trim();
+    let resolvedWeight = null;
+    if (weightText.length > 0) {
+      const parsed = Number(weightText);
+      if (Number.isNaN(parsed) || parsed <= 0) {
+        return res.status(400).json({
+          success: false,
+          field: 'weight',
+          message: 'Weight must be a positive number.',
+          data: null,
+        });
+      }
+      resolvedWeight = parsed;
+    }
+
+    const db = getDB();
+    const collection = db.collection('diary_entries');
+    const objectId = new ObjectId(entryId);
+
+    const result = await collection.updateOne(
+      { _id: objectId },
+      {
+        $set: {
+          title: String(title).trim(),
+          content: String(content).trim(),
+          mood: String(mood || '').trim(),
+          weight: resolvedWeight,
+          updatedAt: new Date().toISOString(),
+        },
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ success: false, message: 'Diary entry not found.', data: null });
+    }
+
+    const updated = await collection.findOne({ _id: objectId });
+
+    return res.json({
+      success: true,
+      message: 'Diary entry updated successfully!',
+      data: updated ? toClientEntry(updated) : null,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Unable to update diary entry.',
+      data: null,
+    });
+  }
+});
+
 router.delete('/:entryId', async (req, res) => {
   try {
     const { entryId } = req.params;

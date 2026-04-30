@@ -127,13 +127,33 @@ class DiaryEntry {
   // @param  {{ title, content, mood, weight }} fields
   // @return {Promise<{ success, message, data }>}
   static async update(entryId, { title, content, mood, weight }) {
-    if (!title?.trim()) return { success: false, message: 'Title is required.', data: null };
-    if (!content?.trim()) return { success: false, message: 'Content is required.', data: null };
-    return {
-      success: true,
-      message: 'Diary entry updated successfully!',
-      data: { entryId, title: title.trim(), content: content.trim(), mood: mood || '', weight: weight || null, updatedAt: new Date().toISOString() },
-    };
+    const check = DiaryEntry.validateEntry({ title, content });
+    if (!check.valid) {
+      return { success: false, field: check.field, message: check.message, data: null };
+    }
+
+    try {
+      const res = await axios.put(`${API_URL}/${entryId}`, {
+        title: title.trim(),
+        content: content.trim(),
+        mood: String(mood || '').trim(),
+        weight: String(weight ?? '').trim(),
+      });
+
+      return {
+        success: Boolean(res.data?.success),
+        field: res.data?.field ?? null,
+        message: res.data?.message || 'Diary entry updated successfully!',
+        data: res.data?.data ? DiaryEntry.fromApi(res.data.data) : null,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        field: err.response?.data?.field ?? null,
+        message: err.response?.data?.message || 'Unable to update diary entry.',
+        data: null,
+      };
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────────

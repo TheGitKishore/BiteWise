@@ -421,6 +421,60 @@ const DiaryScreen = ({ navigation, route }) => {
         onSaved={handleSaved}
       />
 
+      <Modal visible={Boolean(editingEntry)} transparent animationType="slide" onRequestClose={() => setEditingEntry(null)}>
+        <View style={m.overlay}>
+          <View style={m.sheet}>
+            <TouchableOpacity style={m.closeBtn} onPress={() => setEditingEntry(null)}>
+              <Text style={m.closeX}>X</Text>
+            </TouchableOpacity>
+            <Text style={m.heading}>Edit Diary Entry</Text>
+
+            <Text style={m.label}>Title *</Text>
+            <TextInput
+              style={m.input}
+              value={editTitle}
+              onChangeText={setEditTitle}
+              placeholder="Entry title..."
+              placeholderTextColor={C.subtle}
+            />
+
+            <Text style={[m.label, { marginTop: 10 }]}>Entry *</Text>
+            <TextInput
+              style={[m.input, m.multiline]}
+              value={editContent}
+              onChangeText={setEditContent}
+              placeholder="Write about your day, progress, goals..."
+              placeholderTextColor={C.subtle}
+              multiline
+              textAlignVertical="top"
+            />
+
+            <Text style={[m.label, { marginTop: 10 }]}>Mood (Optional)</Text>
+            <TextInput
+              style={m.input}
+              value={editMood}
+              onChangeText={setEditMood}
+              placeholder="How are you feeling today?"
+              placeholderTextColor={C.subtle}
+            />
+
+            <Text style={[m.label, { marginTop: 10 }]}>Weight (Optional)</Text>
+            <TextInput
+              style={m.input}
+              value={editWeight}
+              onChangeText={setEditWeight}
+              placeholder="e.g. 68.5"
+              placeholderTextColor={C.subtle}
+              keyboardType="decimal-pad"
+            />
+
+            <TouchableOpacity style={[m.saveBtn, editSaving && m.disabled]} onPress={handleEditSave} disabled={editSaving}>
+              <Text style={m.saveBtnTxt}>{editSaving ? 'Saving...' : 'Save Changes'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       <ScrollView contentContainerStyle={s.list}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"

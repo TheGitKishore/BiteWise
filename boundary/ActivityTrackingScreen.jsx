@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
-  StyleSheet, StatusBar, Modal,
+  StyleSheet, StatusBar, Modal, Alert, TouchableWithoutFeedback,
   Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -132,20 +132,38 @@ const sc = StyleSheet.create({
 const ModalSheet = ({ visible, title, subtitle, onClose, children }) => (
   <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
     <View style={ms.overlay}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={StyleSheet.absoluteFillObject} />
+      </TouchableWithoutFeedback>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        pointerEvents="box-none"
+        style={ms.keyboardWrap}
+      >
       <View style={ms.sheet}>
         <TouchableOpacity style={ms.closeBtn} onPress={onClose} accessibilityRole="button">
           <Text style={ms.closeIcon}>✕</Text>
         </TouchableOpacity>
-        <Text style={ms.title}>{title}</Text>
-        {subtitle ? <Text style={ms.subtitle}>{subtitle}</Text> : null}
-        {children}
+        <ScrollView
+          contentContainerStyle={ms.sheetContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={ms.title}>{title}</Text>
+          {subtitle ? <Text style={ms.subtitle}>{subtitle}</Text> : null}
+          {children}
+        </ScrollView>
       </View>
+      </KeyboardAvoidingView>
     </View>
   </Modal>
 );
 const ms = StyleSheet.create({
   overlay:  { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', paddingHorizontal: 16 },
-  sheet:    { backgroundColor: C.white, borderRadius: 16, padding: 22, paddingTop: 36 },
+  keyboardWrap: { flex: 1, justifyContent: 'center' },
+  sheet:    { maxHeight: '88%', backgroundColor: C.white, borderRadius: 16, padding: 22, paddingTop: 36 },
+  sheetContent: { paddingBottom: 4 },
   closeBtn: { position: 'absolute', top: 12, right: 16, padding: 4 },
   closeIcon:{ fontSize: 16, color: C.subtle },
   title:    { fontSize: 16, fontWeight: '700', color: C.dark, textAlign: 'center', marginBottom: 4 },
@@ -429,6 +447,8 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
           if (result.success) {
             setExerciseEntries((prev) => prev.filter((e) => e.entryId !== entryId));
             handleExerciseLogged(result.message, null);
+          } else {
+            Alert.alert('Error', result.message);
           }
         }},
     ]);
@@ -437,7 +457,9 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
   const handleExerciseLogged = useCallback((message, entry) => {
     setShowLogModal(false);
     setBanner(message);
-    setExerciseEntries((prev) => [entry, ...prev]);
+    if (entry) {
+      setExerciseEntries((prev) => [entry, ...prev]);
+    }
     setActiveTab('Exercise Log');
     setTimeout(() => setBanner(''), 4000);
   }, []);
@@ -479,6 +501,43 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
         onClose={() => setShowLogModal(false)}
         onSuccess={handleExerciseLogged}
       />
+
+      <ModalSheet
+        visible={Boolean(editingExercise)}
+        title="Edit Exercise Log"
+        subtitle="Update your workout details"
+        onClose={() => setEditingExercise(null)}
+      >
+        <ExerciseTypePicker value={editExType} onSelect={setEditExType} />
+        <Field
+          label="Duration (minutes) *"
+          value={editExDuration}
+          onChangeText={setEditExDuration}
+          placeholder="30"
+          keyboardType="numeric"
+        />
+        <Field
+          label="Calories Burned (optional)"
+          value={editExCalories}
+          onChangeText={setEditExCalories}
+          placeholder="Auto-calculated if left empty"
+          keyboardType="numeric"
+        />
+        <Field
+          label="Notes (optional)"
+          value={editExNotes}
+          onChangeText={setEditExNotes}
+          placeholder="Great workout!"
+        />
+        <TouchableOpacity
+          style={[le.btn, editExSaving && le.btnDisabled]}
+          onPress={handleEditExSave}
+          activeOpacity={0.85}
+          disabled={editExSaving}
+        >
+          <Text style={le.btnText}>{editExSaving ? 'Saving...' : 'Save Changes'}</Text>
+        </TouchableOpacity>
+      </ModalSheet>
 
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"

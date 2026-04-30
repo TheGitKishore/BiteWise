@@ -106,25 +106,37 @@ class ExerciseEntry {
   static async update(entryId, { exerciseType, durationMins, caloriesBurned, notes }) {
     if (!exerciseType?.trim()) return { success: false, message: 'Exercise type is required.', data: null };
     if (!durationMins || Number(durationMins) <= 0) return { success: false, message: 'Duration must be greater than 0.', data: null };
-    return {
-      success: true,
-      message: 'Exercise log updated successfully!',
-      data: {
-        entryId,
+
+    try {
+      const res = await axios.put(`${API_URL}/${entryId}`, {
         exerciseType: exerciseType.trim(),
         durationMins: Number(durationMins),
-        caloriesBurned: Number(caloriesBurned) || 0,
+        caloriesBurned: caloriesBurned === '' || caloriesBurned == null ? null : Number(caloriesBurned),
         notes: notes || '',
-        updatedAt: new Date().toISOString(),
-      },
-    };
+      });
+      return res.data;
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || 'Server error',
+        data: null,
+      };
+    }
   }
 
   // Delete exercise log — seeded stub, no axios.
   // @param  {string|number} entryId
   // @return {Promise<{ success, message }>}
   static async delete(entryId) {
-    return { success: true, message: 'Exercise log deleted successfully!' };
+    try {
+      const res = await axios.delete(`${API_URL}/${entryId}`);
+      return res.data;
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || 'Server error',
+      };
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
