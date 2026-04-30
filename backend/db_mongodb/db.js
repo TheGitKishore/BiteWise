@@ -1,13 +1,14 @@
 import { MongoClient } from 'mongodb';
+import dotenv from 'dotenv';
 
-//const uri = process.env.MONGODB_URI || 'mongodb://zm:FYP-26-S1-17 BiteWise@ac-dbzb1mg-shard-00-00.hjry7gx.mongodb.net:27017,ac-dbzb1mg-shard-00-01.hjry7gx.mongodb.net:27017,ac-dbzb1mg-shard-00-02.hjry7gx.mongodb.net:27017/?ssl=true&replicaSet=atlas-rxz00p-shard-0&authSource=admin&appName=cluster1';
+const env = process.env.NODE_ENV || 'development';
+dotenv.config({ path: `.env.${env}` });
 
-//Leonards IP Mongo
-const uri = process.env.MONGODB_URI || 'mongodb://leonardpoonkokwei_db_user:1234@ac-dbzb1mg-shard-00-00.hjry7gx.mongodb.net:27017,ac-dbzb1mg-shard-00-01.hjry7gx.mongodb.net:27017,ac-dbzb1mg-shard-00-02.hjry7gx.mongodb.net:27017/?ssl=true&replicaSet=atlas-rxz00p-shard-0&authSource=admin&appName=cluster1';
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+  throw new Error(`MONGODB_URI is missing in .env.${env}`);
+}
 
-//const client = new MongoClient(uri);
-
-//Leonard
 const client = new MongoClient(uri);
 
 let db;
@@ -15,8 +16,8 @@ let db;
 export const connectDB = async () => {
   if (!db) {
     await client.connect();
-    db = client.db('fyp');
-    console.log('MongoDB connected');
+    db = client.db(process.env.DB_NAME || 'fyp');
+    console.log(`MongoDB connected (${env})`);
   }
   return db;
 };
