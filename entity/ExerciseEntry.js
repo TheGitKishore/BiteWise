@@ -98,4 +98,36 @@ class ExerciseEntry {
   }
 }
 
+  // ── SPRINT 11 ADDITIONS ───────────────────────────────────────────────────────
+
+  // Edit exercise log — seeded stub, no axios.
+  // @param  {string|number} entryId
+  // @param  {{ exerciseType, durationMins, caloriesBurned, notes }} fields
+  // @return {Promise<{ success, message, data }>}
+  static async update(entryId, { exerciseType, durationMins, caloriesBurned, notes }) {
+    if (!exerciseType?.trim()) return { success: false, message: 'Exercise type is required.', data: null };
+    if (!durationMins || Number(durationMins) <= 0) return { success: false, message: 'Duration must be greater than 0.', data: null };
+    return {
+      success: true,
+      message: 'Exercise log updated successfully!',
+      data: {
+        entryId,
+        exerciseType: exerciseType.trim(),
+        durationMins: Number(durationMins),
+        caloriesBurned: Number(caloriesBurned) || 0,
+        notes: notes || '',
+        updatedAt: new Date().toISOString(),
+      },
+    };
+  }
+
+  // Delete exercise log — seeded stub, no axios.
+  // @param  {string|number} entryId
+  // @return {Promise<{ success, message }>}
+  static async delete(entryId) {
+    return { success: true, message: 'Exercise log deleted successfully!' };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+
 export default ExerciseEntry;

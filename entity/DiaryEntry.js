@@ -121,4 +121,22 @@ class DiaryEntry {
   }
 }
 
+  // ── SPRINT 11 ADDITIONS ───────────────────────────────────────────────────────
+
+  // Edit diary entry — seeded stub, no axios.
+  // @param  {string|number} entryId
+  // @param  {{ title, content, mood, weight }} fields
+  // @return {Promise<{ success, message, data }>}
+  static async update(entryId, { title, content, mood, weight }) {
+    if (!title?.trim()) return { success: false, message: 'Title is required.', data: null };
+    if (!content?.trim()) return { success: false, message: 'Content is required.', data: null };
+    return {
+      success: true,
+      message: 'Diary entry updated successfully!',
+      data: { entryId, title: title.trim(), content: content.trim(), mood: mood || '', weight: weight || null, updatedAt: new Date().toISOString() },
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+
 export default DiaryEntry;

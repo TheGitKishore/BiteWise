@@ -7,6 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
 import LogExerciseController from '../controller/LogExerciseController';
+import EditExerciseLogController from '../controller/EditExerciseLogController';
+import DeleteExerciseLogController from '../controller/DeleteExerciseLogController';
 import { EXERCISE_TYPES }    from '../entity/ExerciseEntry';
 
 const controller = new LogExerciseController();
@@ -308,7 +310,7 @@ const OverviewTab = ({ exerciseEntries }) => {
 
 // ─── EXERCISE LOG TAB ────────────────────────────────────────────────────────
 
-const ExerciseLogTab = ({ exerciseEntries, onOpenLog }) => {
+const ExerciseLogTab = ({ exerciseEntries, onOpenLog, onEditExercise, onDeleteExercise }) => {
   const total7Day = exerciseEntries.reduce((s, e) => s + e.caloriesBurned, 0);
 
   return (
@@ -344,6 +346,10 @@ const ExerciseLogTab = ({ exerciseEntries, onOpenLog }) => {
                 <Text style={el.rowTime}>
                   {new Date(e.loggedAt).toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit' })}
                 </Text>
+                <View style={{ flexDirection:'row', gap:6, marginTop:6 }}>
+                  <TouchableOpacity onPress={() => onEditExercise(e)} style={{ padding:4 }}><Text style={{ fontSize:15 }}>✏️</Text></TouchableOpacity>
+                  <TouchableOpacity onPress={() => onDeleteExercise(e.entryId)} style={{ padding:4 }}><Text style={{ fontSize:15 }}>🗑️</Text></TouchableOpacity>
+                </View>
               </View>
             </View>
           ))
@@ -377,8 +383,56 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
 
   const [activeTab,       setActiveTab]       = useState('Overview');
   const [exerciseEntries, setExerciseEntries] = useState([]);
+  const [editingExercise, setEditingExercise] = useState(null);
+  const [editExType, setEditExType] = useState('');
+  const [editExDuration, setEditExDuration] = useState('');
+  const [editExCalories, setEditExCalories] = useState('');
+  const [editExNotes, setEditExNotes] = useState('');
+  const [editExSaving, setEditExSaving] = useState(false);
+  const editExCtrl = new EditExerciseLogController();
+  const deleteExCtrl = new DeleteExerciseLogController();
   const [showLogModal,    setShowLogModal]    = useState(false);
   const [banner,          setBanner]          = useState('');
+
+  const handleEditExercise = useCallback((entry) => {
+    setEditingExercise(entry);
+    setEditExType(entry.exerciseType || '');
+    setEditExDuration(String(entry.durationMins || ''));
+    setEditExCalories(String(entry.caloriesBurned || ''));
+    setEditExNotes(entry.notes || '');
+  }, []);
+
+  const handleEditExSave = useCallback(async () => {
+    if (!editingExercise) return;
+    setEditExSaving(true);
+    const result = await editExCtrl.updateExercise(editingExercise.entryId, {
+      exerciseType: editExType, durationMins: editExDuration,
+      caloriesBurned: editExCalories, notes: editExNotes,
+    });
+    setEditExSaving(false);
+    if (result.success) {
+      setExerciseEntries((prev) => prev.map((e) =>
+        e.entryId === editingExercise.entryId ? { ...e, ...result.data } : e
+      ));
+      setEditingExercise(null);
+      handleExerciseLogged(result.message, null);
+    } else {
+      Alert.alert('Error', result.message);
+    }
+  }, [editingExercise, editExType, editExDuration, editExCalories, editExNotes]);
+
+  const handleDeleteExercise = useCallback((entryId) => {
+    Alert.alert('Delete Exercise Log', 'Remove this exercise log permanently?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: async () => {
+          const result = await deleteExCtrl.deleteExercise(entryId);
+          if (result.success) {
+            setExerciseEntries((prev) => prev.filter((e) => e.entryId !== entryId));
+            handleExerciseLogged(result.message, null);
+          }
+        }},
+    ]);
+  }, []);
 
   const handleExerciseLogged = useCallback((message, entry) => {
     setShowLogModal(false);
@@ -441,7 +495,7 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
         <TabBar activeTab={activeTab} onSelect={setActiveTab} />
 
         {activeTab === 'Overview'     && <OverviewTab     exerciseEntries={exerciseEntries} />}
-        {activeTab === 'Exercise Log' && <ExerciseLogTab  exerciseEntries={exerciseEntries} onOpenLog={() => setShowLogModal(true)} />}
+        {activeTab === 'Exercise Log' && <ExerciseLogTab exerciseEntries={exerciseEntries} onOpenLog={() => setShowLogModal(true)} onEditExercise={handleEditExercise} onDeleteExercise={handleDeleteExercise} />}
 
       </ScrollView>
           </KeyboardAvoidingView>

@@ -202,8 +202,8 @@ const CuratorProfileSection = ({ profileData, onEditProfile }) => {
           <Text style={cp.icon}>👤</Text>
           <Text style={cp.title}>Curator Profile</Text>
         </View>
-        <TouchableOpacity style={cp.editBtn} onPress={onEditProfile}>
-          <Text style={cp.editBtnTxt}>⚙️ Edit Profile</Text>
+        <TouchableOpacity style={cp.editBtn} onPress={onUpdateProfile}>
+          <Text style={cp.editBtnTxt}>⚙️ Update Profile</Text>
         </TouchableOpacity>
       </View>
 
@@ -272,6 +272,17 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
 
   const [profileData, setProfileData] = useState(null);
   const [loading,     setLoading]     = useState(true);
+  const [banner,      setBanner]      = useState(route?.params?.banner || '');
+
+  // Show incoming banner from UpdateCuratorProfileScreen
+  useFocusEffect(
+    useCallback(() => {
+      if (route?.params?.banner) {
+        setBanner(route.params.banner);
+        setTimeout(() => setBanner(''), 4000);
+      }
+    }, [route?.params?.banner])
+  );
 
   // Role guard — fixed: compare uppercase
   if (String(user?.role || '').toUpperCase() !== 'CURATOR') {
@@ -316,6 +327,12 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <NavBar onMenuPress={handleMenuPress} />
       <WelcomeBanner visible={showWelcome} />
+      {banner ? (
+        <View style={{ flexDirection:'row', alignItems:'center', gap:10, paddingHorizontal:16, paddingVertical:12, backgroundColor:'#F0FDF4', borderBottomWidth:1, borderBottomColor:'#BBF7D0' }}>
+          <Text style={{ fontSize:16 }}>✅</Text>
+          <Text style={{ flex:1, fontSize:14, fontWeight:'500', color:'#15803D' }}>{banner}</Text>
+        </View>
+      ) : null}
 
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
@@ -400,7 +417,11 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
               {/* Curator Profile */}
               <CuratorProfileSection
                 profileData={profileData}
-                onEditProfile={() => Alert.alert('Edit Profile', 'Profile editing coming soon.')}
+                onUpdateProfile={() => navigation.navigate('UpdateCuratorProfileScreen', {
+                  user,
+                  expertise: profileData?.expertise || '',
+                  bio:       profileData?.bio       || '',
+                })}
               />
             </>
           ) : (

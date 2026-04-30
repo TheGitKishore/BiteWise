@@ -55,6 +55,7 @@ import TodaysMenuScreen              from './boundary/TodaysMenuScreen';
 import EditMyRecipeScreen            from './boundary/EditMyRecipeScreen';
 import DineOutScreen                 from './boundary/DineOutScreen';
 import FoodAlternativesScreen        from './boundary/FoodAlternativesScreen';
+import UpdateCuratorProfileScreen    from './boundary/UpdateCuratorProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -118,6 +119,9 @@ export default function App() {
         <Stack.Screen name="EditMyRecipeScreen"           component={EditMyRecipeScreen} />
         <Stack.Screen name="DineOutScreen"                component={DineOutScreen} />
         <Stack.Screen name="FoodAlternativesScreen"       component={FoodAlternativesScreen} />
+
+        {/* ── Sprint 11 ────────────────────────────────────────────────── */}
+        <Stack.Screen name="UpdateCuratorProfileScreen"   component={UpdateCuratorProfileScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -469,7 +469,7 @@ const FreeUserDashboardScreen = ({ navigation, route }) => {
 
         {/* Upgrade nudge — Free only */}
         {isFree && (
-          <UpgradeBanner onPress={() => navigation.navigate('ViewPricingPlansScreen')} />
+          <UpgradeBanner onPress={() => navigation.navigate('ViewPricingPlansScreen', { mode: 'update', user: currentUser, onUpdated: (updatedUser) => setCurrentUser(updatedUser) })} />
         )}
 
         {/* Feature tiles — Sprint 7: ordered by profile type (Step 6) */}
@@ -486,7 +486,7 @@ const FreeUserDashboardScreen = ({ navigation, route }) => {
         {/* Getting Started */}
         <GettingStartedSection
           isFree={isFree}
-          onUpgrade={() => navigation.navigate('ViewPricingPlansScreen')}
+          onUpgrade={() => navigation.navigate('ViewPricingPlansScreen', { mode: 'update', user: currentUser, onUpdated: (updatedUser) => setCurrentUser(updatedUser) })}
         />
 
       </ScrollView>

@@ -18,10 +18,12 @@ import * as ImagePicker from 'expo-image-picker';
 import ViewDiaryController from '../controller/ViewDiaryController';
 import CreateDiaryEntryController from '../controller/CreateDiaryEntryController';
 import DeleteDiaryEntryController from '../controller/DeleteDiaryEntryController';
+import EditDiaryEntryController from '../controller/EditDiaryEntryController';
 import API_CONFIG from '../entity/api_config';
 
 const viewCtrl = new ViewDiaryController();
 const createCtrl = new CreateDiaryEntryController();
+const editCtrl   = new EditDiaryEntryController();
 const deleteCtrl = new DeleteDiaryEntryController();
 
 const C = {
@@ -269,7 +271,7 @@ const m = StyleSheet.create({
   disabled: { opacity: 0.6 },
 });
 
-const EntryCard = ({ entry, onDelete }) => (
+const EntryCard = ({ entry, onDelete, onEdit }) => (
   <View style={ec.card}>
     <View style={ec.row}>
       <View style={ec.info}>
@@ -282,9 +284,14 @@ const EntryCard = ({ entry, onDelete }) => (
           ].filter(Boolean).join('  |  ')}
         </Text>
       </View>
-      <TouchableOpacity style={ec.del} onPress={() => onDelete(entry.entryId)}>
-        <Text style={ec.delIcon}>Delete</Text>
-      </TouchableOpacity>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <TouchableOpacity style={ec.editBtn} onPress={() => onEdit(entry)}>
+          <Text style={ec.editIcon}>✏️</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={ec.del} onPress={() => onDelete(entry.entryId)}>
+          <Text style={ec.delIcon}>Delete</Text>
+        </TouchableOpacity>
+      </View>
     </View>
     {entry.photoUri ? <Image source={{ uri: entry.photoUri }} style={ec.photo} resizeMode="cover" /> : null}
     <Text style={ec.body}>{entry.content}</Text>
@@ -293,6 +300,8 @@ const EntryCard = ({ entry, onDelete }) => (
 
 const ec = StyleSheet.create({
   card: { backgroundColor: C.white, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: C.border, marginBottom: 12 },
+  editBtn: { padding: 4 },
+  editIcon: { fontSize: 16 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
   info: { flex: 1 },
   title: { fontSize: 16, fontWeight: '700', color: C.dark, marginBottom: 2 },
@@ -308,6 +317,12 @@ const DiaryScreen = ({ navigation, route }) => {
   const [entries, setEntries] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [banner, setBanner] = useState('');
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editMood, setEditMood] = useState('');
+  const [editWeight, setEditWeight] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const showBanner = (msg) => {
@@ -327,6 +342,33 @@ const DiaryScreen = ({ navigation, route }) => {
       setLoading(false);
     });
   }, [user?.userId]));
+
+  const handleEdit = useCallback((entry) => {
+    setEditingEntry(entry);
+    setEditTitle(entry.title || '');
+    setEditContent(entry.content || '');
+    setEditMood(entry.mood || '');
+    setEditWeight(entry.weight ? String(entry.weight) : '');
+  }, []);
+
+  const handleEditSave = useCallback(async () => {
+    if (!editingEntry) return;
+    setEditSaving(true);
+    const result = await editCtrl.updateEntry(editingEntry.entryId, {
+      title: editTitle, content: editContent, mood: editMood, weight: editWeight,
+    });
+    setEditSaving(false);
+    if (result.success) {
+      setEntries((prev) => prev.map((e) =>
+        e.entryId === editingEntry.entryId ? { ...e, ...result.data } : e
+      ));
+      setEditingEntry(null);
+      setBanner(result.message);
+      setTimeout(() => setBanner(''), 4000);
+    } else {
+      Alert.alert('Error', result.message);
+    }
+  }, [editingEntry, editTitle, editContent, editMood, editWeight]);
 
   const handleDelete = useCallback((entryId) => {
     Alert.alert('Delete Entry', 'Remove this diary entry permanently?', [
@@ -401,7 +443,7 @@ const DiaryScreen = ({ navigation, route }) => {
             <Text style={s.emptyBody}>Start documenting your health journey by adding your first entry.</Text>
           </View>
         ) : entries.map((e) => (
-          <EntryCard key={e.entryId} entry={e} onDelete={handleDelete} />
+          <EntryCard key={e.entryId} entry={e} onDelete={handleDelete} onEdit={handleEdit} />
         ))}
       </ScrollView>
           </KeyboardAvoidingView>

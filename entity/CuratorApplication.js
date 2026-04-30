@@ -93,4 +93,23 @@ class CuratorApplication {
   }
 }
 
+  // ── SPRINT 11 ADDITIONS ───────────────────────────────────────────────────────
+
+  // UC #116 — Update curator profile (expertise + bio). Seeded stub — no axios.
+  // @param  {number|string} userId
+  // @param  {{ expertise, bio }} fields
+  // @return {Promise<{ success, message, data }>}
+  static async updateProfile(userId, { expertise, bio }) {
+    if (!expertise?.trim()) {
+      return { success: false, message: 'Expertise is required.', data: null };
+    }
+    return {
+      success: true,
+      message: 'Profile updated successfully!',
+      data: { userId, expertise: expertise.trim(), bio: (bio || '').trim() },
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+
 export default CuratorApplication;

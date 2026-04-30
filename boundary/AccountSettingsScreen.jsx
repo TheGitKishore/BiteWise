@@ -253,13 +253,7 @@ const AccountSettingsScreen = ({ navigation, route }) => {
     if (result.success) {
       navigation.reset({
         index: 0,
-        routes: [{
-          name: 'MainLandingScreen',
-          params: {
-            successMessage: result.message,
-            messageType: 'success',
-          },
-        }],
+        routes: [{ name: 'LoginScreen', params: { successMessage: result.message, messageType: 'success' } }],
       });
     }
   }, [navigation]);
@@ -356,6 +350,7 @@ const AccountSettingsScreen = ({ navigation, route }) => {
               setUser(prev => ({ ...prev, profileType: selectedProfile }));
               setProfileDropdown(false);
               setBanner({ message: `Profile updated to ${meta.label}!`, type: 'success' });
+              setTimeout(() => setBanner({ message: '', type: '' }), 4000);
             } else {
               setBanner({ message: result.message, type: 'error' });
             }

@@ -152,7 +152,7 @@ const LoginScreen = ({ navigation, route }) => {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
 
-      <NavBar onMenuPress={() => navigation.goBack()} />
+      <NavBar onMenuPress={() => navigation.reset({ index: 0, routes: [{ name: 'MainLandingScreen' }] })} />
 
       {/* Success or error banner */}
       <Banner message={banner.message} type={banner.type} />
