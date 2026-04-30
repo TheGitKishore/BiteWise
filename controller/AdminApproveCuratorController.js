@@ -16,21 +16,29 @@ class AdminApproveCuratorController {
   constructor() {}
 
   async _safe(fn) {
-    try { return await fn(); }
-    catch (e) { console.error('[AdminApproveCuratorController]', e); return { success: false, message: 'Failed to approve application.' }; }
+    try {
+      return await fn();
+    } catch (e) {
+      console.error('[AdminApproveCuratorController]', e);
+      return {
+        success: false,
+        message: 'Failed to approve application.'
+      };
+    }
   }
 
-  // @param  {number|string} applicationId
-  // @param  {number|string} adminId
-  // @return {Promise<{ success, message }>}
+  // UC #106 — approve curator application
   async approveApplication(applicationId, adminId) {
     return this._safe(async () => {
-      if (!applicationId) return { success: false, message: 'Invalid application.' };
-      try {
-        const result = await Admin.approve(applicationId, adminId);
-        if (result.success) return result;
-      } catch (_) {}
-      return Admin.approveApplicationSeeded(applicationId, adminId);
+      if (!applicationId || !adminId) {
+        return {
+          success: false,
+          message: 'Invalid request.'
+        };
+      }
+
+      const res = await Admin.approveApplication(applicationId, adminId);
+      return res;
     });
   }
 }

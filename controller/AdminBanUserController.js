@@ -21,25 +21,38 @@ class AdminBanUserController {
   constructor() {}
 
   async _safe(fn) {
-    try { return await fn(); }
-    catch (e) { console.error('[AdminBanUserController]', e); return { success: false, message: 'Operation failed. Please try again.' }; }
+    try {
+      return await fn();
+    } catch (e) {
+      console.error('[AdminBanUserController]', e);
+      return {
+        success: false,
+        message: 'Something went wrong. Please try again.'
+      };
+    }
   }
 
-  // @param  {number|string} userId
-  // @return {Promise<{ success, message }>}
+  // UC #102 — ban user
   async banUser(userId) {
     return this._safe(async () => {
-      if (!userId) return { success: false, message: 'Invalid user.' };
-      return Admin.banUser(userId);
+      if (!userId || userId === '') {
+        return { success: false, message: 'Invalid user.' };
+      }
+
+      const res = await Admin.banUser(userId);
+      return res;
     });
   }
 
-  // @param  {number|string} userId
-  // @return {Promise<{ success, message }>}
+  // UC #102 — unban user
   async unbanUser(userId) {
     return this._safe(async () => {
-      if (!userId) return { success: false, message: 'Invalid user.' };
-      return Admin.unbanUser(userId);
+      if (!userId || userId === '') {
+        return { success: false, message: 'Invalid user.' };
+      }
+
+      const res = await Admin.unbanUser(userId);
+      return res;
     });
   }
 }

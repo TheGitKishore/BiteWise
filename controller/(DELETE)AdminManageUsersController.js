@@ -24,17 +24,30 @@ class AdminManageUsersController {
 
   // UC #103 — fetch all users
   async fetchAllUsers() {
-    return this._safeCall(async () => Admin.fetchAllUsers());
+    return this._safeCall(async () => {
+      const res = await Admin.fetchAllUsers();
+      return res;
+    });
   }
 
   // UC #103 — deactivate account
   async deactivateUser(targetUserId) {
-    return this._safeCall(async () => Admin.deactivateUser(targetUserId));
+    return this._safeCall(async () => {
+      if (!targetUserId) {
+        return { success: false, message: 'Invalid user id' };
+      }
+      return Admin.deactivateUser(targetUserId);
+    });
   }
 
   // UC #103 — reactivate account
   async reactivateUser(targetUserId) {
-    return this._safeCall(async () => Admin.reactivateUser(targetUserId));
+    return this._safeCall(async () => {
+      if (!targetUserId) {
+        return { success: false, message: 'Invalid user id' };
+      }
+      return Admin.reactivateUser(targetUserId);
+    });
   }
 }
 

@@ -16,21 +16,41 @@ class AdminRejectCuratorController {
   constructor() {}
 
   async _safe(fn) {
-    try { return await fn(); }
-    catch (e) { console.error('[AdminRejectCuratorController]', e); return { success: false, message: 'Failed to reject application.' }; }
+    try {
+      return await fn();
+    } catch (e) {
+      console.error('[AdminRejectCuratorController]', e);
+      return {
+        success: false,
+        message: 'Failed to reject application.'
+      };
+    }
   }
 
-  // @param  {number|string} applicationId
-  // @param  {number|string} adminId
-  // @return {Promise<{ success, message }>}
-  async rejectApplication(applicationId, adminId) {
+  // UC #107 — Reject curator application
+  async rejectApplication(applicationId, adminId, reason = 'Rejected by admin') {
     return this._safe(async () => {
-      if (!applicationId) return { success: false, message: 'Invalid application.' };
-      try {
-        const result = await Admin.reject(applicationId, adminId, 'Rejected by admin');
-        if (result.success) return result;
-      } catch (_) {}
-      return Admin.rejectApplicationSeeded(applicationId, adminId);
+      if (!applicationId || !adminId) {
+        return {
+          success: false,
+          message: 'Invalid application or admin.'
+        };
+      }
+
+      const res = await Admin.rejectApplication(
+        applicationId,
+        adminId,
+        reason
+      );
+
+      if (!res.success) {
+        return {
+          success: false,
+          message: res.message || 'Rejection failed'
+        };
+      }
+
+      return res;
     });
   }
 }

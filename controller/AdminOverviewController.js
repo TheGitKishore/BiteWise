@@ -17,8 +17,25 @@ class AdminOverviewController {
   constructor() {}
 
   async _safe(fn) {
-    try { return await fn(); }
-    catch (e) { console.error('[AdminOverviewController]', e); return { success: false, data: null, message: 'Failed to load overview.' }; }
+    try {
+      const res = await fn();
+    
+      // normalize axios + backend response
+      const data = res?.data ?? res;
+    
+      return {
+        success: res?.success ?? true,
+        data: data?.data ?? data
+      };
+    
+    } catch (e) {
+      console.error('[AdminOverviewController]', e);
+      return {
+        success: false,
+        data: null,
+        message: 'Failed to load overview.'
+      };
+    }
   }
 
   // @return {Promise<{ success, data: {
@@ -26,7 +43,19 @@ class AdminOverviewController {
   //   totalReviews, flaggedReviews, pendingApplications, systemStatus
   // }, message }>}
   async fetchOverviewStats() {
-    return this._safe(async () => Admin.fetchOverviewStats());
+    return this._safe(async () => {
+      const res = await Admin.fetchOverviewStats();
+    
+      if (!res?.success) {
+        return {
+          success: false,
+          data: null,
+          message: res?.message || 'Failed to load overview.'
+        };
+      }
+    
+      return res;
+    });
   }
 }
 

@@ -27,7 +27,17 @@ class AdminLoginController {
       if (!username?.trim() || !password) {
         return { success: false, message: 'Username and password are required.' };
       }
-      return Admin.login({ username: username.trim(), password });
+    
+      const res = await Admin.login({
+        username: username.trim(),
+        password
+      });
+    
+      if (!res) {
+        return { success: false, message: 'Invalid server response.' };
+      }
+    
+      return res;
     });
   }
 }

@@ -1,12 +1,15 @@
 import express from 'express';
-//import bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import db from '../db_sql/db.js';
 
 const router = express.Router();
 
-// POST /api/admin/login
+/* =========================================================
+   🔐 ADMIN LOGIN
+========================================================= */
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
+
   try {
     const [rows] = await db.query(
       `SELECT admin_id, username, password
@@ -18,21 +21,25 @@ router.post('/login', async (req, res) => {
     if (rows.length === 0) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: 'Invalid credentials',
+        user: null
       });
     }
 
     const admin = rows[0];
 
-    // plain text comparison
-    if (password !== admin.password) {
+    // ⚠️ Plain text comparison (since DB is manually created)
+    const match = password === admin.password;
+
+    if (!match) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: 'Invalid credentials',
+        user: null
       });
     }
 
-    return res.status(200).json({
+    return res.json({
       success: true,
       message: 'Login successful',
       user: {
@@ -42,177 +49,273 @@ router.post('/login', async (req, res) => {
     });
 
   } catch (err) {
+    console.error('[ADMIN LOGIN]', err);
     return res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
+      user: null
     });
   }
 });
 
-// GET /api/admin/users
+/* =========================================================
+   👤 USERS MANAGEMENT
+========================================================= */
+
 router.get('/users', async (req, res) => {
   try {
-    const [rows] = await db.query(
-      `SELECT 
+    const [rows] = await db.query(`
+      SELECT 
         user_id AS userId,
         username,
         email,
         role,
         is_active AS isActive,
         created_at AS createdAt
-       FROM users`
-    );
+      FROM users
+      ORDER BY created_at DESC
+    `);
 
-    return res.status(200).json({
-      success: true,
-      data: rows
-    });
+    res.json({ success: true, data: rows });
 
   } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to fetch users'
-    });
+    res.status(500).json({ success: false, message: 'Failed to fetch users' });
   }
 });
 
-// PUT /api/admin/deactivate
 router.put('/deactivate', async (req, res) => {
   const { userId } = req.body;
 
   try {
     await db.query(
-      `UPDATE users SET is_active = 0 WHERE user_id = ?`,
+      `UPDATE users SET is_active = false WHERE user_id = ?`,
       [userId]
     );
 
-    return res.json({
-      success: true,
-      message: 'User deactivated'
-    });
+    res.json({ success: true, message: 'User deactivated' });
 
   } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to deactivate user'
-    });
+    res.status(500).json({ success: false, message: 'Deactivate failed' });
   }
 });
 
-// PUT /api/admin/reactivate
 router.put('/reactivate', async (req, res) => {
   const { userId } = req.body;
 
   try {
     await db.query(
-      `UPDATE users SET is_active = 1 WHERE user_id = ?`,
+      `UPDATE users SET is_active = true WHERE user_id = ?`,
       [userId]
     );
 
-    return res.json({
-      success: true,
-      message: 'User reactivated'
-    });
+    res.json({ success: true, message: 'User reactivated' });
 
   } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to reactivate user'
-    });
+    res.status(500).json({ success: false, message: 'Reactivate failed' });
   }
 });
 
-// ================= UC #106 — APPROVE =================
-router.put('/:id/approve', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { adminId } = req.body;
+router.delete('/users/:userId', async (req, res) => {
+  const { userId } = req.params;
 
-    // 1. get userId from application
-    const [appRows] = await db.query(
-      'SELECT user_id FROM curator_applications WHERE application_id = ?',
-      [id]
+  try {
+    await db.query(`DELETE FROM users WHERE user_id = ?`, [userId]);
+
+    res.json({ success: true, message: 'User deleted' });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Delete failed' });
+  }
+});
+
+/* =========================================================
+   📩 CURATOR APPLICATIONS
+========================================================= */
+
+router.get('/applications', async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        application_id AS applicationId,
+        user_id AS userId,
+        username,
+        motivation,
+        journey,
+        expertise,
+        social,
+        status,
+        reviewed_by_admin_id AS reviewedByAdminId,
+        created_at AS createdAt
+      FROM curator_applications
+      ORDER BY created_at DESC
+    `);
+
+    res.json({ success: true, data: rows });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch applications' });
+  }
+});
+
+router.put('/:applicationId/approve', async (req, res) => {
+  const { applicationId } = req.params;
+  const { adminId } = req.body;
+
+  try {
+    // get userId
+    const [rows] = await db.query(
+      `SELECT user_id FROM curator_applications WHERE application_id = ?`,
+      [applicationId]
     );
 
-    if (!appRows.length) {
-      return res.status(404).json({
-        success: false,
-        message: 'Application not found'
-      });
-    }
+    const userId = rows[0]?.user_id;
 
-    const userId = appRows[0].user_id;
-
-    // 2. approve application
+    // approve
     await db.query(`
       UPDATE curator_applications
       SET status = 'APPROVED',
           reviewed_by_admin_id = ?,
           reviewed_at = NOW()
       WHERE application_id = ?
-    `, [adminId, id]);
+    `, [adminId, applicationId]);
 
-    // 3. promote user
-    await db.query(`
-      UPDATE users
-      SET role = 'curator',
-          updated_at = NOW()
-      WHERE user_id = ?
-    `, [userId]);
+    // promote
+    await db.query(
+      `UPDATE users SET role = 'CURATOR' WHERE user_id = ?`,
+      [userId]
+    );
 
-    return res.json({
-      success: true,
-      message: 'Application approved and user promoted',
-      data: { applicationId: id, userId }
-    });
+    res.json({ success: true, message: 'Approved & promoted' });
 
   } catch (err) {
     console.error(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.put('/:applicationId/reject', async (req, res) => {
+  const { applicationId } = req.params;
+  const { adminId, reason } = req.body;
+
+  try {
+    await db.query(
+      `UPDATE curator_applications
+       SET status = 'REJECTED',
+           rejection_reason = ?,
+           reviewed_by_admin_id = ?,
+           reviewed_at = NOW()
+       WHERE application_id = ?`,
+      [reason, adminId, applicationId]
+    );
+
+    res.json({ success: true, message: 'Application rejected' });
+
+  } catch (err) {
+    console.error("REJECT ERROR:", err);
     return res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: err.message
     });
   }
 });
 
-// ================= UC #106 — REJECT =================
-router.put('/:id/reject', async (req, res) => {
+router.put('/promote-to-curator', async (req, res) => {
+  const { userId, applicationId } = req.body;
+
   try {
-    const { id } = req.params;
-    const { adminId, reason } = req.body;
-
-    const [result] = await db.query(`
-      UPDATE curator_applications
-      SET status = 'REJECTED',
-          reviewed_by_admin_id = ?,
-          reviewed_at = NOW(),
-          rejection_reason = ?
-      WHERE application_id = ?
-    `, [adminId, reason || 'Does not meet requirements', id]);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Application not found'
-      });
-    }
-
-    const [rows] = await db.query(
-      'SELECT * FROM curator_applications WHERE application_id = ?',
-      [id]
+    await db.query(
+      `UPDATE users SET role = 'CURATOR' WHERE user_id = ?`,
+      [userId]
     );
 
-    res.json({
+    await db.query(
+      `UPDATE curator_applications
+       SET status = 'PROMOTED'
+       WHERE application_id = ?`,
+      [applicationId]
+    );
+
+    res.json({ success: true, message: 'User promoted to curator' });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Promotion failed' });
+  }
+});
+
+/* =========================================================
+   ⭐ REVIEWS
+========================================================= */
+
+router.get('/reviews', async (req, res) => {
+  try {
+    const [rows] = await db.query(`SELECT * FROM reviews ORDER BY created_at DESC`);
+    res.json({ success: true, data: rows });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch reviews' });
+  }
+});
+
+router.delete('/reviews/:reviewId', async (req, res) => {
+  const { reviewId } = req.params;
+
+  try {
+    await db.query(`DELETE FROM reviews WHERE review_id = ?`, [reviewId]);
+
+    res.json({ success: true, message: 'Review deleted' });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Delete failed' });
+  }
+});
+
+/* =========================================================
+   📊 DASHBOARD
+========================================================= */
+
+router.get('/overview', async (req, res) => {
+  try {
+    const [usersRows] = await db.query(`SELECT COUNT(*) AS totalUsers FROM users`);
+    const [reviewsRows] = await db.query(`SELECT COUNT(*) AS totalReviews FROM reviews`);
+    const [appsRows] = await db.query(
+      `SELECT COUNT(*) AS pendingApplications 
+       FROM curator_applications 
+       WHERE status = 'PENDING'`
+    );
+
+    const [activeRows] = await db.query(
+      `SELECT COUNT(*) AS activeUsers FROM users WHERE is_active = true`
+    );
+
+    const [bannedRows] = await db.query(
+      `SELECT COUNT(*) AS bannedUsers FROM users WHERE is_active = false`
+    );
+
+    const [premiumRows] = await db.query(
+      `SELECT COUNT(*) AS premiumUsers FROM users WHERE role = 'PREMIUM'`
+    );
+
+    const flaggedRows = [{ flaggedReviews: 0 }];
+
+    return res.json({
       success: true,
-      message: 'Application rejected',
-      data: rows[0]
+      data: {
+        totalUsers: usersRows[0].totalUsers,
+        totalReviews: reviewsRows[0].totalReviews,
+        pendingApplications: appsRows[0].pendingApplications,
+        activeUsers: activeRows[0].activeUsers,
+        bannedUsers: bannedRows[0].bannedUsers,
+        premiumUsers: premiumRows[0].premiumUsers,
+        flaggedReviews: flaggedRows[0].flaggedReviews,
+        systemStatus: 'OK'
+      }
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({
+    console.error("OVERVIEW ERROR:", err);
+    return res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Overview failed'
     });
   }
 });

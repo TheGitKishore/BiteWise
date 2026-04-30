@@ -10,41 +10,40 @@
 // Alt Flow 6a: Admin cancels → Alert dismissed, no action
 // System Admin only
 
-import Admin  from '../entity/Admin';
-import Review from '../entity/Review';
+import Admin from '../entity/Admin';
 
 class AdminRemoveReviewController {
   constructor() {}
 
   async _safe(fn) {
-    try { return await fn(); }
-    catch (e) { console.error('[AdminRemoveReviewController]', e); return { success: false, message: 'Failed to remove review.' }; }
+    try {
+      return await fn();
+    } catch (e) {
+      console.error('[AdminRemoveReviewController]', e);
+      return {
+        success: false,
+        message: 'Failed to remove review.'
+      };
+    }
   }
 
-  // @return {Promise<{ success, data: Array, message }>}
-  async fetchAllReviews() {
-    return this._safe(async () => {
-      try {
-        const reviews = await Review.fetchAll();
-        if (Array.isArray(reviews) && reviews.length > 0) {
-          return { success: true, data: reviews, message: '' };
-        }
-      } catch (_) {}
-      return Admin.fetchReviewsSeeded();
-    });
-  }
-
-  // UC #104 — remove a single review
-  // @param  {number|string} reviewId
-  // @return {Promise<{ success, message }>}
+  // UC #104 — remove review
   async removeReview(reviewId) {
     return this._safe(async () => {
-      if (!reviewId) return { success: false, message: 'Invalid review.' };
-      try {
-        return await Review.remove(reviewId);
-      } catch (_) {
-        return Admin.removeReviewSeeded(reviewId);
+      if (!reviewId) {
+        return { success: false, message: 'Invalid review.' };
       }
+
+      const res = await Admin.removeReview(reviewId);
+
+      if (!res.success) {
+        return {
+          success: false,
+          message: res.message || 'Failed to remove review'
+        };
+      }
+
+      return res;
     });
   }
 }

@@ -171,12 +171,30 @@ const OverviewTab = () => {
   const [stats,   setStats]   = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useFocusEffect(useCallback(() => {
-    overviewCtrl.fetchOverviewStats().then((r) => {
-      if (r.success) setStats(r.data);
-      setLoading(false);
-    });
-  }, []));
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const load = async () => {
+        setLoading?.(true);
+
+        const r = await overviewCtrl.fetchOverviewStats();
+        console.log("OVERVIEW RESPONSE:", r);
+
+        if (!isActive) return;
+
+        if (r.success) setStats(r.data);
+
+        setLoading?.(false);
+      };
+
+      load();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
 
   if (loading) return <Text style={gs.loading}>Loading...</Text>;
   if (!stats)  return <Text style={gs.loading}>Unable to load overview.</Text>;
@@ -204,16 +222,34 @@ const OverviewTab = () => {
 
 // ── UC #100 / #101 / #102: Users Tab ─────────────────────────────────────────
 const UsersTab = ({ adminUser, onBanner }) => {
-  const [users,   setUsers]   = useState([]);
-  const [query,   setQuery]   = useState('');
+  const [users, setUsers] = useState([]);
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useFocusEffect(useCallback(() => {
-    viewUsersCtrl.fetchAllUsers().then((r) => {
-      if (r.success) setUsers(r.data || []);
-      setLoading(false);
-    });
-  }, []));
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const load = async () => {
+        setLoading(true);
+
+        const r = await viewUsersCtrl.fetchAllUsers();
+        // 👆 IMPORTANT: adjust name if your controller uses different method
+
+        if (!isActive) return;
+
+        if (r.success) setUsers(r.data);
+
+        setLoading(false);
+      };
+
+      load();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
 
   const displayed = viewUsersCtrl.searchUsers(users, query);
 
@@ -233,19 +269,36 @@ const UsersTab = ({ adminUser, onBanner }) => {
 
   // UC #102 — Ban / Unban
   const handleBanToggle = useCallback((user) => {
-    const isBanned = user.status === 'banned';
+    const isCurrentlyBanned = !user.isActive;
+
     Alert.alert(
-      isBanned ? 'Unban Account' : 'Ban Account',
-      isBanned ? `Restore access for ${user.firstName}?` : `Temporarily ban ${user.firstName}?`,
+      isCurrentlyBanned ? 'Unban Account' : 'Ban Account',
+      isCurrentlyBanned
+        ? `Restore access for ${user.firstName}?`
+        : `Temporarily ban ${user.firstName}?`,
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: isBanned ? 'Unban' : 'Ban', style: isBanned ? 'default' : 'destructive', onPress: async () => {
-            const r = isBanned ? await banCtrl.unbanUser(user.userId) : await banCtrl.banUser(user.userId);
+        {
+          text: isCurrentlyBanned ? 'Unban' : 'Ban',
+          style: isCurrentlyBanned ? 'default' : 'destructive',
+          onPress: async () => {
+            const r = isCurrentlyBanned
+              ? await banCtrl.unbanUser(user.userId)
+              : await banCtrl.banUser(user.userId);
+
             if (r.success) {
-              setUsers((prev) => prev.map((u) => u.userId === user.userId ? { ...u, status: isBanned ? 'active' : 'banned' } : u));
+              setUsers((prev) =>
+                prev.map((u) =>
+                  u.userId === user.userId
+                    ? { ...u, isActive: !u.isActive }
+                    : u
+                )
+              );
+
               onBanner(r.message);
             }
-          }},
+          },
+        },
       ]
     );
   }, [onBanner]);
@@ -272,9 +325,9 @@ const UsersTab = ({ adminUser, onBanner }) => {
       <SearchBar value={query} onChangeText={setQuery} placeholder="Search users by name or email..." />
       <Text style={gs.countLabel}>All User Accounts ({users.length})</Text>
       {displayed.map((user) => {
-        const sb = statusBadge(user.status);
+        const sb = statusBadge(user.isActive ? 'active' : 'banned');
         const terminated = user.status === 'terminated';
-        const banned = user.status === 'banned';
+        const banned = !user.isActive;
         return (
           <View key={user.userId} style={ut.card}>
             <View style={ut.nameRow}>
@@ -335,26 +388,44 @@ const ut = StyleSheet.create({
 // ── UC #103 / #104: Reviews Tab ───────────────────────────────────────────────
 const ReviewsTab = ({ onBanner }) => {
   const [reviews, setReviews] = useState([]);
-  const [query,   setQuery]   = useState('');
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useFocusEffect(useCallback(() => {
-    viewRevsCtrl.fetchAllReviews().then((r) => {
-      if (r.success) setReviews(r.data || []);
-      setLoading(false);
-    });
-  }, []));
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const load = async () => {
+        setLoading(true);
+
+        const r = await viewRevsCtrl.fetchAllReviews();
+        console.log("REVIEWS RESPONSE:", r);
+
+        if (!isActive) return;
+
+        if (r.success) setReviews(r.data);
+
+        setLoading(false);
+      };
+
+      load();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
 
   const displayed = viewRevsCtrl.searchReviews(reviews, query);
 
   // UC #104 — Remove review
   const handleRemove = useCallback((review) => {
-    Alert.alert('Remove Review', `Remove ${review.reviewerName}'s review? This cannot be undone.`, [
+    Alert.alert('Remove Review', `Remove ${review.reviewer_name}'s review? This cannot be undone.`, [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Remove', style: 'destructive', onPress: async () => {
-          const r = await removeRevCtrl.removeReview(review.reviewId);
+          const r = await removeRevCtrl.removeReview(review.review_id);
           if (r.success) {
-            setReviews((prev) => prev.filter((rv) => rv.reviewId !== review.reviewId));
+            setReviews((prev) => prev.filter((rv) => rv.review_id !== review.review_id));
             onBanner('Review has been removed');
           }
         }},
@@ -371,9 +442,9 @@ const ReviewsTab = ({ onBanner }) => {
       <SearchBar value={query} onChangeText={setQuery} placeholder="Search reviews..." />
       <Text style={gs.countLabel}>All User Reviews ({reviews.length})</Text>
       {displayed.map((review) => (
-        <View key={review.reviewId} style={[rt.card, review.flagged && rt.flaggedCard]}>
+        <View key={review.review_id} style={[rt.card, review.flagged && rt.flaggedCard]}>
           <View style={rt.topRow}>
-            <Text style={rt.name}>{review.reviewerName}</Text>
+            <Text style={rt.name}>{review.reviewer_name}</Text>
             <Text style={rt.stars}>{stars(review.rating)}</Text>
             <View style={[rt.badge, review.flagged ? rt.flaggedBadge : rt.approvedBadge]}>
               <Text style={[rt.badgeTxt, review.flagged ? { color: C.red } : { color: C.purple }]}>
@@ -381,7 +452,7 @@ const ReviewsTab = ({ onBanner }) => {
               </Text>
             </View>
           </View>
-          <Text style={rt.date}>{review.createdAt}</Text>
+          <Text style={rt.date}>{review.created_at}</Text>
 
           {/* UC #104 — Remove button */}
           <TouchableOpacity style={rt.removeBtn} onPress={() => handleRemove(review)}>
@@ -420,22 +491,39 @@ const rt = StyleSheet.create({
 
 // ── UC #105 / #106 / #107: Curators Tab ──────────────────────────────────────
 const CuratorsTab = ({ adminUser, onBanner }) => {
-  const [apps,    setApps]    = useState([]);
-  const [query,   setQuery]   = useState('');
+  const [apps, setApps] = useState([]);
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useFocusEffect(useCallback(() => {
-    viewAppsCtrl.fetchApplications().then((r) => {
-      if (r.success) setApps(r.data || []);
-      setLoading(false);
-    });
-  }, []));
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const load = async () => {
+        setLoading(true);
+
+        const r = await viewAppsCtrl.fetchApplications();
+
+        if (!isActive) return;
+
+        if (r.success) setApps(r.data);
+
+        setLoading(false);
+      };
+
+      load();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
 
   const displayed = viewAppsCtrl.searchApplications(apps, query);
 
   // UC #106 — Approve
   const handleApprove = useCallback((app) => {
-    approveCtrl.approveApplication(app.applicationId, adminUser?.userId).then((r) => {
+    approveCtrl.approveApplication(app.applicationId, adminUser?.adminId).then((r) => {
       if (r.success) {
         setApps((prev) => prev.map((a) => a.applicationId === app.applicationId ? { ...a, status: 'approved' } : a));
         onBanner('Curator application approved!');
@@ -450,7 +538,7 @@ const CuratorsTab = ({ adminUser, onBanner }) => {
     Alert.alert('Reject Application', `Reject ${app.username}'s curator application?`, [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Reject', style: 'destructive', onPress: async () => {
-          const r = await rejectCtrl.rejectApplication(app.applicationId, adminUser?.userId);
+          const r = await rejectCtrl.rejectApplication(app.applicationId, adminUser?.adminId);
           if (r.success) {
             setApps((prev) => prev.map((a) => a.applicationId === app.applicationId ? { ...a, status: 'rejected' } : a));
             onBanner('Curator application rejected.');
@@ -486,7 +574,7 @@ const CuratorsTab = ({ adminUser, onBanner }) => {
       <Text style={gs.countLabel}>Curator Applications ({apps.length})</Text>
       {displayed.map((app) => {
         const ss = statusStyle(app.status);
-        const isPending = app.status === 'pending';
+        const isPending = app.status === 'PENDING';
         return (
           <View key={app.applicationId} style={[ct.card, !isPending && { backgroundColor: app.status === 'approved' ? '#F0FDF4' : C.redPale }]}>
             <View style={ct.nameRow}>
@@ -540,13 +628,31 @@ const ct = StyleSheet.create({
 // ── UC #108: System Tab ───────────────────────────────────────────────────────
 const SystemTab = () => {
   const [info, setInfo] = useState(null);
-  const updateStatus = systemCtrl.getUpdateStatus();
+  const [loading, setLoading] = useState(true);
 
-  useFocusEffect(useCallback(() => {
-    systemCtrl.fetchSystemInfo().then((r) => {
-      if (r.success) setInfo(r.data);
-    });
-  }, []));
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const load = async () => {
+        setLoading(true);
+
+        const r = await systemCtrl.fetchSystemInfo();
+
+        if (!isActive) return;
+
+        if (r.success) setInfo(r.data);
+
+        setLoading(false);
+      };
+
+      load();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
 
   if (!info) return <Text style={gs.loading}>Loading...</Text>;
 
