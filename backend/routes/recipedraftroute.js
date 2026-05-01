@@ -214,6 +214,8 @@ router.post('/:id/publish', async (req, res) => {
     const recipe = {
       ...draft,
       isPublished: true,
+      likeCount: Number(draft.likeCount ?? 0),
+      viewCount: Number(draft.viewCount ?? 0),
       publishedAt: new Date(),
     };
 

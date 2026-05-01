@@ -382,8 +382,6 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
               <View style={sc.grid}>
                 <StatCard label="Total Views"  value={profileData.curatorStats.views}     emoji="👁"  emojiColor={C.purple} />
                 <StatCard label="Total Likes"  value={profileData.curatorStats.likes}     emoji="🤍"  emojiColor={C.pink}   />
-                <StatCard label="Comments"     value={profileData.curatorStats.comments}  emoji="💬"  emojiColor={C.blue}   />
-                <StatCard label="Followers"    value={profileData.curatorStats.followers} emoji="📈"  emojiColor={C.purple} />
               </View>
 
               {/* Recipe Management */}

@@ -326,6 +326,22 @@ const CuratorBlogsScreen = ({ navigation, route }) => {
     setLikingPostIds((prev) => ({ ...prev, [postId]: false }));
   };
 
+  const handleSelectPost = async (post) => {
+    setSelectedPost(post);
+    if (!currentUserId || !post?.blogPostId) return;
+
+    const result = await BlogPost.recordView(post.blogPostId, currentUserId);
+    if (!result.success) return;
+
+    const nextViewCount = Number(result.data?.viewCount ?? post.viewCount ?? 0);
+    setPosts((prev) =>
+      prev.map((p) => (p.blogPostId === post.blogPostId ? { ...p, viewCount: nextViewCount } : p))
+    );
+    setSelectedPost((prev) =>
+      prev && prev.blogPostId === post.blogPostId ? { ...prev, viewCount: nextViewCount } : prev
+    );
+  };
+
   return (
     <SafeAreaView style={s.safe}>
       <KeyboardAvoidingView
@@ -411,7 +427,7 @@ const CuratorBlogsScreen = ({ navigation, route }) => {
                 <PostCard
                   key={p.blogPostId}
                   post={p}
-                  onPress={() => setSelectedPost(p)}
+                  onPress={() => handleSelectPost(p)}
                   isLiked={Boolean(likedByPost[p.blogPostId])}
                   likeCount={likesByPost[p.blogPostId] ?? p.likeCount ?? 0}
                   onToggleLike={toggleLike}

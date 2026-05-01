@@ -13,6 +13,7 @@ class BlogPost {
     tags = [],
     bannerImageUrl = '',
     likeCount = 0,
+    viewCount = 0,
     status = 'DRAFT',
     publishedAt = null,
     createdAt = null,
@@ -27,6 +28,7 @@ class BlogPost {
       tags,
       bannerImageUrl,
       likeCount,
+      viewCount,
       status,
       publishedAt,
       createdAt,
@@ -64,6 +66,7 @@ class BlogPost {
       content: String(raw.content ?? ''),
       tags: Array.isArray(raw.tags) ? raw.tags : [],
       likeCount: Number(raw.likeCount ?? 0),
+      viewCount: Number(raw.viewCount ?? 0),
       status: String(raw.status ?? 'DRAFT').toUpperCase(),
       publishedAt: raw.publishedAt ?? null,
       createdAt: raw.createdAt ?? null,
@@ -262,6 +265,27 @@ class BlogPost {
       return {
         success: false,
         message: err.response?.data?.message || 'Failed to update blog post like.',
+        data: null,
+      };
+    }
+  }
+
+  static async recordView(blogPostId, userId) {
+    try {
+      const res = await axios.put(`${API_URL}/${blogPostId}/view`, { userId });
+      return {
+        success: Boolean(res.data?.success),
+        message: res.data?.message || 'Blog post view updated.',
+        data: {
+          blogPostId: res.data?.data?.blogPostId || blogPostId,
+          viewCount: Number(res.data?.data?.viewCount ?? 0),
+          counted: Boolean(res.data?.data?.counted),
+        },
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || 'Failed to update blog post views.',
         data: null,
       };
     }

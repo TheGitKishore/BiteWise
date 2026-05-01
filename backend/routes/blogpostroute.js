@@ -27,6 +27,7 @@ const mapBlogPost = (doc = {}) => ({
   content: String(doc.content || ''),
   tags: sanitizeTags(doc.tags),
   likeCount: Number(doc.likeCount || 0),
+  viewCount: Number(doc.viewCount || 0),
   status: String(doc.status || 'DRAFT').toUpperCase(),
   publishedAt: toISO(doc.publishedAt),
   createdAt: toISO(doc.createdAt),
@@ -187,6 +188,7 @@ router.post('/', async (req, res) => {
       content: String(content || '').trim(),
       tags: sanitizeTags(tags),
       likeCount: 0,
+      viewCount: 0,
       status: 'DRAFT',
       publishedAt: null,
       createdAt: now,
@@ -347,6 +349,69 @@ router.put('/:blogPostId', async (req, res) => {
       message: 'Something went wrong. Please try again.',
       data: null,
     });
+  }
+});
+
+router.put('/:blogPostId/view', async (req, res) => {
+  try {
+    const { blogPostId } = req.params;
+    const userId = normalizeUserId(req.body?.userId);
+
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'Invalid user id.' });
+    }
+
+    const postFilter = buildPostLookupFilter(blogPostId);
+    if (!postFilter) {
+      return res.status(400).json({ success: false, message: 'Invalid blog post id.' });
+    }
+
+    const db = getDB();
+    const existing = await db.collection(COLLECTION).findOne(
+      { ...postFilter, status: 'PUBLISHED' },
+      { projection: { blogPostId: 1, viewCount: 1 } }
+    );
+
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Blog post not found.' });
+    }
+
+    const resolvedBlogPostId = String(existing.blogPostId || existing._id || blogPostId);
+    const viewUserFilter = userIdFilter(userId);
+    const viewFilter = { ...viewUserFilter, blogPostId: resolvedBlogPostId };
+    const viewsCollection = db.collection('blog_post_views');
+    const alreadyViewed = await viewsCollection.findOne(viewFilter);
+
+    let nextViewCount = Number(existing.viewCount ?? 0);
+    let counted = false;
+
+    if (!alreadyViewed) {
+      await viewsCollection.insertOne({
+        userId: normalizeUserId(userId),
+        blogPostId: resolvedBlogPostId,
+        createdAt: new Date().toISOString(),
+      });
+      nextViewCount += 1;
+      counted = true;
+
+      await db.collection(COLLECTION).updateOne(
+        postFilter,
+        { $set: { viewCount: nextViewCount, updatedAt: new Date().toISOString() } }
+      );
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: counted ? 'Blog post view counted.' : 'Blog post already viewed.',
+      data: {
+        blogPostId: resolvedBlogPostId,
+        viewCount: nextViewCount,
+        counted,
+      },
+    });
+  } catch (err) {
+    console.error('[PUT /blog-posts/:blogPostId/view]', err);
+    return res.status(500).json({ success: false, message: 'Failed to update blog post views.' });
   }
 });
 

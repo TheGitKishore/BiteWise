@@ -98,9 +98,8 @@ const ah = StyleSheet.create({
 const TabBar = ({ active, onSelect }) => (
   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={tb.wrap} contentContainerStyle={tb.row}>
     {TABS.map((t) => (
-      <TouchableOpacity key={t} style={[tb.tab, active === t && tb.tabActive]} onPress={() => onSelect(t)}>
-        <Text style={[tb.txt, active === t && tb.txtActive]}>
-          {t === 'Overview' ? '↗ ' : t === 'Users' ? '👤 ' : t === 'Reviews' ? '💬 ' : t === 'Curators' ? '👑 ' : '⚙️ '}
+      <TouchableOpacity key={t} style={[tb.tab, active === t && tb.tabActive]} onPress={() => onSelect(t)} activeOpacity={0.85}>
+        <Text style={[tb.txt, active === t && tb.txtActive]} numberOfLines={1}>
           {t}
         </Text>
       </TouchableOpacity>
@@ -108,11 +107,11 @@ const TabBar = ({ active, onSelect }) => (
   </ScrollView>
 );
 const tb = StyleSheet.create({
-  wrap:      { backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
-  row:       { flexDirection: 'row', paddingHorizontal: 4 },
-  tab:       { paddingVertical: 12, paddingHorizontal: 12, borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  tabActive: { borderBottomColor: C.purple },
-  txt:       { fontSize: 13, fontWeight: '500', color: C.subtle },
+  wrap:      { height: 53, flexGrow: 0, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
+  row:       { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8 },
+  tab:       { minWidth: 84, height: 36, paddingHorizontal: 12, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: C.bg, borderWidth: 1, borderColor: C.border },
+  tabActive: { backgroundColor: C.purpleLight, borderColor: C.purple },
+  txt:       { fontSize: 13, lineHeight: 18, fontWeight: '600', color: C.subtle, textAlign: 'center' },
   txtActive: { color: C.purple, fontWeight: '700' },
 });
 

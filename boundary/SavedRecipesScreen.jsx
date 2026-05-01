@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ViewSavedRecipesController from '../controller/ViewSavedRecipesController';
+import Recipe from '../entity/Recipe';
 
 const controller = new ViewSavedRecipesController();
 
@@ -200,6 +201,22 @@ const SavedRecipesScreen = ({ navigation, route }) => {
   const [activeDiet, setActiveDiet] = useState('All');
   const [selectedRecipe, setSelectedRecipe] = useState(null);
 
+  const handleSelectRecipe = useCallback(async (recipe) => {
+    setSelectedRecipe(recipe);
+    if (!user?.userId || !recipe?.recipeId) return;
+
+    const result = await Recipe.recordView(recipe.recipeId, user.userId);
+    if (!result.success) return;
+
+    const nextViewCount = Number(result.data?.viewCount ?? recipe.viewCount ?? 0);
+    setAllSaved((prev) =>
+      prev.map((r) => (r.recipeId === recipe.recipeId ? { ...r, viewCount: nextViewCount } : r))
+    );
+    setSelectedRecipe((prev) =>
+      prev && prev.recipeId === recipe.recipeId ? { ...prev, viewCount: nextViewCount } : prev
+    );
+  }, [user?.userId]);
+
   // UC #65 — load on mount
   useEffect(() => {
     controller.fetchSavedRecipes(user.userId).then((result) => {
@@ -349,7 +366,7 @@ const SavedRecipesScreen = ({ navigation, route }) => {
             <SavedRecipeCard
               key={recipe.recipeId}
               recipe={recipe}
-              onPress={() => setSelectedRecipe(recipe)}
+              onPress={() => handleSelectRecipe(recipe)}
               onRemove={handleRemove}
             />
           ))
