@@ -74,9 +74,29 @@ class ViewCuratorProfileController {
         draftRecipes = draftResult.data.length;
       }
 
-      // Seeded curator stats (fall back to zeros for unknown userId)
-      const curatorStats = CURATOR_STATS[uid] || { views: 0, likes: 0, comments: 0, followers: 0 };
+      let totalLikes = 0;
 
+      if (recipeResult.success) {
+        const userPublished = Recipe.filterByUser(recipeResult.data, userId);
+      
+        totalLikes = userPublished.reduce((sum, r) => {
+          return sum + Number(r.likeCount ?? 0);
+        }, 0);
+      }
+
+      // Seeded curator stats (fall back to zeros for unknown userId)
+      const baseStats = CURATOR_STATS[uid] || {
+        views: 0,
+        likes: 0,
+        comments: 0,
+        followers: 0,
+      };
+
+      const curatorStats = {
+        ...baseStats,
+        likes: totalLikes,
+      };
+      
       // Seeded expertise / bio (fall back to empty strings)
       const profileExtra = CURATOR_PROFILES[uid] || { expertise: '', bio: '' };
 
