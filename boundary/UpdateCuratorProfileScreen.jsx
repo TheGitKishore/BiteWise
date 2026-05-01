@@ -4,7 +4,7 @@
 // On success → navigates back to CuratorDashboardScreen with banner param.
 // Design consistent with EditMyRecipeScreen layout.
 
-import React, { useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   StyleSheet, StatusBar, KeyboardAvoidingView, Platform,
@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import UpdateCuratorProfileController from '../controller/UpdateCuratorProfileController';
+import CuratorProfileEdit from '../entity/CuratorProfileEdit'; // adjust path
 
 const ctrl = new UpdateCuratorProfileController();
 
@@ -76,6 +77,19 @@ const UpdateCuratorProfileScreen = ({ navigation, route }) => {
       setError(result.message);
     }
   }, [expertise, bio, user, navigation]);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const res = await CuratorProfileEdit.getProfile(user?.userId);
+
+      if (res.success && res.data) {
+        setExpertise(res.data.expertise || '');
+        setBio(res.data.bio || '');
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
 
   return (
     <SafeAreaView style={s.safe}>
