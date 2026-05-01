@@ -168,15 +168,6 @@ class Admin {
       };
     }
   }
-
-  static async fetchSystemInfo() {
-    try {
-      const res = await axios.get(`${API_URL}/system`);
-      return res.data;
-    } catch (err) {
-      return { success: false, data: null, message: 'Failed to fetch system info' };
-    }
-  }
 }
 
 export default Admin;

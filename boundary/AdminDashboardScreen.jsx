@@ -650,7 +650,8 @@ const ct = StyleSheet.create({
 const SystemTab = () => {
   const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const updateStatus = systemCtrl.getUpdateStatus();
+  
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
