@@ -12,6 +12,8 @@
 
 import User   from '../entity/User';
 import Recipe from '../entity/Recipe';
+import BlogPost from '../entity/BlogPost';
+import RecipeDraft from '../entity/RecipeDraft';
 
 // ── Sprint 9 Seeded Data ──────────────────────────────────────────────────────
 
@@ -58,12 +60,18 @@ class ViewCuratorProfileController {
 
       // Fetch recipes to count published / draft
       const recipeResult = await Recipe.fetchAll();
+      const draftResult  = await RecipeDraft.fetchByUser(userId);
+
       let publishedRecipes = 0;
       let draftRecipes = 0;
+
       if (recipeResult.success) {
-        const userRecipes = Recipe.filterByUser(recipeResult.data, userId);
-        publishedRecipes = userRecipes.filter((r) => r.isPublished).length;
-        draftRecipes     = userRecipes.filter((r) => !r.isPublished).length;
+        const userPublished = Recipe.filterByUser(recipeResult.data, userId);
+        publishedRecipes = userPublished.length;
+      }
+
+      if (draftResult.success) {
+        draftRecipes = draftResult.data.length;
       }
 
       // Seeded curator stats (fall back to zeros for unknown userId)
@@ -71,6 +79,18 @@ class ViewCuratorProfileController {
 
       // Seeded expertise / bio (fall back to empty strings)
       const profileExtra = CURATOR_PROFILES[uid] || { expertise: '', bio: '' };
+
+      const blogResult = await BlogPost.fetchByUser(userId);
+
+      let publishedPosts = 0;
+      let draftPosts = 0;
+
+      if (blogResult.success) {
+        const posts = blogResult.data;
+      
+        publishedPosts = posts.filter(p => p.isPublished()).length;
+        draftPosts     = posts.filter(p => p.isDraft()).length;
+      }
 
       return {
         success: true,
@@ -80,7 +100,7 @@ class ViewCuratorProfileController {
           bio:           profileExtra.bio,
           curatorStats,
           recipes:       { published: publishedRecipes, draft: draftRecipes },
-          blogPosts:     { published: 0, draft: 0 },   // seeded stub — no blog post entity yet
+          blogPosts: { published: publishedPosts, draft: draftPosts },   // seeded stub — no blog post entity yet
         },
         message: '',
       };

@@ -14,7 +14,13 @@ const COLLECTION = 'recipe_drafts';
 router.get('/', async (req, res) => {
   try {
     const db = getDB();
-    const drafts = await db.collection(COLLECTION).find().toArray();
+    const { userId } = req.query;
+
+    const filter = userId
+      ? { createdByUserId: Number(userId) }
+      : {};
+
+    const drafts = await db.collection(COLLECTION).find(filter).toArray();
 
     res.json(drafts);
   } catch (err) {
