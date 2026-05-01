@@ -112,22 +112,38 @@ const CuratorRecipesScreen = ({ navigation, route }) => {
   const handlePublish = useCallback((recipeId) => {
     Alert.alert('Publish Recipe', 'Make this recipe visible in the recipe library?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Publish', onPress: async () => {
-        const result = await publishCtrl.publishRecipe(recipeId, user.userId);
-        if (result.success) loadRecipes();
-        else Alert.alert('Error', result.message || 'Unable to publish recipe.');
-      }},
+      {
+        text: 'Publish',
+        onPress: async () => {
+          const result = await publishCtrl.publishRecipe(recipeId, user.userId);
+
+          if (result.success) {
+            Alert.alert('Success', 'Recipe published successfully.');
+            loadRecipes();
+          } else {
+            Alert.alert('Error', result.message || 'Unable to publish recipe.');
+          }
+        }
+      },
     ]);
   }, [loadRecipes, user?.userId]);
 
   const handleUnpublish = useCallback((recipeId) => {
     Alert.alert('Unpublish Recipe', 'Move this recipe back to drafts so it can be edited?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Unpublish', onPress: async () => {
-        const result = await unpublishCtrl.unpublishRecipe(recipeId, user.userId);
-        if (result.success) loadRecipes();
-        else Alert.alert('Error', result.message || 'Unable to unpublish recipe.');
-      }},
+      {
+        text: 'Unpublish',
+        onPress: async () => {
+          const result = await unpublishCtrl.unpublishRecipe(recipeId, user.userId);
+        
+          if (result.success) {
+            Alert.alert('Success', 'Recipe moved to drafts.');
+            loadRecipes();
+          } else {
+            Alert.alert('Error', result.message || 'Unable to unpublish recipe.');
+          }
+        }
+      },
     ]);
   }, [loadRecipes, user?.userId]);
 
