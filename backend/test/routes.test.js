@@ -75,9 +75,13 @@ const mockCollection = {
   findOne:     jest.fn(),
   insertOne:   jest.fn(),
   updateOne:   jest.fn(),
+  updateMany:       jest.fn(),
   deleteOne:   jest.fn(),
+  deleteMany:       jest.fn(),
   aggregate:   jest.fn(),
   findOneAndUpdate: jest.fn(),
+  countDocuments:   jest.fn(),
+  next:             jest.fn(),
 };
 
 // find() typically returns a cursor with .sort().toArray()
@@ -125,6 +129,16 @@ import groceryListRouter       from '../routes/grocerylistroute.js';
 import healthGoalRouter        from '../routes/healthgoalroute.js';
 import healthReportRouter      from '../routes/healthreportroute.js';
 import heightEntryRouter       from '../routes/heightentryroute.js';
+import mealPlanRouter          from '../routes/mealplanroute.js';
+import membershipPlanRouter    from '../routes/membershipplanroute.js';
+import nutritionTargetsRouter  from '../routes/nutritiontargetsroute.js';
+import recipeDraftRouter       from '../routes/recipedraftroute.js';
+import recipeRouter            from '../routes/reciperoute.js';
+import reviewRouter            from '../routes/reviewroute.js';
+import smartEatingRouter       from '../routes/smarteatingcontentroute.js';
+import userProfileTypeRouter   from '../routes/userprofiletyperoute.js';
+import usersRouter             from '../routes/usersroute.js';
+import weightEntryRouter       from '../routes/weightentryroute.js';
 
 // ─── Build test Express app ───────────────────────────────────────────
 const app = express();
@@ -142,6 +156,16 @@ app.use('/api/grocery-lists',         groceryListRouter);
 app.use('/api/health-goals',          healthGoalRouter);
 app.use('/api/health-reports',        healthReportRouter);
 app.use('/api/height-entries',        heightEntryRouter);
+app.use('/api/meal-plans',          mealPlanRouter);
+app.use('/api/membership-plans',    membershipPlanRouter);
+app.use('/api/nutrition-targets',   nutritionTargetsRouter);
+app.use('/api/recipe-drafts',       recipeDraftRouter);
+app.use('/api/recipes',             recipeRouter);
+app.use('/api/reviews',             reviewRouter);
+app.use('/api/smart-eating',        smartEatingRouter);
+app.use('/api/user-profile-types',  userProfileTypeRouter);
+app.use('/api/users',               usersRouter);
+app.use('/api/weight-entries',      weightEntryRouter);
 
 // Reset all mocks between tests to prevent bleed-across
 beforeEach(() => {
@@ -151,9 +175,12 @@ beforeEach(() => {
   mockCollection.findOne.mockResolvedValue(null);
   mockCollection.insertOne.mockResolvedValue({ insertedId: 'mock-id-123' });
   mockCollection.updateOne.mockResolvedValue({ matchedCount: 1, modifiedCount: 1 });
+  mockCollection.updateMany.mockResolvedValue({ matchedCount: 1, modifiedCount: 1 });
   mockCollection.deleteOne.mockResolvedValue({ deletedCount: 1 });
+  mockCollection.deleteMany.mockResolvedValue({ deletedCount: 1 });
   mockCollection.aggregate.mockReturnValue(makeAggregateCursor([]));
   mockCollection.findOneAndUpdate.mockResolvedValue({ value: null });
+  mockCollection.countDocuments.mockResolvedValue(0);
 });
 
 
