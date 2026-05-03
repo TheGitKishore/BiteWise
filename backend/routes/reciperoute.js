@@ -13,6 +13,7 @@ const getCollections = () => {
     drafts: dbMongo.collection('recipe_drafts'), // ✅ add this
     savedRecipes: dbMongo.collection('saved_recipes'),
     recipeLikes: dbMongo.collection('recipe_likes'),
+    recipeViews: dbMongo.collection('recipe_views'),
     customRecipes: dbMongo.collection('custom_recipes')
   };
 };
@@ -254,6 +255,7 @@ router.post('/', async (req, res) => {
     const newRecipe = {
       ...req.body,
       likeCount: Number(req.body?.likeCount ?? 0),
+      viewCount: Number(req.body?.viewCount ?? 0),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -384,6 +386,64 @@ router.get('/likes/:userId', async (req, res) => {
       .toArray();
 
     return res.json(rows.map((r) => String(r.recipeId)).filter(Boolean));
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+
+// PUT /api/recipes/:recipeId/view
+// Counts one unique logged-in viewer per recipe.
+router.put('/:recipeId/view', async (req, res) => {
+  try {
+    const { recipes, recipeViews } = getCollections();
+    const { recipeId } = req.params;
+    const userId = normalizeUserId(req.body?.userId);
+
+    if (!ObjectId.isValid(recipeId)) {
+      return res.status(400).json({ message: 'Invalid recipeId' });
+    }
+    if (!userId) {
+      return res.status(400).json({ message: 'Invalid userId' });
+    }
+
+    const objectId = new ObjectId(recipeId);
+    const existing = await recipes.findOne(
+      { _id: objectId },
+      { projection: { viewCount: 1 } }
+    );
+
+    if (!existing) {
+      return res.status(404).json({ message: 'Recipe not found' });
+    }
+
+    const viewUserFilter = userIdFilter(userId);
+    const viewFilter = { ...viewUserFilter, recipeId: String(recipeId) };
+    const alreadyViewed = await recipeViews.findOne(viewFilter);
+
+    let nextViewCount = Number(existing.viewCount ?? 0);
+    let counted = false;
+
+    if (!alreadyViewed) {
+      await recipeViews.insertOne({
+        userId: normalizeUserId(userId),
+        recipeId: String(recipeId),
+        createdAt: new Date(),
+      });
+      nextViewCount += 1;
+      counted = true;
+
+      await recipes.updateOne(
+        { _id: objectId },
+        { $set: { viewCount: nextViewCount, updatedAt: new Date() } }
+      );
+    }
+
+    return res.json({
+      success: true,
+      recipeId,
+      viewCount: nextViewCount,
+      counted,
+    });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }

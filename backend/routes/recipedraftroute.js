@@ -14,7 +14,13 @@ const COLLECTION = 'recipe_drafts';
 router.get('/', async (req, res) => {
   try {
     const db = getDB();
-    const drafts = await db.collection(COLLECTION).find().toArray();
+    const { userId } = req.query;
+
+    const filter = userId
+      ? { createdByUserId: Number(userId) }
+      : {};
+
+    const drafts = await db.collection(COLLECTION).find(filter).toArray();
 
     res.json(drafts);
   } catch (err) {
@@ -208,6 +214,8 @@ router.post('/:id/publish', async (req, res) => {
     const recipe = {
       ...draft,
       isPublished: true,
+      likeCount: Number(draft.likeCount ?? 0),
+      viewCount: Number(draft.viewCount ?? 0),
       publishedAt: new Date(),
     };
 

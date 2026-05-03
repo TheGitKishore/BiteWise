@@ -3,7 +3,7 @@
 // Normal Flow (UC #115 Sprint 9):
 //   1. CuratorDashboardScreen mounts → boundary calls fetchProfile(userId)
 //   2. Controller returns full curator profile object including stats, expertise, bio,
-//      recipe counts, and blog post counts from seeded data
+//      recipe counts, and blog post counts from live recipe/blog data
 //   3. Boundary renders single-page Curator Dashboard
 //
 // Sprint 9: fetchProfile() now returns { user, expertise, bio, curatorStats,
@@ -12,12 +12,10 @@
 
 import User   from '../entity/User';
 import Recipe from '../entity/Recipe';
+import BlogPost from '../entity/BlogPost';
+import RecipeDraft from '../entity/RecipeDraft';
 
 // ── Sprint 9 Seeded Data ──────────────────────────────────────────────────────
-
-const CURATOR_STATS = {
-  4: { views: 1250, likes: 340, comments: 89, followers: 0 },
-};
 
 const CURATOR_PROFILES = {
   4: {
@@ -58,17 +56,45 @@ class ViewCuratorProfileController {
 
       // Fetch recipes to count published / draft
       const recipeResult = await Recipe.fetchAll();
+      const draftResult  = await RecipeDraft.fetchByUser(userId);
+      const blogResult = await BlogPost.fetchByUser(userId);
+
       let publishedRecipes = 0;
       let draftRecipes = 0;
+      let totalRecipeLikes = 0;
+      let totalRecipeViews = 0;
+
       if (recipeResult.success) {
-        const userRecipes = Recipe.filterByUser(recipeResult.data, userId);
-        publishedRecipes = userRecipes.filter((r) => r.isPublished).length;
-        draftRecipes     = userRecipes.filter((r) => !r.isPublished).length;
+        const userPublished = Recipe.filterByUser(recipeResult.data, userId);
+        publishedRecipes = userPublished.length;
+        totalRecipeLikes = userPublished.reduce((sum, r) => sum + Number(r.likeCount ?? 0), 0);
+        totalRecipeViews = userPublished.reduce((sum, r) => sum + Number(r.viewCount ?? 0), 0);
       }
 
-      // Seeded curator stats (fall back to zeros for unknown userId)
-      const curatorStats = CURATOR_STATS[uid] || { views: 0, likes: 0, comments: 0, followers: 0 };
+      if (draftResult.success) {
+        draftRecipes = draftResult.data.length;
+      }
 
+      let publishedPosts = 0;
+      let draftPosts = 0;
+      let totalBlogLikes = 0;
+      let totalBlogViews = 0;
+
+      if (blogResult.success) {
+        const posts = blogResult.data;
+        const published = posts.filter(p => p.isPublished());
+      
+        publishedPosts = published.length;
+        draftPosts     = posts.filter(p => p.isDraft()).length;
+        totalBlogLikes = published.reduce((sum, p) => sum + Number(p.likeCount ?? 0), 0);
+        totalBlogViews = published.reduce((sum, p) => sum + Number(p.viewCount ?? 0), 0);
+      }
+
+      const curatorStats = {
+        views: totalRecipeViews + totalBlogViews,
+        likes: totalRecipeLikes + totalBlogLikes,
+      };
+      
       // Seeded expertise / bio (fall back to empty strings)
       const profileExtra = CURATOR_PROFILES[uid] || { expertise: '', bio: '' };
 
@@ -80,7 +106,7 @@ class ViewCuratorProfileController {
           bio:           profileExtra.bio,
           curatorStats,
           recipes:       { published: publishedRecipes, draft: draftRecipes },
-          blogPosts:     { published: 0, draft: 0 },   // seeded stub — no blog post entity yet
+          blogPosts: { published: publishedPosts, draft: draftPosts },   // seeded stub — no blog post entity yet
         },
         message: '',
       };

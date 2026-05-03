@@ -23,6 +23,7 @@ class Recipe {
     isMealPrep = false,
     imageUrl = null,
     likeCount = 0,
+    viewCount = 0,
     createdByUserId = null,
     createdAt = null,
     isPublished = false,
@@ -45,6 +46,7 @@ class Recipe {
     this.isMealPrep = isMealPrep;
     this.imageUrl = imageUrl;
     this.likeCount = Number(likeCount || 0);
+    this.viewCount = Number(viewCount || 0);
     this.createdByUserId = createdByUserId;
     this.createdAt = createdAt;
     this.isPublished = isPublished;
@@ -201,6 +203,27 @@ class Recipe {
       return {
         success: false,
         message: err?.response?.data?.message || err.message || 'Failed to update recipe like',
+        data: null,
+      };
+    }
+  }
+
+  static async recordView(recipeId, userId) {
+    try {
+      const res = await axios.put(`${API_URL}/${recipeId}/view`, { userId });
+      return {
+        success: Boolean(res.data?.success ?? true),
+        message: res.data?.message || 'Recipe view updated',
+        data: {
+          recipeId: res.data?.recipeId || recipeId,
+          viewCount: Number(res.data?.viewCount ?? 0),
+          counted: Boolean(res.data?.counted),
+        },
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err?.response?.data?.message || err.message || 'Failed to update recipe views',
         data: null,
       };
     }

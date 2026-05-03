@@ -83,6 +83,12 @@ const CuratorRecipesScreen = ({ navigation, route }) => {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [banner, setBanner] = useState('');
+
+  const showBanner = useCallback((msg) => {
+    setBanner(msg);
+    setTimeout(() => setBanner(''), 3000);
+  }, []);
 
   const loadRecipes = useCallback(() => {
     if (!user?.userId) {
@@ -112,24 +118,40 @@ const CuratorRecipesScreen = ({ navigation, route }) => {
   const handlePublish = useCallback((recipeId) => {
     Alert.alert('Publish Recipe', 'Make this recipe visible in the recipe library?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Publish', onPress: async () => {
-        const result = await publishCtrl.publishRecipe(recipeId, user.userId);
-        if (result.success) loadRecipes();
-        else Alert.alert('Error', result.message || 'Unable to publish recipe.');
-      }},
+      {
+        text: 'Publish',
+        onPress: async () => {
+          const result = await publishCtrl.publishRecipe(recipeId, user.userId);
+
+          if (result.success) {
+            showBanner(result.message || 'Recipe published successfully.');
+            loadRecipes();
+          } else {
+            Alert.alert('Error', result.message || 'Unable to publish recipe.');
+          }
+        }
+      },
     ]);
-  }, [loadRecipes, user?.userId]);
+  }, [loadRecipes, showBanner, user?.userId]);
 
   const handleUnpublish = useCallback((recipeId) => {
     Alert.alert('Unpublish Recipe', 'Move this recipe back to drafts so it can be edited?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Unpublish', onPress: async () => {
-        const result = await unpublishCtrl.unpublishRecipe(recipeId, user.userId);
-        if (result.success) loadRecipes();
-        else Alert.alert('Error', result.message || 'Unable to unpublish recipe.');
-      }},
+      {
+        text: 'Unpublish',
+        onPress: async () => {
+          const result = await unpublishCtrl.unpublishRecipe(recipeId, user.userId);
+        
+          if (result.success) {
+            showBanner(result.message || 'Recipe moved to drafts.');
+            loadRecipes();
+          } else {
+            Alert.alert('Error', result.message || 'Unable to unpublish recipe.');
+          }
+        }
+      },
     ]);
-  }, [loadRecipes, user?.userId]);
+  }, [loadRecipes, showBanner, user?.userId]);
 
   return (
     <SafeAreaView style={s.safe}>
@@ -139,6 +161,10 @@ const CuratorRecipesScreen = ({ navigation, route }) => {
         <Text style={s.navTitle}>My Recipes</Text>
         <View style={{ width: 60 }} />
       </View>
+
+      {banner ? (
+        <View style={s.bannerBar}><Text style={s.bannerTxt}>✅  {banner}</Text></View>
+      ) : null}
 
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
         <TouchableOpacity
@@ -209,6 +235,8 @@ const s = StyleSheet.create({
   nav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
   back: { fontSize: 14, color: C.purple, fontWeight: '600' },
   navTitle: { fontSize: 17, fontWeight: '700', color: C.dark },
+  bannerBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: C.greenBg, borderBottomWidth: 1, borderBottomColor: C.greenBorder },
+  bannerTxt: { fontSize: 14, fontWeight: '500', color: C.green },
   scroll: { paddingHorizontal: 16, paddingBottom: 40 },
   createBtn: { backgroundColor: C.purple, borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginVertical: 16 },
   createBtnTxt: { fontSize: 15, fontWeight: '700', color: C.white },

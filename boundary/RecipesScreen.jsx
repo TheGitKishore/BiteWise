@@ -483,6 +483,22 @@ const RecipesScreen = ({ navigation, route }) => {
 
   const canLikeRecipe = (recipe) => Boolean(recipe?.isCurated);
 
+  const handleSelectRecipe = useCallback(async (recipe) => {
+    setSelectedRecipe(recipe);
+    if (!currentUserId || !recipe?.recipeId) return;
+
+    const result = await Recipe.recordView(recipe.recipeId, currentUserId);
+    if (!result.success) return;
+
+    const nextViewCount = Number(result.data?.viewCount ?? recipe.viewCount ?? 0);
+    setAllRecipes((prev) =>
+      prev.map((r) => (r.recipeId === recipe.recipeId ? { ...r, viewCount: nextViewCount } : r))
+    );
+    setSelectedRecipe((prev) =>
+      prev && prev.recipeId === recipe.recipeId ? { ...prev, viewCount: nextViewCount } : prev
+    );
+  }, [currentUserId]);
+
   // Load recipes on mount
   useEffect(() => {
     viewCtrl.fetchRecipes().then((result) => {
@@ -534,7 +550,7 @@ const RecipesScreen = ({ navigation, route }) => {
       }
 
       if (targetRecipe) {
-        setSelectedRecipe(targetRecipe);
+        handleSelectRecipe(targetRecipe);
       }
     }
 
@@ -542,7 +558,7 @@ const RecipesScreen = ({ navigation, route }) => {
       initialSearch: undefined,
       focusRecipeId: undefined,
     });
-  }, [allRecipes, incomingSearch, incomingFocusRecipeId, navigation]);
+  }, [allRecipes, incomingSearch, incomingFocusRecipeId, navigation, handleSelectRecipe]);
 
   const toggleRecipeLike = useCallback(async (recipeId) => {
     if (likingRecipeIds[recipeId]) return;
@@ -805,7 +821,7 @@ const RecipesScreen = ({ navigation, route }) => {
             <RecipeCard
               key={recipe.recipeId || recipe._id || `${recipe.title || 'recipe'}-${idx}`}
               recipe={recipe}
-              onPress={() => setSelectedRecipe(recipe)}
+              onPress={() => handleSelectRecipe(recipe)}
               isLiked={Boolean(likedRecipes[recipe.recipeId])}
               likeCount={recipeLikeCounts[recipe.recipeId] ?? recipe.likeCount ?? 0}
               onToggleLike={() => toggleRecipeLike(recipe.recipeId)}
