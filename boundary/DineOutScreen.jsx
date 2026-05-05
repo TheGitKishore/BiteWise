@@ -57,10 +57,18 @@ const nav = StyleSheet.create({
 });
 
 // ── Budget Pill ───────────────────────────────────────────────────────────────
-const BudgetPill = ({ remaining, targets }) => {
-  const pct = targets?.calories > 0
-    ? Math.round(((targets.calories - remaining.calories) / targets.calories) * 100)
+const BudgetPill = ({ consumed, remaining, targets }) => {
+  const calorieGoal = Number(targets?.calories || 0);
+  const consumedCalories = Number(
+    consumed?.calories ?? Math.max(0, calorieGoal - Number(remaining?.calories || 0))
+  );
+  const remainingCalories = Number(
+    remaining?.calories ?? Math.max(0, calorieGoal - consumedCalories)
+  );
+  const pct = calorieGoal > 0
+    ? Math.min(Math.round((consumedCalories / calorieGoal) * 100), 100)
     : 0;
+
   return (
     <View style={bp.wrap}>
       <View style={bp.pill}>
@@ -68,8 +76,11 @@ const BudgetPill = ({ remaining, targets }) => {
         <View>
           <Text style={bp.label}>Remaining Budget</Text>
           <Text style={bp.value}>
-            <Text style={bp.big}>{Math.round(remaining.calories)}</Text>
-            <Text style={bp.unit}> / {Math.round(targets?.calories || 0)} kcal</Text>
+            <Text style={bp.big}>{Math.round(remainingCalories)}</Text>
+            <Text style={bp.unit}> kcal left</Text>
+          </Text>
+          <Text style={bp.usedText}>
+            {Math.round(consumedCalories)} / {Math.round(calorieGoal)} kcal used
           </Text>
         </View>
         <View style={bp.pctBadge}>
@@ -87,6 +98,7 @@ const bp = StyleSheet.create({
   value:   { flexDirection: 'row', alignItems: 'baseline' },
   big:     { fontSize: 22, fontWeight: '900', color: C.white },
   unit:    { fontSize: 12, color: 'rgba(255,255,255,0.75)' },
+  usedText:{ fontSize: 11, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
   pctBadge:{ marginLeft: 'auto', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 },
   pctTxt:  { fontSize: 12, fontWeight: '700', color: C.white },
 });
@@ -252,6 +264,7 @@ const DineOutScreen = ({ navigation, route }) => {
   const [loading,       setLoading]      = useState(true);
   const [error,         setError]        = useState('');
   const [targets,       setTargets]      = useState(null);
+  const [consumed,      setConsumed]     = useState(null);
   const [remaining,     setRemaining]    = useState(null);
   const [allRestaurants, setAllRestaurants] = useState([]);
   const [query,         setQuery]        = useState('');
@@ -266,8 +279,9 @@ const DineOutScreen = ({ navigation, route }) => {
       ctrl.fetchDineOutOptions(user?.userId).then((result) => {
         if (!active) return;
         if (result.success && result.data) {
-          const { targets: t, remaining: r, restaurants } = result.data;
+          const { targets: t, consumed: c, remaining: r, restaurants } = result.data;
           setTargets(t);
+          setConsumed(c);
           setRemaining(r);
           setAllRestaurants(restaurants);
         } else {
@@ -284,6 +298,13 @@ const DineOutScreen = ({ navigation, route }) => {
   const cuisines   = ctrl.getCuisines();
   const byCuisine  = ctrl.filterByCuisine(allRestaurants, cuisine);
   const displayed  = ctrl.search(byCuisine, query);
+  const targetCalories = Number(targets?.calories || 0);
+  const consumedCalories = Number(
+    consumed?.calories ?? Math.max(0, targetCalories - Number(remaining?.calories || 0))
+  );
+  const remainingCalories = Number(
+    remaining?.calories ?? (targets ? Math.max(0, targetCalories - consumedCalories) : 0)
+  );
 
   return (
     <SafeAreaView style={s.safe}>
@@ -314,7 +335,7 @@ const DineOutScreen = ({ navigation, route }) => {
           <>
             {/* Budget pill */}
             {remaining && targets && (
-              <BudgetPill remaining={remaining} targets={targets} />
+              <BudgetPill consumed={consumed} remaining={remaining} targets={targets} />
             )}
 
             {/* Info strip */}
@@ -322,7 +343,7 @@ const DineOutScreen = ({ navigation, route }) => {
               <Text style={s.infoIcon}>💡</Text>
               <Text style={s.infoTxt}>
                 Showing restaurants with meals that fit your remaining{' '}
-                <Text style={s.infoHighlight}>{Math.round(remaining?.calories || 0)} kcal</Text>.
+                <Text style={s.infoHighlight}>{Math.round(remainingCalories)} kcal</Text>.
                 Tap a card to see matching menu items.
               </Text>
             </View>
