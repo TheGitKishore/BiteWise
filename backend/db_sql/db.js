@@ -1,17 +1,5 @@
-import mysql from 'mysql2/promise';
-import fs from 'fs';
+// config/api.js
 
-const db = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+const API_CONFIG = 'http://192.168.xx.xx:3000/api';
 
-  ssl: {
-    ca: fs.readFileSync('./certs/isrgrootx1.pem'),
-    rejectUnauthorized: true
-  }
-});
-
-export default db;
+export default API_CONFIG;
