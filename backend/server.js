@@ -33,10 +33,9 @@ import curatorprofileRoute from './routes/curatorprofileroute.js';
 import { initializeDatabases } from './routes/apiroute.js';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json({ limit: '15mb' }));
+app.use(express.json());
 
 app.use((req, res, next) => {
   console.log("➡️ REQUEST:", req.method, req.url);
@@ -73,7 +72,11 @@ app.use('/api/curator-profiles', curatorprofileRoute);
 // ? Initialize DB before server starts
 const startServer = async () => {
   try {
-    await initializeDatabases();   // ?? THIS IS WHAT YOU WERE MISSING
+    initializeDatabases().catch(err =>
+      console.error("DB init failed:", err)
+    );
+
+    const PORT = process.env.PORT || 3000;
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
