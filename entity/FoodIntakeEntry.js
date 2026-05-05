@@ -102,8 +102,8 @@ class FoodIntakeEntry {
     
       formData.append('image', {
         uri: photo.uri,
-        name: 'food.jpg',
-        type: 'image/jpeg',
+        name: photo.name || 'food.jpg',
+        type: photo.type || 'image/jpeg',
       });
     
       const res = await axios.post(`${API_URL}/food-recognition`, formData, {
@@ -116,7 +116,8 @@ class FoodIntakeEntry {
     } catch (err) {
       return {
         success: false,
-        message: 'Food recognition failed',
+        message: err.response?.data?.message || err.message || 'Food recognition failed',
+        recognition: err.response?.data?.recognition,
       };
     }
   }

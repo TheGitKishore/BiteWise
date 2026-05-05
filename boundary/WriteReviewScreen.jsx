@@ -48,7 +48,7 @@ const WriteReviewScreen = ({ navigation, route }) => {
           <Text style={{fontSize:22,fontWeight:'800',color:C.dark,marginBottom:8,textAlign:'center'}}>Thank You!</Text>
           <Text style={{fontSize:14,color:C.subtle,textAlign:'center',marginBottom:24,lineHeight:21}}>Your review has been submitted and will appear once approved by our team.</Text>
           <TouchableOpacity style={{backgroundColor:C.purple,borderRadius:10,paddingVertical:13,paddingHorizontal:32}} onPress={() => navigation.goBack()} activeOpacity={0.85}>
-            <Text style={{fontSize:15,fontWeight:'700',color:C.white}}>Back to Account Page</Text>
+            <Text style={{fontSize:15,fontWeight:'700',color:C.white}}>Back to Dashboard</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

@@ -1,10 +1,14 @@
 import express from 'express';
 import { getDB } from '../db_mongodb/db.js';
 import { ObjectId } from 'mongodb';
+import { recognizeFoodFromImage } from '../services/ai/foodRecognitionService.js';
 
 const router = express.Router();
 import multer from 'multer';
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 // ===============================
 // CREATE MANUAL ENTRY
@@ -58,12 +62,13 @@ router.post('/manual', async (req, res) => {
 router.post('/camera', async (req, res) => {
   try {
     const { userId, foodName, calories, protein, carbs, fat, meal } = req.body;
+    const numericUserId = Number(userId);
 
     const db = await getDB();
     const collection = db.collection('food_logs');
 
     const doc = {
-      userId,
+      userId: numericUserId,
       foodName,
       calories: Number(calories),
       protein: Number(protein),
@@ -92,7 +97,7 @@ router.post('/camera', async (req, res) => {
 
 
 // ===============================
-// FOOD RECOGNITION (MOCK OR AI)
+// FOOD RECOGNITION
 // ===============================
 router.post('/food-recognition', upload.single('image'), async (req, res) => {
   const file = req.file;
@@ -104,17 +109,26 @@ router.post('/food-recognition', upload.single('image'), async (req, res) => {
     });
   }
 
-  // 🔥 Simulate detection (replace later with AI)
-  return res.json({
-    success: true,
-    data: {
-      foodName: 'Chicken Rice',
-      calories: 600,
-      protein: 35,
-      carbs: 70,
-      fat: 20,
-    },
-  });
+  if (!file.mimetype?.startsWith('image/')) {
+    return res.status(400).json({
+      success: false,
+      message: 'Only image uploads are supported',
+    });
+  }
+
+  try {
+    const result = await recognizeFoodFromImage({
+      imageBuffer: file.buffer,
+      mimeType: file.mimetype,
+    });
+
+    return res.status(result.success ? 200 : 503).json(result);
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Food recognition failed',
+    });
+  }
 });
 
 // ===============================
@@ -123,6 +137,7 @@ router.post('/food-recognition', upload.single('image'), async (req, res) => {
 router.get('/today/:userId', async (req, res) => {
   try {
     const userId = Number(req.params.userId);
+    const rawUserId = req.params.userId;
 
     const db = await getDB();
     const collection = db.collection('food_logs');
@@ -132,7 +147,7 @@ router.get('/today/:userId', async (req, res) => {
 
     const entries = await collection
       .find({
-        userId,
+        userId: { $in: [userId, rawUserId] },
         loggedAt: { $gte: start }
       })
       .toArray();

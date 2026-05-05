@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 
 import ViewFoodDatabaseController          from '../controller/ViewFoodDatabaseController';
 import CreateManualFoodEntryController     from '../controller/CreateManualFoodEntryController';
@@ -337,21 +338,11 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
   const reset = () => { setStep('capture'); setDetected(null); setFoodName(''); setMeal(''); setErrorMsg(''); };
   const handleClose = () => { reset(); onClose(); };
 
-  const handleCapture = useCallback(async () => {
-    if (!cameraRef) return;
-
+  const recognisePhoto = useCallback(async (photo, fallbackError = 'Food recognition failed') => {
     try {
       setIsLoading(true);
       setErrorMsg('');
 
-      const photo = await cameraRef.takePictureAsync({
-        base64: true,
-        quality: 0.5,
-      });
-
-      console.log("PHOTO:", photo.uri);
-
-      // 🔥 Send to backend for recognition
       const result = await cameraController.recogniseFood(photo);
 
       setIsLoading(false);
@@ -361,14 +352,58 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
         setFoodName(result.data.foodName);
         setStep('confirm');
       } else {
-        setErrorMsg(result.message || 'Recognition failed');
+        setErrorMsg(result.message || fallbackError);
       }
+    } catch (err) {
+      setIsLoading(false);
+      setErrorMsg(fallbackError);
+    }
+  }, []);
+
+  const handleCapture = useCallback(async () => {
+    if (!cameraRef) return;
+
+    try {
+      const photo = await cameraRef.takePictureAsync({
+        base64: true,
+        quality: 0.5,
+      });
+
+      console.log("PHOTO:", photo.uri);
+      await recognisePhoto(photo, 'Camera recognition failed');
     } catch (err) {
       setIsLoading(false);
       setErrorMsg('Camera error occurred');
     }
-  }, [cameraRef]);
+  }, [cameraRef, recognisePhoto]);
 
+  const handlePickImage = useCallback(async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        setErrorMsg('Allow photo library access to choose an image.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: 'images',
+        allowsEditing: true,
+        quality: 0.7,
+      });
+
+      if (result.canceled || !result.assets?.[0]?.uri) return;
+
+      const asset = result.assets[0];
+      await recognisePhoto({
+        uri: asset.uri,
+        name: asset.fileName || 'food.jpg',
+        type: asset.mimeType || 'image/jpeg',
+      }, 'Image recognition failed');
+    } catch (err) {
+      setIsLoading(false);
+      setErrorMsg('Unable to open photo library');
+    }
+  }, [recognisePhoto]);
   const handleConfirmLog = useCallback(async () => {
     if (!detected) return;
     if (!meal) {
@@ -381,21 +416,6 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
     if (result.success) { reset(); onSuccess(result.message, result.data); }
     else setErrorMsg(result.message || 'Failed to log entry');
   }, [detected, foodName, meal, userId]);
-
-  if (!permission) {
-    return <View />;
-  }
-
-  if (!permission.granted) {
-    return (
-      <View>
-        <Text>No access to camera</Text>
-        <TouchableOpacity onPress={requestPermission}>
-          <Text>Grant Permission</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }  
 
   return (
     <ModalSheet
@@ -427,11 +447,20 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
           <TouchableOpacity
             style={[cm.captureBtn, isLoading && cm.btnDisabled]}
             onPress={handleCapture}
-            disabled={isLoading}
+            disabled={isLoading || !permission?.granted}
           >
             <Text style={cm.captureBtnText}>
               {isLoading ? 'Recognising...' : 'Capture & Recognize Food'}
             </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[cm.libraryBtn, isLoading && cm.btnDisabled]}
+            onPress={handlePickImage}
+            disabled={isLoading}
+            activeOpacity={0.85}
+          >
+            <Text style={cm.libraryBtnText}>Choose From Library</Text>
           </TouchableOpacity>
         </>
       )}
@@ -443,6 +472,14 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
             <View style={cm.pill}><Text style={cm.pillValue}>{detected.protein}</Text><Text style={cm.pillLabel}>Protein</Text></View>
             <View style={cm.pill}><Text style={cm.pillValue}>{detected.carbs}</Text><Text style={cm.pillLabel}>Carbs</Text></View>
             <View style={cm.pill}><Text style={cm.pillValue}>{detected.fat}</Text><Text style={cm.pillLabel}>Fat</Text></View>
+          </View>
+
+          <View style={cm.modelBadge}>
+            <Text style={cm.modelBadgeIcon}>{detected.source === 'local' ? '◎' : '◇'}</Text>
+            <Text style={cm.modelBadgeText}>
+              {detected.source === 'local' ? 'Local AI' : 'Anthropic AI'}
+              {typeof detected.confidence === 'number' ? ` · ${Math.round(detected.confidence * 100)}%` : ''}
+            </Text>
           </View>
 
           <Field
@@ -485,6 +522,8 @@ const cm = StyleSheet.create({
   cameraIcon:     { fontSize: 40, opacity: 0.4 },
   captureBtn:     { backgroundColor: C.purple, borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginBottom: 10 },
   captureBtnText: { fontSize: 15, fontWeight: '700', color: C.white },
+  libraryBtn:     { borderWidth: 1.5, borderColor: C.purple, borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginBottom: 10 },
+  libraryBtnText: { fontSize: 14, fontWeight: '700', color: C.purple },
   demoNote:       { fontSize: 12, color: C.subtle, textAlign: 'center' },
   errorText:      { fontSize: 13, color: C.errorText, textAlign: 'center', marginBottom: 10 },
   btnDisabled:    { opacity: 0.6 },
@@ -492,6 +531,9 @@ const cm = StyleSheet.create({
   pill:           { flex: 1, alignItems: 'center', backgroundColor: C.purpleLight, borderRadius: 10, paddingVertical: 10, marginHorizontal: 3 },
   pillValue:      { fontSize: 16, fontWeight: '800', color: C.purple },
   pillLabel:      { fontSize: 11, color: C.purple, marginTop: 2 },
+  modelBadge:     { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', backgroundColor: C.bg, borderWidth: 1, borderColor: C.border, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10, marginBottom: 10 },
+  modelBadgeIcon: { fontSize: 12, color: C.purple, marginRight: 6 },
+  modelBadgeText: { fontSize: 12, fontWeight: '700', color: C.mid },
   detectedLabel:  { fontSize: 12, color: C.subtle, marginBottom: 10 },
   confirmRow:     { flexDirection: 'row', gap: 10, marginTop: 4 },
   tryAgainBtn:    { flex: 1, borderWidth: 1.5, borderColor: C.border, borderRadius: 10, paddingVertical: 13, alignItems: 'center' },
