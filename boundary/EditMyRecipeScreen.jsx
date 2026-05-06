@@ -10,7 +10,7 @@ import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar,
-  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import UpdateCustomRecipeController from '../controller/UpdateCustomRecipeController';
@@ -206,6 +206,8 @@ const EditMyRecipeScreen = ({ navigation, route }) => {
       <NavBar onBack={() => navigation.goBack()} />
       <Banner message={banner} />
 
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.list} keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag">
 
@@ -360,6 +362,8 @@ const EditMyRecipeScreen = ({ navigation, route }) => {
         </TouchableOpacity>
 
       </ScrollView>
+      </View>
+      </TouchableWithoutFeedback>
           </KeyboardAvoidingView>
     </SafeAreaView>
   );

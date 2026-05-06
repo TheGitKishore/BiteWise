@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Modal, Dimensions,
-  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -465,9 +465,10 @@ const WeightModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
       <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.45)',justifyContent:'center',paddingHorizontal:16}}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{backgroundColor:C.white,borderRadius:16,padding:22,paddingTop:40}}>
           <TouchableOpacity onPress={handleClose} style={{position:'absolute',top:12,right:16}}>
-            <Text style={{fontSize:16,color:C.subtle}}>âœ•</Text>
+            <Text style={{fontSize:16,color:C.subtle}}>✕</Text>
           </TouchableOpacity>
           <Text style={{fontSize:16,fontWeight:'700',color:C.dark,textAlign:'center',marginBottom:18}}>Update Weight</Text>
           <Text style={{fontSize:13,fontWeight:'600',color:C.dark,marginBottom:4}}>Weight (kg) *</Text>
@@ -482,6 +483,7 @@ const WeightModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
             <Text style={{fontSize:15,fontWeight:'700',color:C.white}}>{isLoading?'Saving...':'Update Weight'}</Text>
           </TouchableOpacity>
         </View>
+        </TouchableWithoutFeedback>
       </View>
     </Modal>
   );
@@ -495,6 +497,7 @@ const HeightModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
       <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.45)',justifyContent:'center',paddingHorizontal:16}}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{backgroundColor:C.white,borderRadius:16,padding:22,paddingTop:40}}>
           <TouchableOpacity onPress={handleClose} style={{position:'absolute',top:12,right:16}}>
             <Text style={{fontSize:16,color:C.subtle}}>✕</Text>
@@ -517,6 +520,7 @@ const HeightModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
             <Text style={{fontSize:15,fontWeight:'700',color:C.white}}>{isLoading?'Saving...':'Update Height'}</Text>
           </TouchableOpacity>
         </View>
+        </TouchableWithoutFeedback>
       </View>
     </Modal>
   );
@@ -556,6 +560,7 @@ const GoalModal = ({ visible, existingGoal, onClose, onSave, isLoading, errors }
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
       <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.45)',justifyContent:'flex-end'}}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{backgroundColor:C.white,borderTopLeftRadius:20,borderTopRightRadius:20,padding:20,paddingTop:40,maxHeight:'90%'}}>
           <TouchableOpacity onPress={handleClose} style={{position:'absolute',top:12,right:16}}>
             <Text style={{fontSize:16,color:C.subtle}}>✕</Text>
@@ -620,6 +625,7 @@ const GoalModal = ({ visible, existingGoal, onClose, onSave, isLoading, errors }
             </TouchableOpacity>
           </ScrollView>
         </View>
+        </TouchableWithoutFeedback>
       </View>
     </Modal>
   );

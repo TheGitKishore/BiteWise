@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Modal, Alert,
-  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -211,6 +211,7 @@ const fdr = StyleSheet.create({
 const ModalSheet = ({ visible, title, subtitle, onClose, children }) => (
   <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
     <View style={ms.overlay}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={ms.sheet}>
         <TouchableOpacity style={ms.closeBtn} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close">
           <Text style={ms.closeIcon}>✕</Text>
@@ -219,6 +220,7 @@ const ModalSheet = ({ visible, title, subtitle, onClose, children }) => (
         {subtitle ? <Text style={ms.subtitle}>{subtitle}</Text> : null}
         {children}
       </View>
+      </TouchableWithoutFeedback>
     </View>
   </Modal>
 );

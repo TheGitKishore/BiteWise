@@ -13,7 +13,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, Modal, ActivityIndicator,
-  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -301,6 +301,7 @@ const EditTargetsModal = ({ visible, targets, isPremium, user, onClose, onSaved 
 
   // ⚡ Auto-Calculate Based on Profile
   const handleAutoCalc = useCallback(() => {
+    Keyboard.dismiss();
     const computed = autoCtrl.computeTargets(user, activityLevel, goal);
     setCalories(String(computed.calories));
     setProtein(String(computed.protein));
@@ -313,6 +314,7 @@ const EditTargetsModal = ({ visible, targets, isPremium, user, onClose, onSaved 
 
   // Save
   const handleSave = useCallback(async () => {
+    Keyboard.dismiss();
     setFieldErrors({});
     setIsSaving(true);
 
@@ -331,9 +333,21 @@ const EditTargetsModal = ({ visible, targets, isPremium, user, onClose, onSaved 
     }
   }, [isPremium, user, calories, protein, carbs, fat, fiber, activityLevel, goal, onSaved]);
 
+  const handleClose = useCallback(() => {
+    Keyboard.dismiss();
+    onClose();
+  }, [onClose]);
+
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
       <View style={em.overlay}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 12 : 0}
+          pointerEvents="box-none"
+          style={em.keyboardWrap}
+        >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={em.sheet}>
 
           {/* Auto-calc banner */}
@@ -345,13 +359,18 @@ const EditTargetsModal = ({ visible, targets, isPremium, user, onClose, onSaved 
               <Text style={em.title}>Update Nutrition Targets</Text>
               <Text style={em.subtitle}>Customize your daily nutritional goals or use auto-calculation</Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={em.closeBtn} activeOpacity={0.7}>
+            <TouchableOpacity onPress={handleClose} style={em.closeBtn} activeOpacity={0.7}>
               <Text style={em.closeTxt}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag">
+          <ScrollView
+            contentContainerStyle={em.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            onScrollBeginDrag={Keyboard.dismiss}
+          >
 
             {/* Activity Level + Goal dropdowns — Premium only */}
             {isPremium && (
@@ -439,13 +458,17 @@ const EditTargetsModal = ({ visible, targets, isPremium, user, onClose, onSaved 
 
           </ScrollView>
         </View>
+        </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );
 };
 const em = StyleSheet.create({
   overlay:       { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  keyboardWrap:  { flex: 1, justifyContent: 'flex-end' },
   sheet:         { backgroundColor: C.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 32, maxHeight: '88%' },
+  scrollContent: { paddingBottom: 20 },
   headerRow:     { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 20 },
   title:         { fontSize: 17, fontWeight: '700', color: C.dark, marginBottom: 4 },
   subtitle:      { fontSize: 13, color: C.subtle, lineHeight: 18 },

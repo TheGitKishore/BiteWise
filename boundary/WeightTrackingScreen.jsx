@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, Alert, Modal,
-  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import LogWeightController        from '../controller/LogWeightController';
@@ -52,6 +52,7 @@ const UpdateModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
       <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.45)',justifyContent:'center',paddingHorizontal:16}}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{backgroundColor:C.white,borderRadius:16,padding:22,paddingTop:36}}>
           <TouchableOpacity onPress={handleClose} style={{position:'absolute',top:12,right:16}}><Text style={{fontSize:16,color:C.subtle}}>✕</Text></TouchableOpacity>
           <Text style={{fontSize:16,fontWeight:'700',color:C.dark,textAlign:'center',marginBottom:18}}>Update Weight</Text>
@@ -74,6 +75,7 @@ const UpdateModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
             <Text style={{fontSize:15,fontWeight:'700',color:C.white}}>{isLoading ? 'Saving...' : '+ Update Weight'}</Text>
           </TouchableOpacity>
         </View>
+        </TouchableWithoutFeedback>
       </View>
     </Modal>
   );

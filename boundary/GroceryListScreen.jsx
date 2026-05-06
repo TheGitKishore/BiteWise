@@ -3,7 +3,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, StatusBar, Modal,
-  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback} from 'react-native';
 import { SafeAreaView }   from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -37,6 +37,7 @@ const AddItemModal = ({ visible, onClose, onAdd }) => {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', paddingHorizontal: 16 }}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{ backgroundColor: C.white, borderRadius: 16, padding: 22, paddingTop: 40 }}>
           <TouchableOpacity style={{ position: 'absolute', top: 12, right: 16 }} onPress={handleClose}><Text style={{ color: C.subtle, fontSize: 16 }}>✕</Text></TouchableOpacity>
           <Text style={{ fontSize: 16, fontWeight: '700', color: C.dark, textAlign: 'center', marginBottom: 16 }}>Add Item</Text>
@@ -57,6 +58,7 @@ const AddItemModal = ({ visible, onClose, onAdd }) => {
             <Text style={{ fontSize: 15, fontWeight: '700', color: C.white }}>Add to List</Text>
           </TouchableOpacity>
         </View>
+        </TouchableWithoutFeedback>
       </View>
     </Modal>
   );

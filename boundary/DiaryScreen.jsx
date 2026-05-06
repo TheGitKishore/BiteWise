@@ -10,7 +10,7 @@ import {
   Modal,
   Alert,
   Image,
-  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
@@ -179,6 +179,7 @@ const EntryModal = ({ visible, userId, onClose, onSaved }) => {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
       <View style={m.overlay}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={m.sheet}>
           <TouchableOpacity style={m.closeBtn} onPress={handleClose}>
             <Text style={m.closeX}>X</Text>
@@ -244,6 +245,7 @@ const EntryModal = ({ visible, userId, onClose, onSaved }) => {
             <Text style={m.saveBtnTxt}>{saving ? 'Saving...' : 'Save Entry'}</Text>
           </TouchableOpacity>
         </View>
+        </TouchableWithoutFeedback>
       </View>
     </Modal>
   );
@@ -423,6 +425,7 @@ const DiaryScreen = ({ navigation, route }) => {
 
       <Modal visible={Boolean(editingEntry)} transparent animationType="slide" onRequestClose={() => setEditingEntry(null)}>
         <View style={m.overlay}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View style={m.sheet}>
             <TouchableOpacity style={m.closeBtn} onPress={() => setEditingEntry(null)}>
               <Text style={m.closeX}>X</Text>
@@ -472,6 +475,7 @@ const DiaryScreen = ({ navigation, route }) => {
               <Text style={m.saveBtnTxt}>{editSaving ? 'Saving...' : 'Save Changes'}</Text>
             </TouchableOpacity>
           </View>
+          </TouchableWithoutFeedback>
         </View>
       </Modal>
 
