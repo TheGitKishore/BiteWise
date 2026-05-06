@@ -2,6 +2,16 @@ import { spawnSync } from 'child_process';
 import fs from 'fs';
 import { execSync } from 'child_process';
 
+console.log("python version:");
+try {
+  console.log(execSync('python --version').toString());
+} catch {}
+
+console.log("python3 version:");
+try {
+  console.log(execSync('python3 --version').toString());
+} catch {}
+
 const readEnvPython = () => {
   try {
     const line = fs.readFileSync('.env', 'utf8')
@@ -14,7 +24,7 @@ const readEnvPython = () => {
 };
 
 const configuredPython = process.env.PYTHON_BIN || readEnvPython();
-const fallbackCandidates = process.platform === 'win32' ? ['python', 'python3'] : ['python3', 'python'];
+const fallbackCandidates = ['python3'];
 const candidates = configuredPython ? [configuredPython, ...fallbackCandidates] : fallbackCandidates;
 
 console.log("=== PYTHON DEBUG START ===");
