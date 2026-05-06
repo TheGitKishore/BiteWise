@@ -1,4 +1,3 @@
-import io
 import json
 import math
 import os
@@ -101,9 +100,14 @@ def main():
     labels_path = os.environ["AI_LABELS_PATH"]
     nutrition_path = os.environ["AI_NUTRITION_PATH"]
 
-    image_bytes = sys.stdin.buffer.read()
-    if not image_bytes:
-        respond({"success": False, "message": "No image bytes received.", "data": None}, 1)
+    image_path = sys.argv[1]
+
+    if not os.path.exists(image_path):
+        respond({
+            "success": False,
+            "message": f"Image file not found: {image_path}",
+            "data": None
+        }, 1)
 
     labels = read_labels(labels_path)
     nutrition = read_nutrition(nutrition_path)

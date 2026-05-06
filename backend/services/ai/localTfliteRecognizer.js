@@ -1,6 +1,9 @@
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import fs from 'fs';
+import os from 'os';
+
 import {
   AI_LABELS_PATH,
   AI_MODEL_INPUT_SIZE,
@@ -10,6 +13,7 @@ import {
 } from './config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 const PYTHON_BIN = process.env.PYTHON_BIN || 'python';
 const PYTHON_TIMEOUT_MS = Number(process.env.AI_PYTHON_TIMEOUT_MS ?? 30000);
 
@@ -30,8 +34,18 @@ export const runLocalTfliteRecognition = async ({ imageBuffer }) => {
 
   return await new Promise((resolve) => {
     let child;
+
     try {
-      child = spawn(PYTHON_BIN, [scriptPath], {
+      // 1. Create temp image file
+      const tempFilePath = path.join(
+        os.tmpdir(),
+        `food_${Date.now()}.jpg`
+      );
+
+      fs.writeFileSync(tempFilePath, imageBuffer);
+
+      // 2. Spawn Python with file path argument
+      child = spawn(PYTHON_BIN, [scriptPath, tempFilePath], {
         env: {
           ...process.env,
           AI_MODEL_PATH,
@@ -42,6 +56,7 @@ export const runLocalTfliteRecognition = async ({ imageBuffer }) => {
         },
         stdio: ['pipe', 'pipe', 'pipe'],
       });
+
     } catch (err) {
       resolve({
         success: false,
@@ -53,6 +68,7 @@ export const runLocalTfliteRecognition = async ({ imageBuffer }) => {
 
     let stdout = '';
     let stderr = '';
+
     const timeout = setTimeout(() => {
       child.kill();
       resolve({
@@ -81,19 +97,21 @@ export const runLocalTfliteRecognition = async ({ imageBuffer }) => {
 
     child.on('close', (code) => {
       clearTimeout(timeout);
+
       const parsed = parseJson(stdout.trim());
 
       if (code !== 0 && !parsed.success) {
         resolve({
           ...parsed,
-          message: parsed.message || stderr.trim() || `Local recognizer exited with code ${code}.`,
+          message:
+            parsed.message ||
+            stderr.trim() ||
+            `Local recognizer exited with code ${code}.`,
         });
         return;
       }
 
       resolve(parsed);
     });
-
-    child.stdin.end(imageBuffer);
   });
 };
