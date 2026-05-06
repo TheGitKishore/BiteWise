@@ -30,7 +30,7 @@ const readEnvPython = () => {
 };
 
 const configuredPython = process.env.PYTHON_BIN || readEnvPython();
-const fallbackCandidates = ['python3.11', 'python3'];
+const fallbackCandidates = ['python3.11'];
 const candidates = configuredPython ? [configuredPython, ...fallbackCandidates] : fallbackCandidates;
 
 console.log("=== PYTHON DEBUG START ===");
