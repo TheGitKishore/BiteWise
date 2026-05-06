@@ -2,15 +2,21 @@ import { spawnSync } from 'child_process';
 import fs from 'fs';
 import { execSync } from 'child_process';
 
-console.log("python version:");
-try {
-  console.log(execSync('python --version').toString());
-} catch {}
+console.log("=== CHECK python3.11 ===");
 
-console.log("python3 version:");
 try {
-  console.log(execSync('python3 --version').toString());
-} catch {}
+  console.log("which python3.11:");
+  console.log(execSync('which python3.11').toString());
+} catch (e) {
+  console.log("python3.11 not found");
+}
+
+try {
+  console.log("python3.11 version:");
+  console.log(execSync('python3.11 --version').toString());
+} catch (e) {
+  console.log("cannot run python3.11");
+}
 
 const readEnvPython = () => {
   try {
@@ -24,7 +30,7 @@ const readEnvPython = () => {
 };
 
 const configuredPython = process.env.PYTHON_BIN || readEnvPython();
-const fallbackCandidates = ['python3'];
+const fallbackCandidates = ['python3.11', 'python3'];
 const candidates = configuredPython ? [configuredPython, ...fallbackCandidates] : fallbackCandidates;
 
 console.log("=== PYTHON DEBUG START ===");
