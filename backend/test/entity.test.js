@@ -47,7 +47,7 @@ const mockError = (message = 'Server error', status = 500) =>
 // =====================================================================
 //  1. MembershipPlan
 // =====================================================================
-import MembershipPlan from '../entity/MembershipPlan';
+import MembershipPlan from '../../entity/MembershipPlan';
 
 describe('MembershipPlan — instance methods', () => {
   test('getFormattedPrice() returns "$0" for free plan', () => {
@@ -181,7 +181,7 @@ describe('MembershipPlan — API methods', () => {
 // =====================================================================
 //  2. MembershipPlanFeature
 // =====================================================================
-import MembershipPlanFeature from '../entity/MembershipPlanFeature';
+import MembershipPlanFeature from '../../entity/MembershipPlanFeature';
 
 describe('MembershipPlanFeature — constructor', () => {
   test('constructs with defaults', () => {
@@ -202,7 +202,7 @@ describe('MembershipPlanFeature — constructor', () => {
 // =====================================================================
 //  3. BlogPost
 // =====================================================================
-import BlogPost from '../entity/BlogPost';
+import BlogPost from '../../entity/BlogPost';
 
 describe('BlogPost — instance methods', () => {
   test('isDraft() returns true for DRAFT status', () => {
@@ -314,7 +314,7 @@ describe('BlogPost — API methods', () => {
 // =====================================================================
 //  4. CuratorApplication
 // =====================================================================
-import CuratorApplication from '../entity/CuratorApplication';
+import CuratorApplication from '../../entity/CuratorApplication';
 
 describe('CuratorApplication — validateApplication()', () => {
   test('returns valid when all required fields provided', () => {
@@ -379,7 +379,7 @@ describe('CuratorApplication — approve() / reject()', () => {
 // =====================================================================
 //  5. DiaryEntry
 // =====================================================================
-import DiaryEntry from '../entity/DiaryEntry';
+import DiaryEntry from '../../entity/DiaryEntry';
 
 describe('DiaryEntry — validateEntry()', () => {
   test('valid when title and content provided', () => {
@@ -453,7 +453,7 @@ describe('DiaryEntry — create()', () => {
 // =====================================================================
 //  6. DineOut
 // =====================================================================
-import DineOut from '../entity/DineOut';
+import DineOut from '../../entity/DineOut';
 
 describe('DineOut — constructor', () => {
   test('sets restaurantId from _id when restaurantId not provided', () => {
@@ -538,7 +538,7 @@ describe('DineOut — fetchAll()', () => {
 // =====================================================================
 //  7. ExerciseEntry
 // =====================================================================
-import ExerciseEntry, { EXERCISE_TYPES } from '../entity/ExerciseEntry';
+import ExerciseEntry, { EXERCISE_TYPES } from '../../entity/ExerciseEntry';
 
 describe('ExerciseEntry — validateEntry()', () => {
   test('valid with correct type and duration', () => {
@@ -637,7 +637,7 @@ describe('ExerciseEntry — create()', () => {
 // =====================================================================
 //  8. FoodIntakeEntry
 // =====================================================================
-import FoodIntakeEntry from '../entity/FoodIntakeEntry';
+import FoodIntakeEntry from '../../entity/FoodIntakeEntry';
 
 describe('FoodIntakeEntry — validateManualEntry()', () => {
   const valid = { foodName: 'Chicken Rice', calories: 500, protein: 30, carbs: 60, fat: 10, meal: 'Lunch' };
@@ -726,7 +726,7 @@ describe('FoodIntakeEntry — createManual()', () => {
 // =====================================================================
 //  9. FoodItem
 // =====================================================================
-import FoodItem from '../entity/FoodItem';
+import FoodItem from '../../entity/FoodItem';
 
 describe('FoodItem — getDisplayMeta()', () => {
   test('appends "g" when serving is a plain number string', () => {
@@ -803,8 +803,8 @@ describe('FoodItem — logFoodItem()', () => {
 // =====================================================================
 // Note: User.js is not uploaded yet, so we test the role assignment
 // that FreeUser and PremiumUser add on top of User.
-import FreeUser from '../entity/FreeUser';
-import PremiumUser from '../entity/PremiumUser';
+import FreeUser from '../../entity/FreeUser';
+import PremiumUser from '../../entity/PremiumUser';
 
 describe('FreeUser', () => {
   test('sets role to FREE', () => {
@@ -839,7 +839,7 @@ describe('PremiumUser', () => {
 // =====================================================================
 //  11. GroceryList
 // =====================================================================
-import GroceryList from '../entity/GroceryList';
+import GroceryList from '../../entity/GroceryList';
 
 describe('GroceryList — instance methods', () => {
   test('getCheckedCount() returns count of checked items', () => {
@@ -907,7 +907,7 @@ describe('GroceryList — addItem()', () => {
 // =====================================================================
 //  12. HealthGoal
 // =====================================================================
-import HealthGoal, { GOAL_TYPES, ACTIVITY_LEVELS } from '../entity/HealthGoal';
+import HealthGoal, { GOAL_TYPES, ACTIVITY_LEVELS } from '../../entity/HealthGoal';
 
 describe('HealthGoal — GOAL_TYPES constant', () => {
   test('contains LOSE_WEIGHT, GAIN_MUSCLE, MAINTAIN_WEIGHT, IMPROVE_FITNESS, EAT_HEALTHIER, CUSTOM', () => {
@@ -977,7 +977,7 @@ describe('HealthGoal — create()', () => {
 // =====================================================================
 //  13. HealthReport
 // =====================================================================
-import HealthReport from '../entity/HealthReport';
+import HealthReport from '../../entity/HealthReport';
 
 describe('HealthReport — getGoalProgress()', () => {
   test('returns correct percentage', () => {
@@ -1050,7 +1050,7 @@ describe('HealthReport — generateInsights()', () => {
 // =====================================================================
 //  14. HeightEntry
 // =====================================================================
-import HeightEntry from '../entity/HeightEntry';
+import HeightEntry from '../../entity/HeightEntry';
 
 describe('HeightEntry — validateHeight()', () => {
   test('valid for a normal height', () => {
@@ -1119,7 +1119,7 @@ describe('HeightEntry — create()', () => {
 // =====================================================================
 //  15. MealPlan
 // =====================================================================
-import MealPlan from '../entity/MealPlan';
+import MealPlan from '../../entity/MealPlan';
 
 describe('MealPlan — validatePlan()', () => {
   test('valid when name is provided', () => {
@@ -1218,7 +1218,7 @@ describe('MealPlan — create()', () => {
 // =====================================================================
 //  16. NutritionTargets
 // =====================================================================
-import NutritionTargets from '../entity/NutritionTargets';
+import NutritionTargets from '../../entity/NutritionTargets';
 
 describe('NutritionTargets — validateCalories()', () => {
   test('valid for 2000 kcal', () => {
@@ -1345,7 +1345,7 @@ describe('NutritionTargets — fetchByUser()', () => {
 // =====================================================================
 //  17. Admin
 // =====================================================================
-import Admin from '../entity/Admin';
+import Admin from '../../entity/Admin';
 
 describe('Admin — login()', () => {
   test('returns res.data on success', async () => {
@@ -1396,7 +1396,7 @@ describe('Admin — promoteToCurator()', () => {
 // =====================================================================
 //  18. User
 // =====================================================================
-import User from '../entity/User';
+import User from '../../entity/User';
 
 describe('User — validateUsername()', () => {
   test('valid for a normal username', () => {
@@ -1750,7 +1750,7 @@ describe('User — getUser()', () => {
 // =====================================================================
 //  19. WeightEntry
 // =====================================================================
-import WeightEntry from '../entity/WeightEntry';
+import WeightEntry from '../../entity/WeightEntry';
 
 describe('WeightEntry — validateWeight()', () => {
   test('valid for a normal weight', () => {
@@ -1953,7 +1953,7 @@ describe('WeightEntry — delete()', () => {
 // =====================================================================
 //  20. Review
 // =====================================================================
-import Review from '../entity/Review';
+import Review from '../../entity/Review';
 
 describe('Review — validateReview()', () => {
   const valid = { rating: 4, title: 'Great app!', content: 'Really helped me track my meals.' };
@@ -2100,7 +2100,7 @@ describe('Review — constructor', () => {
 // =====================================================================
 //  21. Recipe
 // =====================================================================
-import Recipe from '../entity/Recipe';
+import Recipe from '../../entity/Recipe';
 
 describe('Recipe — constructor & getSummaryLine()', () => {
   test('getSummaryLine() returns correctly formatted string', () => {
@@ -2366,7 +2366,7 @@ describe('Recipe — search()', () => {
 // =====================================================================
 //  22. RecipeDraft
 // =====================================================================
-import RecipeDraft from '../entity/RecipeDraft';
+import RecipeDraft from '../../entity/RecipeDraft';
 
 describe('RecipeDraft — validateRecipe()', () => {
   const valid = {
@@ -2480,7 +2480,7 @@ describe('RecipeDraft — delete()', () => {
 // =====================================================================
 //  23. UserProfileType
 // =====================================================================
-import UserProfileType, { USER_PROFILE_TYPES } from '../entity/UserProfileType';
+import UserProfileType, { USER_PROFILE_TYPES } from '../../entity/UserProfileType';
 
 describe('UserProfileType — USER_PROFILE_TYPES constant', () => {
   test('contains exactly 3 types', () => {
@@ -2641,7 +2641,7 @@ describe('UserProfileType — getProfileMeta()', () => {
 // =====================================================================
 //  24. SmartEatingContent
 // =====================================================================
-import SmartEatingContent from '../entity/SmartEatingContent';
+import SmartEatingContent from '../../entity/SmartEatingContent';
 
 describe('SmartEatingContent — filterByCategory()', () => {
   const alternatives = [
