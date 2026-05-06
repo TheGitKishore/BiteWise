@@ -100,30 +100,34 @@ router.post('/camera', async (req, res) => {
 // FOOD RECOGNITION
 // ===============================
 router.post('/food-recognition', upload.single('image'), async (req, res) => {
-  const file = req.file;
-
-  if (!file) {
-    return res.status(400).json({
-      success: false,
-      message: 'No image uploaded',
-    });
-  }
-
-  if (!file.mimetype?.startsWith('image/')) {
-    return res.status(400).json({
-      success: false,
-      message: 'Only image uploads are supported',
-    });
-  }
-
   try {
+    const file = req.file;
+
+    console.log("=== FOOD RECOGNITION HIT ===");
+
+    if (!file) {
+      console.log("NO FILE RECEIVED");
+      return res.status(400).json({ success: false, message: 'No image uploaded' });
+    }
+
+    console.log("File received:");
+    console.log("mimetype:", file.mimetype);
+    console.log("size:", file.size);
+
+    console.log("Calling AI service...");
+
     const result = await recognizeFoodFromImage({
       imageBuffer: file.buffer,
       mimeType: file.mimetype,
     });
 
-    return res.status(result.success ? 200 : 503).json(result);
+    console.log("AI RESULT:", result);
+
+    return res.status(200).json(result);
+
   } catch (err) {
+    console.error("❌ FOOD RECOGNITION CRASH:");
+    console.error(err);
     return res.status(500).json({
       success: false,
       message: err.message || 'Food recognition failed',
