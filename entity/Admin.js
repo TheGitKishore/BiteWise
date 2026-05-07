@@ -70,17 +70,6 @@ class Admin {
     }
   }
 
-  // ── ADMINS ───────────────────────────────────────────────────
-
-//  static async createAdmin({ username, password }) {
-//    try {
-//      const res = await axios.post(`${API_URL}/create`, { username, password });
-//      return res.data;
-//    } catch (err) {
-//      return { success: false, message: 'Create admin failed' };
-//    }
-//  }
-
   // ── CURATOR APPLICATIONS ─────────────────────────────────────
 
   static async fetchApplications() {

@@ -1,4 +1,4 @@
-import axios from 'axios'; //everything entity file needs this two lines of code
+import axios from 'axios'; 
 import API_CONFIG from './api_config.js';
 const API_URL = `${API_CONFIG}/membership-plans`;
 
@@ -142,54 +142,5 @@ class MembershipPlan {
     const res = await axios.get(`${API_URL}/active`);
     return res.data.map((row) => MembershipPlan.fromRow(row));
   }
-
-  // @return {Promise<MembershipPlan[]>}
-  /*
-  static async fetchAll() {
-    const raw = [
-      {
-        planId:       1,
-        name:         'Free',
-        price:        0,
-        billingCycle: '',
-        description:  'Perfect for getting started with calorie tracking.',
-        isPopular:    false,
-        isActive:     true,
-        featureIds:   [1, 2, 3],
-        features: [
-          'Calorie tracking (up to 5 meals/day)',
-          'Basic food database search',
-          'Daily calorie goal setting',
-          'Manual food entry',
-          'Basic nutrition summary',
-        ],
-      },
-      {
-        planId:       2,
-        name:         'Premium',
-        price:        19.99,
-        billingCycle: 'monthly',
-        description:  'All features included — the complete BiteWise experience.',
-        isPopular:    true,
-        isActive:     true,
-        featureIds:   [1, 2, 3, 4, 5, 6, 7],
-        features: [
-          'Everything in Free',
-          'Unlimited meal logging',
-          'Macronutrient breakdown',
-          'Personalised meal prep plans',
-          'Grocery list generation',
-          'Barcode scanning',
-          'Custom food & recipe creation',
-          'Monthly nutrition report',
-          'Health diary',
-        ],
-      },
-    ];
-
-    return raw.map((r) => new MembershipPlan(r));
-  }
-  */
-
 }
 export default MembershipPlan;

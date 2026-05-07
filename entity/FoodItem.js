@@ -102,7 +102,7 @@ class FoodItem {
       };
     }
   
-    // Step 2 — API search (ALWAYS run if query exists)
+    // API search
     let apiItems = [];
     let apiFailed = false;
   
@@ -130,10 +130,10 @@ class FoodItem {
       console.log('[FoodItem.searchWithFallback] OpenFoodFacts search unavailable:', err.response?.data?.message || err.message);
     }
   
-    // Step 3 — merge BOTH results
+    // Merge BOTH results
     const merged = [...localResults, ...apiItems];
   
-    // Step 4 — optional dedup (recommended)
+    // Optional dedup
     const seen = new Set();
     const deduped = merged.filter((item) => {
       const key = item.foodItemId || item.name.toLowerCase();
@@ -191,6 +191,6 @@ class FoodItem {
     }
   }
 
-} // ← class closes here, after ALL methods
+} 
 
 export default FoodItem;

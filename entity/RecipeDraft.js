@@ -97,7 +97,6 @@ class RecipeDraft {
     }
   }
 
-  // ✅ NEW (IMPORTANT for your controller)
   static async fetchByUser(userId) {
     try {
       const res = await axios.get(`${API_URL}?userId=${userId}`);

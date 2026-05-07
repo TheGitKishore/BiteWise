@@ -71,7 +71,7 @@ class FoodIntakeEntry {
   // API CALLS
   // =========================
 
-  // ✅ Create manual entry
+  // Create manual entry
   static async createManual(userId, data) {
     const validation = FoodIntakeEntry.validateManualEntry(data);
     if (!validation.valid) {
@@ -95,7 +95,7 @@ class FoodIntakeEntry {
       }
   }
 
-  // ✅ Camera recognition
+  // Camera recognition
   static async recogniseFromCamera(photo) {
     try {
       const formData = new FormData();
@@ -122,7 +122,7 @@ class FoodIntakeEntry {
     }
   }
 
-  // ✅ Create from camera
+  // Create from camera
   static async createFromCamera(userId, data) {
     try {
       const res = await axios.post(`${API_URL}/camera`, {
@@ -139,7 +139,7 @@ class FoodIntakeEntry {
     }
   }
 
-  // ✅ Get today entries
+  // Get today entries
   static async getTodayEntries(userId) {
     try {
       const res = await axios.get(`${API_URL}/today/${userId}`);
@@ -154,7 +154,7 @@ class FoodIntakeEntry {
     }
   }
 
-  // ✅ Get past entries
+  // Get past entries
   static async getPastEntries(userId) {
     try {
       const res = await axios.get(`${API_URL}/history/${userId}`);

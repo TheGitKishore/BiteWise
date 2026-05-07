@@ -1,4 +1,4 @@
-import axios from 'axios'; //everything entity file needs this two lines of code
+import axios from 'axios'; 
 import API_CONFIG from './api_config.js';
 const API_URL = `${API_CONFIG}/user-profile-types`;
 
@@ -129,62 +129,6 @@ class UserProfileType {
   static findByType(profiles, type) {
     return profiles.find((p) => p.type === type) ?? null;
   }
-
-
-  // DATA ACCESS
-  // @return {Promise<UserProfileType[]>}
-  // Replace w API calls
-  /*
-  static async fetchAll() {
-    const raw = [
-      {
-        profileTypeId: 1,
-        type:          USER_PROFILE_TYPES.MEAL_PLANNER,
-        displayName:   'Meal Planner',
-        description:   'Perfect for those who love planning their meals in advance',
-        imageUrl:      null,
-        features: [
-          'Weekly meal planning calendar',
-          'Grocery list generator',
-          'Recipe organisation',
-          'Batch cooking suggestions',
-          'Budget-friendly meal ideas',
-        ],
-      },
-      {
-        profileTypeId: 2,
-        type:          USER_PROFILE_TYPES.ATHLETE,
-        displayName:   'Athletes',
-        description:   'Optimised for peak athletic performance and recovery',
-        imageUrl:      null,
-        features: [
-          'Protein and macro tracking',
-          'Pre/post-workout meal timing',
-          'Performance nutrition insights',
-          'Hydration tracking',
-          'Recovery meal suggestions',
-        ],
-      },
-      {
-        profileTypeId: 3,
-        type:          USER_PROFILE_TYPES.HEALTH_ORIENTED,
-        displayName:   'Health-Oriented',
-        description:   'Focus on overall wellness and healthy lifestyle choices',
-        imageUrl:      null,
-        features: [
-          'Balanced nutrition guidance',
-          'Heart-healthy recipes',
-          'Weight management tools',
-          'Vitamin and mineral tracking',
-          'Dietary restriction support',
-        ],
-      },
-    ];
-
-    return raw.map((r) => new UserProfileType(r));
-  }
-}
-*/
 
   // ─── SPRINT 7 ADDITIONS ────────────────────────────────────────────────────
 

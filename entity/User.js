@@ -1,21 +1,6 @@
-import axios from 'axios'; //everything entity file needs this two lines of code
+import axios from 'axios'; 
 import API_CONFIG from './api_config.js';
 const API_URL = `${API_CONFIG}/users`;
-
-// ─── SPRINT 5 — seeded store for admin-only operations ──────────────────────
-// fetchAllUsers / deactivateUser / reactivateUser / promoteToMinuteCurator
-// use this local list so UC #103 and #106 work without a backend.
-// All other User methods (login, createAccount, etc.) are unchanged.
-/*const SPRINT5_USERS = [
-  { userId: 1, username: 'xuanxuan',  email: 'xuanxuan@email.com',       firstName: 'Xuan',   lastName: 'Tan', role: 'FREE',    isActive: true,  membershipPlanId: 1, profileType: 'HEALTH_ORIENTED', createdAt: '2025-01-10T08:00:00Z' },
-  { userId: 2, username: 'premuser',  email: 'premuser@email.com',        firstName: 'Alex',   lastName: 'Lim', role: 'PREMIUM', isActive: true,  membershipPlanId: 2, profileType: 'ATHLETE',         createdAt: '2024-11-05T09:30:00Z' },
-  { userId: 3, username: 'adminuser', email: 'admin@bitewise.com',        firstName: 'Admin',  lastName: 'User',role: 'ADMIN',   isActive: true,  membershipPlanId: null, profileType: null,           createdAt: '2024-01-01T00:00:00Z' },
-  { userId: 4, username: 'curator01', email: 'curator01@bitewise.com',    firstName: 'Jordan', lastName: 'Ng',  role: 'CURATOR', isActive: true,  membershipPlanId: 2, profileType: 'HEALTH_ORIENTED', createdAt: '2025-06-01T00:00:00Z' },
-];
-let _sprint5Users = SPRINT5_USERS.map(u => ({ ...u })); */
-// ─────────────────────────────────────────────────────────────────────────────
-
-
 
 class User {
   constructor({
@@ -172,19 +157,16 @@ class User {
 
       console.log('Response received:', res.data);
 
-      // ✅ backend may return same structure → just pass through
       return res.data;
     
     } catch (err) {
       
       console.log('ERROR:', err?.response?.data || err.message);
 
-      // ✅ preserve backend message if exists
       if (err.response?.data) {
         return err.response.data;
       }
     
-      // ✅ fallback (same style as your original)
       return {
         success: false,
         field: null,
@@ -468,57 +450,6 @@ class User {
 
     return { success: true, data: targets, message: '' };
   }
-
-
-  // ─── SPRINT 5 ADDITIONS ────────────────────────────────────────────────────
-
-  // UC #103 — admin: fetch all users
-  // @return {Promise<{ success, data, message }>}
-  /*static async fetchAllUsers() {
-    return { success: true, data: _sprint5Users.map(u => ({ ...u })), message: '' };
-  }
-
-  // UC #103 — admin: deactivate a user account
-  // @param  {number} targetUserId
-  // @return {Promise<{ success, message, data }>}
-  static async deactivateUser(targetUserId) {
-    const idx = _sprint5Users.findIndex(u => u.userId === targetUserId);
-    if (idx === -1) return { success: false, message: 'User not found.' };
-    _sprint5Users[idx].isActive = false;
-    return { success: true, message: 'User deactivated.', data: { ..._sprint5Users[idx] } };
-  }
-
-  // UC #103 — admin: reactivate a user account
-  // @param  {number} targetUserId
-  // @return {Promise<{ success, message, data }>}
-  static async reactivateUser(targetUserId) {
-    const idx = _sprint5Users.findIndex(u => u.userId === targetUserId);
-    if (idx === -1) return { success: false, message: 'User not found.' };
-    _sprint5Users[idx].isActive = true;
-    return { success: true, message: 'User reactivated.', data: { ..._sprint5Users[idx] } };
-  }
-
-  // UC #106 — admin: promote approved applicant to CURATOR role
-  // @param  {number} targetUserId
-  // @param  {string} curatorApplicationId
-  // @return {Promise<{ success, message, data }>}
-  static async promoteToMinuteCurator(targetUserId, curatorApplicationId) {
-    try {
-      const res = await axios.put(`${API_URL}/promote-to-curator`, {
-      userId: targetUserId,
-      applicationId: curatorApplicationId
-      });
-    
-      return res.data;
-    
-    } catch (err) {
-      return {
-        success: false,
-        message: err.response?.data?.message || 'Promotion failed'
-      };
-    }
-  } */
-
 
   // ─── SPRINT 7 ADDITIONS ────────────────────────────────────────────────────
 

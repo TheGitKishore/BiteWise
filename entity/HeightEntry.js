@@ -1,4 +1,4 @@
-import axios from 'axios'; //everything entity file needs this two lines of code
+import axios from 'axios';
 import API_CONFIG from './api_config.js';
 const API_URL = `${API_CONFIG}/height-entries`;
 
