@@ -374,7 +374,7 @@ const CuratorBlogsScreen = ({ navigation, route }) => {
           <View style={s.header}>
             <View style={s.badge}><Text style={s.badgeTxt}>Premium</Text></View>
             <Text style={s.pageTitle}>Blogs</Text>
-            <Text style={s.pageSub}>Expert insights, tpis, and stories from our community of nutrition curators</Text>
+            <Text style={s.pageSub}>Expert insights, tips, and stories from our community of nutrition curators</Text>
           </View>
 
           <View style={s.searchWrap}>
@@ -392,11 +392,11 @@ const CuratorBlogsScreen = ({ navigation, route }) => {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
+            style={s.tagScroller}
             contentContainerStyle={s.tagRow}
-          
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-        >
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+          >
             {tags.map((tag) => (
               <TouchableOpacity
                 key={tag}
@@ -404,7 +404,10 @@ const CuratorBlogsScreen = ({ navigation, route }) => {
                 onPress={() => setActiveTag(tag)}
                 activeOpacity={0.85}
               >
-                <Text style={[s.tagFilterTxt, activeTag === tag && s.tagFilterTxtActive]}>
+                <Text
+                  style={[s.tagFilterTxt, activeTag === tag && s.tagFilterTxtActive]}
+                  numberOfLines={1}
+                >
                   {tag === 'All' ? 'All' : `#${tag}`}
                 </Text>
               </TouchableOpacity>
@@ -467,7 +470,7 @@ const s = StyleSheet.create({
     marginBottom: 8,
   },
   badgeTxt: { fontSize: 11, fontWeight: '700', color: C.white },
-  pageTitle: { fontSize: 26, fontWeight: '800', color: C.dark, letterSpacing: -0.5, marginBottom: 6 },
+  pageTitle: { fontSize: 26, fontWeight: '800', color: C.dark, marginBottom: 6 },
   pageSub: { fontSize: 14, color: C.subtle, lineHeight: 20 },
   searchWrap: {
     flexDirection: 'row',
@@ -482,23 +485,31 @@ const s = StyleSheet.create({
   },
   searchIcon: { fontSize: 12, color: C.subtle, fontWeight: '700' },
   searchInput: { flex: 1, fontSize: 14, color: C.dark, paddingVertical: 11 },
+  tagScroller: {
+    height: 44,
+    flexGrow: 0,
+    marginBottom: 12,
+  },
   tagRow: {
+    alignItems: 'center',
     gap: 8,
-    paddingBottom: 12,
+    minHeight: 44,
   },
   tagFilterBtn: {
     borderWidth: 1,
     borderColor: C.border,
     borderRadius: 999,
-    paddingVertical: 7,
+    height: 31,
     paddingHorizontal: 12,
     backgroundColor: C.white,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   tagFilterBtnActive: {
     borderColor: C.purple,
     backgroundColor: C.purpleLight,
   },
-  tagFilterTxt: { fontSize: 11, color: C.mid, textAlign: 'center' },
+  tagFilterTxt: { fontSize: 11, color: C.mid, textAlign: 'center', includeFontPadding: false },
   tagFilterTxtActive: { color: C.purple, fontWeight: '700' },
   postPanel: { flex: 1 },
   empty: { textAlign: 'center', color: C.subtle, paddingTop: 40 },
