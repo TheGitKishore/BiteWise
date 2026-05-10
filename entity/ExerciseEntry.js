@@ -53,13 +53,6 @@ class ExerciseEntry {
     return { valid: true };
   }
 
-  // CALORIES CALC
-  static calculateCaloriesBurned(exerciseType, durationMins) {
-    const match = EXERCISE_TYPES.find(e => e.value === exerciseType);
-    const rate = match ? match.calPerMin : 5;
-    return Math.round(rate * Number(durationMins));
-  }
-
   // CREATE ENTRY (CALL BACKEND → MYSQL)
   static async create(userId, { exerciseType, durationMins, notes }) {
     const check = ExerciseEntry.validateEntry({ exerciseType, durationMins });
@@ -103,7 +96,7 @@ class ExerciseEntry {
   // @param  {string|number} entryId
   // @param  {{ exerciseType, durationMins, caloriesBurned, notes }} fields
   // @return {Promise<{ success, message, data }>}
-  static async update(entryId, { exerciseType, durationMins, caloriesBurned, notes }) {
+  static async update(entryId, { exerciseType, durationMins, notes }) {
     if (!exerciseType?.trim()) return { success: false, message: 'Exercise type is required.', data: null };
     if (!durationMins || Number(durationMins) <= 0) return { success: false, message: 'Duration must be greater than 0.', data: null };
 
@@ -111,7 +104,6 @@ class ExerciseEntry {
       const res = await axios.put(`${API_URL}/${entryId}`, {
         exerciseType: exerciseType.trim(),
         durationMins: Number(durationMins),
-        caloriesBurned: caloriesBurned === '' || caloriesBurned == null ? null : Number(caloriesBurned),
         notes: notes || '',
       });
       return res.data;

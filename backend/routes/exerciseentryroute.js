@@ -105,7 +105,7 @@ router.get('/today/:userId', async (req, res) => {
 router.put('/:entryId', async (req, res) => {
   try {
     const entryId = Number(req.params.entryId);
-    const { exerciseType, durationMins, caloriesBurned, notes } = req.body;
+    const { exerciseType, durationMins, notes } = req.body;
 
     if (!entryId) {
       return res.status(400).json({ success: false, message: 'Invalid exercise log.', data: null });
@@ -121,9 +121,8 @@ router.put('/:entryId', async (req, res) => {
 
     const cleanExerciseType = exerciseType.trim();
     const cleanDuration = Number(durationMins);
-    const cleanCalories = caloriesBurned || caloriesBurned === 0
-      ? Number(caloriesBurned)
-      : Math.round((rateMap[cleanExerciseType] || 5) * cleanDuration);
+    const cleanCalories =
+    Math.round((rateMap[cleanExerciseType] || 5) * cleanDuration);
 
     const [result] = await db.execute(
       `UPDATE exerciseentry
