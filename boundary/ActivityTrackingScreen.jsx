@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, Modal, Alert, TouchableWithoutFeedback,
@@ -9,7 +9,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import LogExerciseController from '../controller/LogExerciseController';
 import EditExerciseLogController from '../controller/EditExerciseLogController';
 import DeleteExerciseLogController from '../controller/DeleteExerciseLogController';
-import { EXERCISE_TYPES }    from '../entity/ExerciseEntry';
+import ExerciseEntry from '../entity/ExerciseEntry';
 
 const controller = new LogExerciseController();
 
@@ -196,11 +196,13 @@ const fl = StyleSheet.create({
 });
 
 // Exercise type picker chips
-const ExerciseTypePicker = ({ value, onSelect }) => (
+const ExerciseTypePicker = ({ value, onSelect, exerciseTypes = [] }) => (
   <View style={ep.wrap}>
     <Text style={ep.label}>Exercise Type *</Text>
     <View style={ep.grid}>
-      {EXERCISE_TYPES.map((t) => (
+      {exerciseTypes.length === 0 ? (
+        <Text style={ep.empty}>No exercise types found.</Text>
+      ) : exerciseTypes.map((t) => (
         <TouchableOpacity key={t.value} style={[ep.chip, value === t.value && ep.chipActive]} onPress={() => onSelect(t.value)} activeOpacity={0.8}>
           <Text style={[ep.chipText, value === t.value && ep.chipTextActive]}>{t.label}</Text>
         </TouchableOpacity>
@@ -216,21 +218,29 @@ const ep = StyleSheet.create({
   chipActive:    { backgroundColor: C.purple, borderColor: C.purple },
   chipText:      { fontSize: 12, color: C.mid },
   chipTextActive:{ color: C.white, fontWeight: '600' },
+  empty:         { fontSize: 12, color: C.subtle },
 });
 
 
 // ─── UC #58 — LOG EXERCISE MODAL ─────────────────────────────────────────────
 
-const LogExerciseModal = ({ visible, userId, onClose, onSuccess }) => {
-  const [exerciseType,   setExerciseType]   = useState('Running');
+const LogExerciseModal = ({ visible, userId, onClose, onSuccess, exerciseTypes }) => {
+  const defaultExerciseType = exerciseTypes?.[0]?.value || '';
+  const [exerciseType,   setExerciseType]   = useState(defaultExerciseType);
   const [durationMins,   setDurationMins]   = useState('');
   const [caloriesBurned, setCaloriesBurned] = useState('');
   const [notes,          setNotes]          = useState('');
   const [fieldErrors,    setFieldErrors]    = useState({});
   const [isLoading,      setIsLoading]      = useState(false);
 
+  useEffect(() => {
+    if (!exerciseTypes?.some((t) => t.value === exerciseType)) {
+      setExerciseType(defaultExerciseType);
+    }
+  }, [defaultExerciseType, exerciseType, exerciseTypes]);
+
   const reset = () => {
-    setExerciseType('Running');
+    setExerciseType(defaultExerciseType);
     setDurationMins('');
     setCaloriesBurned('');
     setNotes('');
@@ -268,7 +278,7 @@ const LogExerciseModal = ({ visible, userId, onClose, onSuccess }) => {
       subtitle="Record your workout or physical activity"
       onClose={handleClose}
     >
-      <ExerciseTypePicker value={exerciseType} onSelect={setExerciseType} />
+      <ExerciseTypePicker value={exerciseType} onSelect={setExerciseType} exerciseTypes={exerciseTypes} />
       <Field
         label="Duration (minutes) *"
         value={durationMins}
@@ -294,7 +304,7 @@ const LogExerciseModal = ({ visible, userId, onClose, onSuccess }) => {
         style={[le.btn, isLoading && le.btnDisabled]}
         onPress={handleSubmit}
         activeOpacity={0.85}
-        disabled={isLoading}
+        disabled={isLoading || exerciseTypes.length === 0}
       >
         <Text style={le.btnText}>{isLoading ? 'Logging...' : 'Log Exercise'}</Text>
       </TouchableOpacity>
@@ -401,6 +411,7 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
 
   const [activeTab,       setActiveTab]       = useState('Overview');
   const [exerciseEntries, setExerciseEntries] = useState([]);
+  const [exerciseTypes,   setExerciseTypes]   = useState([]);
   const [editingExercise, setEditingExercise] = useState(null);
   const [editExType, setEditExType] = useState('');
   const [editExDuration, setEditExDuration] = useState('');
@@ -479,7 +490,17 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
         }
       };
 
+      const fetchExerciseTypes = async () => {
+        try {
+          const types = await ExerciseEntry.getExerciseTypes();
+          setExerciseTypes(types);
+        } catch (err) {
+          console.error('Failed to fetch exercise types', err);
+        }
+      };
+
       fetchEntries();
+      fetchExerciseTypes();
     }, [user?.userId])  // FIX 3
   );
 
@@ -500,6 +521,7 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
         userId={user?.userId}
         onClose={() => setShowLogModal(false)}
         onSuccess={handleExerciseLogged}
+        exerciseTypes={exerciseTypes}
       />
 
       <ModalSheet
@@ -508,7 +530,7 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
         subtitle="Update your workout details"
         onClose={() => setEditingExercise(null)}
       >
-        <ExerciseTypePicker value={editExType} onSelect={setEditExType} />
+        <ExerciseTypePicker value={editExType} onSelect={setEditExType} exerciseTypes={exerciseTypes} />
         <Field
           label="Duration (minutes) *"
           value={editExDuration}
