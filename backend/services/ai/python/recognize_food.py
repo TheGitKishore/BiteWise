@@ -119,7 +119,7 @@ def main():
     input_details = interpreter.get_input_details()[0]
     output_details = interpreter.get_output_details()[0]
 
-    image = Image.open(io.BytesIO(image_bytes))
+    image = Image.open(image_path)
     input_tensor = normalize_image(image, input_details)
     interpreter.set_tensor(input_details["index"], input_tensor)
     interpreter.invoke()
