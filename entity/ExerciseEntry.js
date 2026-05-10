@@ -1,19 +1,6 @@
-// Exercise types with their estimated cal/min burn rate
 import axios from 'axios'; //everything entity file needs this two lines of code
 import API_CONFIG from './api_config.js';
 const API_URL = `${API_CONFIG}/exercise-entries`;
-
-// Exercise types with their estimated cal/min burn rate
-export const EXERCISE_TYPES = [
-  { label: 'Running (~10 cal/min)',     value: 'Running',     calPerMin: 10 },
-  { label: 'Cycling (~8 cal/min)',      value: 'Cycling',     calPerMin: 8  },
-  { label: 'Swimming (~7 cal/min)',     value: 'Swimming',    calPerMin: 7  },
-  { label: 'Weight Training (~5 cal/min)', value: 'Weight Training', calPerMin: 5 },
-  { label: 'Walking (~4 cal/min)',      value: 'Walking',     calPerMin: 4  },
-  { label: 'HIIT (~12 cal/min)',        value: 'HIIT',        calPerMin: 12 },
-  { label: 'Yoga (~3 cal/min)',         value: 'Yoga',        calPerMin: 3  },
-  { label: 'Other',                     value: 'Other',       calPerMin: 5  },
-];
 
 class ExerciseEntry {
   constructor({
@@ -51,6 +38,27 @@ class ExerciseEntry {
     }
 
     return { valid: true };
+  }
+
+  static calculateCaloriesBurned(exerciseType, durationMins, exerciseTypes = []) {
+    const selectedType = exerciseTypes.find((t) => t.value === exerciseType);
+    const rate = Number(selectedType?.calPerMin ?? 0);
+    return Math.round(rate * Number(durationMins || 0));
+  }
+
+  static async getExerciseTypes() {
+    try {
+      const res = await axios.get(`${API_URL}/types`);
+      const data = Array.isArray(res.data?.data) ? res.data.data : res.data;
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.error(
+        'Failed to fetch exercise types',
+        err.response?.status,
+        err.response?.data || err.message
+      );
+      return [];
+    }
   }
 
   // CREATE ENTRY (CALL BACKEND → MYSQL)
