@@ -1,16 +1,45 @@
 import express from 'express';
 import db from '../db_sql/db.js'; // mysql2 pool
+import { getDB } from '../db_mongodb/db.js';
 
 const router = express.Router();
 
-const rateMap = {
-  Running: 10,
-  Cycling: 8,
-  Swimming: 7,
-  'Weight Training': 5,
-  Walking: 4,
-  HIIT: 12,
-  Yoga: 3,
+const EXERCISE_TYPES_COLLECTION = 'exercise_types';
+
+const formatExerciseType = (doc) => ({
+  _id: doc._id,
+  value: doc.value || doc.exerciseType || doc.name || doc.type,
+  label: doc.label || doc.exerciseType || doc.name || doc.type || `${doc.value} (~${doc.calPerMin} cal/min)`,
+  calPerMin: Number(doc.calPerMin ?? doc.caloriesPerMinute ?? doc.calories_per_min ?? 0),
+  order: Number(doc.order ?? 999),
+  isActive: doc.isActive !== false,
+});
+
+const getExerciseTypeCollection = async () => {
+  const mongo = getDB();
+  return mongo.collection(EXERCISE_TYPES_COLLECTION);
+};
+
+const getExerciseTypes = async ({ includeInactive = false } = {}) => {
+  const collection = await getExerciseTypeCollection();
+  const docs = await collection.find({}).sort({ order: 1, value: 1 }).toArray();
+  return docs
+    .map(formatExerciseType)
+    .filter((type) => type.value && (includeInactive || type.isActive));
+};
+
+const getCalPerMin = async (exerciseType) => {
+  const collection = await getExerciseTypeCollection();
+  const doc = await collection.findOne({
+    $or: [
+      { value: exerciseType },
+      { exerciseType },
+      { name: exerciseType },
+      { type: exerciseType },
+    ],
+    isActive: { $ne: false },
+  });
+  return doc ? Number(doc.calPerMin ?? doc.caloriesPerMinute ?? doc.calories_per_min) : null;
 };
 
 const formatExerciseEntry = (row) => ({
@@ -21,6 +50,28 @@ const formatExerciseEntry = (row) => ({
   caloriesBurned: row.calories_burned,
   notes: row.notes,
   loggedAt: row.logged_at,
+});
+
+// ===============================
+// GET EXERCISE TYPES FROM MONGO
+// ===============================
+router.get('/types', async (_req, res) => {
+  try {
+    const types = await getExerciseTypes();
+
+    return res.json({
+      success: true,
+      data: types,
+      message: 'Exercise types fetched successfully',
+    });
+  } catch (err) {
+    console.error('[GET /exercise-entries/types]', err);
+    return res.status(500).json({
+      success: false,
+      data: [],
+      message: 'Database error',
+    });
+  }
 });
 
 // ===============================
@@ -37,7 +88,14 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const rate = rateMap[exerciseType] || 5;
+    const rate = await getCalPerMin(exerciseType);
+    if (rate === null || Number.isNaN(rate)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Exercise type not found in MongoDB.',
+      });
+    }
+
     const caloriesBurned = Math.round(rate * durationMins);
 
     const [result] = await db.execute(
@@ -121,8 +179,13 @@ router.put('/:entryId', async (req, res) => {
 
     const cleanExerciseType = exerciseType.trim();
     const cleanDuration = Number(durationMins);
-    const cleanCalories =
-    Math.round((rateMap[cleanExerciseType] || 5) * cleanDuration);
+    const rate = await getCalPerMin(cleanExerciseType);
+
+    if (rate === null || Number.isNaN(rate)) {
+      return res.status(400).json({ success: false, message: 'Exercise type not found in MongoDB.', data: null });
+    }
+
+    const cleanCalories = Math.round(rate * cleanDuration);
 
     const [result] = await db.execute(
       `UPDATE exerciseentry
