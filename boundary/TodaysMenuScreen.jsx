@@ -7,8 +7,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, StatusBar,
-} from 'react-native';
+  StyleSheet, StatusBar,, Image} from 'react-native';
 import { SafeAreaView }   from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -41,7 +40,7 @@ const C = {
 const NavBar = ({ onMenuPress }) => (
   <View style={nav.bar}>
     <View style={nav.brand}>
-      <Text style={nav.icon}>🍴</Text>
+      <Image source={require('../assets/BiteWiseLogo.png')} style={nav.logo} />
       <Text style={nav.brandName}>BiteWise</Text>
     </View>
     <TouchableOpacity onPress={onMenuPress} style={{padding: 6}}>
@@ -53,6 +52,7 @@ const nav = StyleSheet.create({
   bar:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
   brand:     { flexDirection: 'row', alignItems: 'center', gap: 6 },
   icon:      { fontSize: 20 },
+  logo:      { width: 24, height: 24, resizeMode: 'contain' },
   brandName: { fontSize: 20, fontWeight: '800', color: C.dark, letterSpacing: -0.3 },
   menuBtn:   { padding: 6, gap: 4, alignItems: 'flex-end' },
   menuLine:  { width: 22, height: 2.5, backgroundColor: C.dark, borderRadius: 2 },

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, Alert, Modal,
-  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import LogWeightController        from '../controller/LogWeightController';
@@ -22,7 +22,7 @@ const C = {
 
 const NavBar = ({ onMenu }) => (
   <View style={nav.bar}>
-    <View style={nav.brand}><Text style={nav.icon}>🍴</Text><Text style={nav.name}>BiteWise</Text></View>
+    <View style={nav.brand}><Image source={require('../assets/BiteWiseLogo.png')} style={nav.logo} /><Text style={nav.name}>BiteWise</Text></View>
     <TouchableOpacity onPress={onMenu} style={{padding: 6}}>
           <Text style={{fontSize: 14, fontWeight: '500', color: '#374151'}}>← Back</Text>
         </TouchableOpacity>
@@ -31,6 +31,7 @@ const NavBar = ({ onMenu }) => (
 const nav = StyleSheet.create({
   bar:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',paddingHorizontal:20,paddingVertical:14,backgroundColor:C.white,borderBottomWidth:1,borderBottomColor:C.border},
   brand:{flexDirection:'row',alignItems:'center',gap:6},icon:{fontSize:20},
+  logo:      { width: 24, height: 24, resizeMode: 'contain' },
   name:{fontSize:20,fontWeight:'800',color:C.dark},
   btn:{padding:6,gap:4,alignItems:'flex-end'},line:{width:22,height:2.5,backgroundColor:C.dark,borderRadius:2},
 });

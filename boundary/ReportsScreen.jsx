@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, ActivityIndicator, Modal, Dimensions,
-  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -36,7 +36,7 @@ const C = {
 const NavBar = ({ onMenu }) => (
   <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',paddingHorizontal:20,paddingVertical:14,backgroundColor:C.white,borderBottomWidth:1,borderBottomColor:C.border}}>
     <View style={{flexDirection:'row',alignItems:'center',gap:6}}>
-      <Text style={{fontSize:20}}>🍴</Text>
+      <Image source={require('../assets/BiteWiseLogo.png')} style={{width:20,height:20,resizeMode:'contain'}} />
       <Text style={{fontSize:20,fontWeight:'800',color:C.dark}}>BiteWise</Text>
     </View>
     <TouchableOpacity onPress={onMenu} style={{padding: 6}}>

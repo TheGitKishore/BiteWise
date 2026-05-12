@@ -6,8 +6,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, TouchableOpacity, ScrollView, StyleSheet,
-  StatusBar, Modal, Alert,
-} from 'react-native';
+  StatusBar, Modal, Alert,, Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import OnboardingController from '../controller/OnboardingController';
@@ -126,7 +125,7 @@ const ALL_PROFILES = ctrl.getAllProfileOptions();
 const NavBar = () => (
   <View style={nav.bar}>
     <View style={nav.brand}>
-      <Text style={nav.icon}>🍴</Text>
+      <Image source={require('../assets/BiteWiseLogo.png')} style={nav.logo} />
       <Text style={nav.brandName}>BiteWise</Text>
     </View>
   </View>
@@ -135,6 +134,7 @@ const nav = StyleSheet.create({
   bar:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
   brand:     { flexDirection: 'row', alignItems: 'center', gap: 6 },
   icon:      { fontSize: 20 },
+  logo:      { width: 24, height: 24, resizeMode: 'contain' },
   brandName: { fontSize: 20, fontWeight: '800', color: C.dark, letterSpacing: -0.3 },
 });
 

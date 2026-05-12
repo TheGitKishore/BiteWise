@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar, Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Design Tokens
@@ -63,7 +63,7 @@ const UserDashboardScreen = ({ navigation, route }) => {
       <View style={styles.topBar}>
         {/* Brand */}
         <View style={styles.brand}>
-          <Text style={styles.brandIcon}>🍴</Text>
+          <Image source={require('../assets/BiteWiseLogo.png')} style={styles.brandLogo} />
           <Text style={styles.brandName}>BiteWise</Text>
         </View>
 

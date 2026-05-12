@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Alert,
-  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform, Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -45,7 +45,7 @@ const C = {
 const NavBar = ({ onMenuPress }) => (
   <View style={nav.bar}>
     <View style={nav.brand}>
-      <Text style={nav.icon}>🍴</Text>
+      <Image source={require('../assets/BiteWiseLogo.png')} style={nav.logo} />
       <Text style={nav.brandName}>BiteWise</Text>
     </View>
     <TouchableOpacity onPress={onMenuPress} style={{padding: 6}}>
@@ -67,6 +67,7 @@ const nav = StyleSheet.create({
   },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   icon:      { fontSize: 20 },
+  logo:      { width: 24, height: 24, resizeMode: 'contain' },
   brandName: {
     fontSize:      20,
     fontWeight:    '800',
