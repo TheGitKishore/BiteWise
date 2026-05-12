@@ -6,7 +6,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, TouchableOpacity, ScrollView, StyleSheet,
-  StatusBar, Modal, Alert,, Image} from 'react-native';
+  StatusBar, Modal, Alert, Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import OnboardingController from '../controller/OnboardingController';

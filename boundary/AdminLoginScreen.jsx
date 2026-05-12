@@ -14,7 +14,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, StatusBar, KeyboardAvoidingView, Platform,, Image} from 'react-native';
+  StyleSheet, StatusBar, KeyboardAvoidingView, Platform, Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AdminLoginController from '../controller/AdminLoginController';
