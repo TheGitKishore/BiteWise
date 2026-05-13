@@ -134,8 +134,8 @@ const MenuItemCard = ({ item }) => (
     {/* Tags */}
     {item.tags?.length > 0 && (
       <View style={mi.tagRow}>
-        {item.tags.map((t) => (
-          <View key={t} style={mi.tag}>
+        {item.tags.map((t, idx) => (
+          <View key={`${t || 'tag'}-${idx}`} style={mi.tag}>
             <Text style={mi.tagTxt}>{t}</Text>
           </View>
         ))}
@@ -208,8 +208,8 @@ const RestaurantCard = ({ restaurant }) => {
           {restaurant.matchingItems.length === 0 ? (
             <Text style={rc.noItems}>No items fit your current budget.</Text>
           ) : (
-            restaurant.matchingItems.map((item) => (
-              <MenuItemCard key={item.itemId} item={item} />
+            restaurant.matchingItems.map((item, idx) => (
+              <MenuItemCard key={`${item.itemId || item.name || 'menu-item'}-${idx}`} item={item} />
             ))
           )}
         </View>
@@ -376,14 +376,19 @@ const DineOutScreen = ({ navigation, route }) => {
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >
-              {cuisines.map((c) => (
+              {cuisines.map((c, idx) => (
                 <TouchableOpacity
-                  key={c}
+                  key={`${c || 'cuisine'}-${idx}`}
                   style={[s.chip, cuisine === c && s.chipActive]}
                   onPress={() => setCuisine(c)}
                   activeOpacity={0.8}
                 >
-                  <Text style={[s.chipTxt, cuisine === c && s.chipTxtActive]}>{c}</Text>
+                  <Text
+                    style={[s.chipTxt, cuisine === c && s.chipTxtActive]}
+                    numberOfLines={1}
+                  >
+                    {c}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -399,9 +404,9 @@ const DineOutScreen = ({ navigation, route }) => {
             {displayed.length === 0 ? (
               <EmptyState query={query} />
             ) : (
-              displayed.map((restaurant) => (
+              displayed.map((restaurant, idx) => (
                 <RestaurantCard
-                  key={restaurant.restaurantId}
+                  key={`${restaurant.restaurantId || restaurant.name || 'restaurant'}-${idx}`}
                   restaurant={restaurant}
                 />
               ))
@@ -435,12 +440,12 @@ const s = StyleSheet.create({
   searchInput:   { flex: 1, fontSize: 14, color: C.dark, paddingVertical: 13 },
   clearBtn:      { padding: 4 },
   clearTxt:      { fontSize: 14, color: C.subtle },
-  chipScrollWrap:{ marginBottom: 14 },
-  chipScroll:    { gap: 8, paddingRight: 4 },
-  chip:          { borderWidth: 1, borderColor: C.border, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, backgroundColor: C.white },
-  chipActive:    { backgroundColor: C.purple, borderColor: C.purple },
-  chipTxt:       { fontSize: 13, color: C.mid, fontWeight: '500' },
-  chipTxtActive: { color: C.white, fontWeight: '700' },
+  chipScrollWrap:{ height: 42, maxHeight: 42, flexGrow: 0, marginBottom: 14 },
+  chipScroll:    { gap: 8, paddingRight: 4, alignItems: 'center' },
+  chip:          { height: 36, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: C.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: C.white },
+  chipActive:    { backgroundColor: C.purpleLight, borderColor: C.purple },
+  chipTxt:       { fontSize: 13, lineHeight: 17, color: C.mid, fontWeight: '600' },
+  chipTxtActive: { color: C.purple, fontWeight: '700' },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
   sectionTitle:  { fontSize: 14, fontWeight: '700', color: C.mid },
 });

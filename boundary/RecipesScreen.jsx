@@ -153,14 +153,14 @@ const RecipeCard = ({ recipe, onPress, isLiked, likeCount, onToggleLike, canLike
       </View>
       <Text style={rc.ingHeading}>Ingredients:</Text>
       {recipe.ingredients.slice(0, 3).map((ing, i) => (
-        <Text key={i} style={rc.ing}>• <Text style={rc.ingPurple}>{ing}</Text></Text>
+        <Text key={`${ing || 'ingredient-preview'}-${i}`} style={rc.ing}>• <Text style={rc.ingPurple}>{ing}</Text></Text>
       ))}
       {recipe.ingredients.length > 3 && (
         <Text style={rc.ingMore}>+ {recipe.ingredients.length - 3} more</Text>
       )}
       <View style={rc.footer}>
         <View style={rc.tagRow}>
-          {recipe.tags.map((t, i) => <View key={i} style={rc.tag}><Text style={rc.tagText}>{t}</Text></View>)}
+          {recipe.tags.map((t, i) => <View key={`${t || 'tag'}-${i}`} style={rc.tag}><Text style={rc.tagText}>{t}</Text></View>)}
         </View>
         {canLike ? (
           <LikeButton
@@ -218,7 +218,7 @@ const RecipeDetail = ({ recipe, user, onBack, onSave, isSaving, isLiked, likeCou
           <View style={rd.heroOverlay}>
             <Text style={rd.heroTitle}>{recipe.title}</Text>
             <View style={rd.heroTagRow}>
-              {recipe.tags.map((t, i) => <View key={i} style={rd.heroTag}><Text style={rd.heroTagText}>{t}</Text></View>)}
+              {recipe.tags.map((t, i) => <View key={`${t || 'hero-tag'}-${i}`} style={rd.heroTag}><Text style={rd.heroTagText}>{t}</Text></View>)}
             </View>
           </View>
         </View>
@@ -257,7 +257,7 @@ const RecipeDetail = ({ recipe, user, onBack, onSave, isSaving, isLiked, likeCou
       <View style={rd.section}>
         <Text style={rd.sectionHeading}>Ingredients</Text>
         {recipe.ingredients.map((ing, i) => (
-          <Text key={i} style={rd.listItem}>• <Text style={rd.listPurple}>{ing}</Text></Text>
+          <Text key={`${ing || 'ingredient'}-${i}`} style={rd.listItem}>• <Text style={rd.listPurple}>{ing}</Text></Text>
         ))}
       </View>
 
@@ -265,7 +265,7 @@ const RecipeDetail = ({ recipe, user, onBack, onSave, isSaving, isLiked, likeCou
       <View style={rd.section}>
         <Text style={rd.sectionHeading}>Instructions</Text>
         {recipe.instructions.map((step, i) => (
-          <View key={i} style={rd.stepRow}>
+          <View key={`${String(step || 'step').slice(0, 24)}-${i}`} style={rd.stepRow}>
             <View style={rd.stepNum}><Text style={rd.stepNumText}>{i + 1}</Text></View>
             <Text style={rd.stepText}>{step}</Text>
           </View>
@@ -343,7 +343,7 @@ const PremiumGateModal = ({ visible, onClose, onUpgrade }) => (
           <Text style={pgm.planName}>Premium</Text>
           <Text style={pgm.planPrice}>$19.99<Text style={pgm.planCycle}>/month</Text></Text>
           {['Unlimited recipes', 'AI meal recommendations', 'Camera food recognition', 'Monthly detailed reports', 'Custom meal plans'].map((f, i) => (
-            <View key={i} style={pgm.featureRow}><Image source={require('../assets/icon-check.png')} style={[pgm.featureTick,{width:14,height:14,resizeMode:'contain'}]} /><Text style={pgm.featureText}>{f}</Text></View>
+            <View key={`${f}-${i}`} style={pgm.featureRow}><Image source={require('../assets/icon-check.png')} style={[pgm.featureTick,{width:14,height:14,resizeMode:'contain'}]} /><Text style={pgm.featureText}>{f}</Text></View>
           ))}
           <TouchableOpacity style={pgm.chooseBtn} onPress={onUpgrade} activeOpacity={0.85}>
             <Text style={pgm.chooseBtnText}>Choose Plan</Text>
@@ -403,8 +403,8 @@ const DietaryPrefsModal = ({ visible, prefs, onSave, onClose }) => {
 
             <Text style={dp.heading}>Dietary Restrictions</Text>
             <View style={dp.grid}>
-              {DIETARY_RESTRICTIONS.map((r) => (
-                <TouchableOpacity key={r} style={dp.checkRow} onPress={() => toggle('restrictions', r)}>
+              {DIETARY_RESTRICTIONS.map((r, idx) => (
+                <TouchableOpacity key={`restriction-${r}-${idx}`} style={dp.checkRow} onPress={() => toggle('restrictions', r)}>
                   <View style={[dp.checkbox, localPrefs.restrictions.includes(r) && dp.checkboxChecked]} />
                   <Text style={dp.checkLabel}>{r}</Text>
                 </TouchableOpacity>
@@ -413,8 +413,8 @@ const DietaryPrefsModal = ({ visible, prefs, onSave, onClose }) => {
 
             <Text style={dp.heading}>Allergies</Text>
             <View style={dp.grid}>
-              {ALLERGIES.map((a) => (
-                <TouchableOpacity key={a} style={dp.checkRow} onPress={() => toggle('allergies', a)}>
+              {ALLERGIES.map((a, idx) => (
+                <TouchableOpacity key={`allergy-${a}-${idx}`} style={dp.checkRow} onPress={() => toggle('allergies', a)}>
                   <View style={[dp.checkbox, localPrefs.allergies.includes(a) && dp.checkboxChecked]} />
                   <Text style={dp.checkLabel}>{a}</Text>
                 </TouchableOpacity>
@@ -740,18 +740,21 @@ const RecipesScreen = ({ navigation, route }) => {
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >
-          {QUICK_FILTERS.map((f) => {
+          {QUICK_FILTERS.map((f, idx) => {
             const isMealPrep   = f === 'Meal Prep';
             const isLocked     = isMealPrep && !isPremium;
             const isActive     = quickFilter === f;
             return (
               <TouchableOpacity
-                key={f}
+                key={`quick-filter-${f}-${idx}`}
                 style={[qt.tab, isActive && qt.tabActive, isLocked && qt.tabLocked]}
                 onPress={() => setQuickFilter(f)}
                 activeOpacity={0.8}
               >
-                <Text style={[qt.tabText, isActive && qt.tabTextActive]}>
+                <Text
+                  style={[qt.tabText, isActive && qt.tabTextActive]}
+                  numberOfLines={1}
+                >
                   {f}{isMealPrep && !isPremium ? '' : isMealPrep && isPremium ? '' : ''}
                 </Text>
               </TouchableOpacity>
@@ -776,9 +779,9 @@ const RecipesScreen = ({ navigation, route }) => {
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >
-            {DIET_TAGS.map((t) => (
+            {DIET_TAGS.map((t, idx) => (
               <TouchableOpacity
-                key={t}
+                key={`diet-tag-${t}-${idx}`}
                 style={[dt.chip, dietTag === t && dt.chipActive]}
                 onPress={() => setDietTag(t)}
                 activeOpacity={0.8}
@@ -820,7 +823,7 @@ const RecipesScreen = ({ navigation, route }) => {
         ) : (
           visibleRecipes.map((recipe, idx) => (
             <RecipeCard
-              key={recipe.recipeId || recipe._id || `${recipe.title || 'recipe'}-${idx}`}
+              key={`${recipe.recipeId || recipe._id || recipe.title || 'recipe'}-${idx}`}
               recipe={recipe}
               onPress={() => handleSelectRecipe(recipe)}
               isLiked={Boolean(likedRecipes[recipe.recipeId])}
@@ -838,10 +841,10 @@ const RecipesScreen = ({ navigation, route }) => {
 };
 
 const qt = StyleSheet.create({
-  tab:          { paddingHorizontal:14, paddingVertical:8, borderRadius:20, borderWidth:1, borderColor:C.border, backgroundColor:C.white, marginRight:8 },
+  tab:          { height:36, justifyContent:'center', alignItems:'center', paddingHorizontal:12, paddingVertical:8, borderRadius:8, borderWidth:1, borderColor:C.border, backgroundColor:C.white, marginRight:8 },
   tabActive:    { backgroundColor:C.purpleLight, borderColor:C.purple },
   tabLocked:    { opacity:0.65 },
-  tabText:      { fontSize:13, color:C.mid, fontWeight:'500' },
+  tabText:      { fontSize:13, lineHeight:17, color:C.mid, fontWeight:'600' },
   tabTextActive:{ color:C.purple, fontWeight:'700' },
 });
 const dt = StyleSheet.create({
@@ -855,8 +858,8 @@ const styles = StyleSheet.create({
   safe:         { flex:1, backgroundColor:C.bg },
   list: { flexGrow: 1, paddingHorizontal:16, paddingBottom:32 },
   pageTitle:    { fontSize:28, fontWeight:'800', color:C.dark, letterSpacing:-0.5, paddingVertical:20 },
-  tabScroll:    { marginBottom:12 },
-  tabContent:   { paddingRight:16 },
+  tabScroll:    { height:42, maxHeight:42, flexGrow:0, marginBottom:12 },
+  tabContent:   { paddingRight:16, alignItems:'center' },
   filterCard:   { backgroundColor:C.white, borderRadius:14, padding:12, borderWidth:1, borderColor:C.border, marginBottom:12, gap:8 },
   searchRow:    { flexDirection:'row', alignItems:'center', backgroundColor:C.bg, borderRadius:8, paddingHorizontal:10, paddingVertical:8, borderWidth:1, borderColor:C.border, gap:8 },
   searchIcon:   { fontSize:14, color:C.subtle },
