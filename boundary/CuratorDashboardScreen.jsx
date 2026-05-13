@@ -73,8 +73,8 @@ const WelcomeBanner = ({ visible }) => {
   if (!visible) return null;
   return (
     <View style={wb.wrap}>
-      <Text style={wb.icon}>✅</Text>
-      <Text style={wb.text}>Application submitted and approved! Welcome to the Curator Program! 🎉</Text>
+      <Image source={require('../assets/icon-success.png')} style={[wb.icon,{width:20,height:20,resizeMode:'contain'}]} />
+      <Text style={wb.text}>Application submitted and approved! Welcome to the Curator Program! </Text>
     </View>
   );
 };
@@ -88,7 +88,7 @@ const wb = StyleSheet.create({
 const HeroBanner = ({ username, onBackToDashboard }) => (
   <View style={hb.banner}>
     <View style={hb.avatarCircle}>
-      <Text style={hb.avatarIcon}>👨‍🍳</Text>
+      <Image source={require('../assets/avatar-curator.png')} style={[hb.avatarIcon,{width:30,height:30,resizeMode:'contain'}]} />
     </View>
     <Text style={hb.title}>Curator Dashboard</Text>
     <Text style={hb.subtitle}>Welcome back, {username}!</Text>
@@ -199,11 +199,11 @@ const CuratorProfileSection = ({ profileData, onUpdateProfile }) => {
     <View style={cp.card}>
       <View style={cp.header}>
         <View style={cp.titleRow}>
-          <Text style={cp.icon}>👤</Text>
+          <Image source={require('../assets/avatar-user.png')} style={[cp.icon,{width:20,height:20,resizeMode:'contain'}]} />
           <Text style={cp.title}>Curator Profile</Text>
         </View>
         <TouchableOpacity style={cp.editBtn} onPress={onUpdateProfile}>
-          <Text style={cp.editBtnTxt}>⚙️ Update Profile</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:6}}><Image source={require('../assets/icon-settings.png')} style={{width:16,height:16,resizeMode:'contain'}} /><Text style={cp.editBtnTxt}>Update Profile</Text></View>
         </TouchableOpacity>
       </View>
 
@@ -329,7 +329,7 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
       <WelcomeBanner visible={showWelcome} />
       {banner ? (
         <View style={{ flexDirection:'row', alignItems:'center', gap:10, paddingHorizontal:16, paddingVertical:12, backgroundColor:'#F0FDF4', borderBottomWidth:1, borderBottomColor:'#BBF7D0' }}>
-          <Text style={{ fontSize:16 }}>✅</Text>
+          <Image source={require('../assets/icon-success.png')} style={{width:16,height:16,resizeMode:'contain'}} />
           <Text style={{ flex:1, fontSize:14, fontWeight:'500', color:'#15803D' }}>{banner}</Text>
         </View>
       ) : null}
@@ -362,14 +362,14 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
 
           {/* My Recipes nav tile */}
           <NavTile
-            icon="📄"
+            icon={require('../assets/stat-posts.png')}
             label="My Recipes"
             onPress={() => navigation.navigate('CuratorRecipesScreen', { user })}
           />
 
           {/* My Blog Posts nav tile */}
           <NavTile
-            icon="📖"
+            icon={require('../assets/stat-published.png')}
             label="My Blog Posts"
             onPress={() => navigation.navigate('BlogPostsScreen', { user })}
           />
@@ -380,14 +380,14 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
           ) : profileData ? (
             <>
               <View style={sc.grid}>
-                <StatCard label="Total Views"  value={profileData.curatorStats.views}     emoji="👁"  emojiColor={C.purple} />
-                <StatCard label="Total Likes"  value={profileData.curatorStats.likes}     emoji="🤍"  emojiColor={C.pink}   />
+                <StatCard label="Total Views"  value={profileData.curatorStats.views}     emoji={require('../assets/stat-views.png')}  emojiColor={C.purple} />
+                <StatCard label="Total Likes"  value={profileData.curatorStats.likes}     emoji={require('../assets/stat-likes.png')}  emojiColor={C.pink}   />
               </View>
 
               {/* Recipe Management */}
               <ManagementSection
                 title="Recipe Management"
-                icon="👨‍🍳"
+                icon={require('../assets/avatar-curator.png')}
                 published={profileData.recipes.published}
                 draft={profileData.recipes.draft}
                 publishedLabel="Published Recipes"
@@ -401,7 +401,7 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
               {/* Blog Post Management */}
               <ManagementSection
                 title="Blog Post Management"
-                icon="📖"
+                icon={require('../assets/stat-published.png')}
                 published={profileData.blogPosts.published}
                 draft={profileData.blogPosts.draft}
                 publishedLabel="Published Posts"

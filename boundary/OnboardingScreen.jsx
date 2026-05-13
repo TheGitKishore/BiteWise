@@ -175,7 +175,7 @@ const qc = StyleSheet.create({
 const ProfileResultCard = ({ meta, isRecommended }) => (
   <View style={[pr.card, isRecommended && pr.cardHighlight]}>
     {isRecommended && (
-      <View style={pr.recommendBadge}><Text style={pr.recommendBadgeTxt}>✨ Recommended for you</Text></View>
+      <View style={pr.recommendBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-recommended.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={pr.recommendBadgeTxt}>Recommended for you</Text></View>
     )}
     <Text style={pr.emoji}>{meta.emoji}</Text>
     <Text style={pr.label}>{meta.label}</Text>
@@ -346,7 +346,7 @@ const OnboardingScreen = ({ navigation, route }) => {
                 <Text style={s.dropdownTxt}>
                   {ALL_PROFILES.find(p => p.profileType === chosenType)?.label || 'Select a profile'}
                 </Text>
-                <Text style={s.dropdownArrow}>{showDropdown ? '▲' : '▼'}</Text>
+                {showDropdown  ? <Image source={require('../assets/icon-chevron-up.png')} style={{width:11,height:11,resizeMode:'contain'}} /> : <Image source={require('../assets/icon-chevron-down.png')} style={{width:11,height:11,resizeMode:'contain'}} />}
               </TouchableOpacity>
 
               {/* Dropdown options */}

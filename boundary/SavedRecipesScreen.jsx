@@ -58,13 +58,13 @@ const SavedRecipeCard = ({ recipe, onPress, onRemove }) => (
     {recipe.imageUrl ? (
       <Image source={{ uri: recipe.imageUrl }} style={src.image} resizeMode="cover" />
     ) : (
-      <View style={src.imagePlaceholder}><Text style={{ fontSize:32 }}>🍽️</Text></View>
+      <Image source={require('../assets/placeholder-recipe.png')} style={src.imagePlaceholder} resizeMode="cover" />
     )}
     <View style={src.body}>
       <Text style={src.title}>{recipe.title}</Text>
       <View style={src.metaRow}>
-        <Text style={src.meta}>⏱ {recipe.prepTimeMins} min</Text>
-        <Text style={src.meta}>👥 {recipe.servings} servings</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-prep-time.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={src.meta}>{recipe.prepTimeMins} min</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-users.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={src.meta}>{recipe.servings} servings</Text>
       </View>
       <View style={src.tagRow}>
         {recipe.tags.map((t, i) => <View key={i} style={src.tag}><Text style={src.tagText}>{t}</Text></View>)}
@@ -80,7 +80,7 @@ const SavedRecipeCard = ({ recipe, onPress, onRemove }) => (
       <View style={src.footer}>
         <Text style={src.savedDate}>Saved {new Date().toLocaleDateString('en-SG')}</Text>
         <TouchableOpacity onPress={(e) => { e?.stopPropagation?.(); onRemove(recipe.recipeId); }} style={src.removeBtn} accessibilityRole="button">
-          <Text style={src.removeIcon}>🗑</Text>
+          <Image source={require('../assets/icon-delete.png')} style={[src.removeIcon,{width:18,height:18,resizeMode:'contain'}]} />
         </TouchableOpacity>
       </View>
     </View>
@@ -181,9 +181,9 @@ const SavedRecipesScreen = ({ navigation, route }) => {
     return (
       <SafeAreaView style={styles.safe}>
         <NavBar onMenuPress={() => navigation.goBack()} />
-      {banner ? (<View style={{flexDirection:'row',alignItems:'center',gap:10,paddingHorizontal:16,paddingVertical:12,backgroundColor:'#F0FDF4',borderBottomWidth:1,borderBottomColor:'#BBF7D0'}}><Text style={{fontSize:16}}>✅</Text><Text style={{flex:1,fontSize:14,fontWeight:'500',color:'#15803D'}}>{banner}</Text></View>) : null}
+      {banner ? (<View style={{flexDirection:'row',alignItems:'center',gap:10,paddingHorizontal:16,paddingVertical:12,backgroundColor:'#F0FDF4',borderBottomWidth:1,borderBottomColor:'#BBF7D0'}}><Image source={require('../assets/icon-success.png')} style={{width:16,height:16,resizeMode:'contain'}} /><Text style={{flex:1,fontSize:14,fontWeight:'500',color:'#15803D'}}>{banner}</Text></View>) : null}
         <View style={styles.gateWrap}>
-          <Text style={styles.gateIcon}>🔒</Text>
+          <Image source={require('../assets/icon-lock-inline.png')} style={[styles.gateIcon,{width:16,height:16,resizeMode:'contain'}]} />
           <Text style={styles.gateTitle}>Premium Feature</Text>
           <Text style={styles.gateBody}>Saving and managing your recipe collection requires a Premium membership.</Text>
           <TouchableOpacity style={styles.gateBtn} onPress={() => navigation.navigate('ViewPricingPlansScreen')} activeOpacity={0.85}>
@@ -297,7 +297,7 @@ const SavedRecipesScreen = ({ navigation, route }) => {
 
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.premiumBadge}><Text style={styles.premiumBadgeText}>☆ Premium</Text></View>
+          <View style={styles.premiumBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={styles.premiumBadgeText}>Premium</Text></View>
           <Text style={styles.pageTitle}>Saved Recipes</Text>
           <Text style={styles.pageSubtitle}>
             Your personally saved recipe collection ({allSaved.length} recipe{allSaved.length !== 1 ? 's' : ''})
@@ -308,7 +308,7 @@ const SavedRecipesScreen = ({ navigation, route }) => {
         <View style={styles.filterCard}>
           {/* Search */}
           <View style={styles.searchRow}>
-            <Text style={styles.searchIcon}>🔍</Text>
+            <Image source={require('../assets/icon-search.png')} style={[styles.searchIcon,{width:14,height:14,resizeMode:'contain'}]} />
             <TextInput
               style={styles.searchInput}
               value={search}
@@ -358,7 +358,7 @@ const SavedRecipesScreen = ({ navigation, route }) => {
           <ActivityIndicator size="large" color={C.purple} style={{ marginTop:32 }} />
         ) : visible.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>🔖</Text>
+            <Image source={require('../assets/empty-saved-recipes.png')} style={[styles.emptyIcon,{width:48,height:48,resizeMode:'contain'}]} />
             <Text style={styles.emptyText}>No saved recipes found.</Text>
             <Text style={styles.emptySubtext}>Browse the Recipe Library and save recipes you love.</Text>
           </View>

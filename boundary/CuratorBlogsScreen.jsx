@@ -10,7 +10,7 @@ import {
   StatusBar,
   TextInput,
   Image,
-  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform, Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ViewCuratorBlogsController from '../controller/ViewCuratorBlogsController';
@@ -41,7 +41,7 @@ const LikeButton = ({ isLiked, count, onPress }) => (
     onPress={onPress}
     activeOpacity={0.85}
   >
-    <Text style={lb.icon}>👍</Text>
+    <Image source={require('../assets/icon-like.png')} style={[lb.icon,{width:20,height:20,resizeMode:'contain'}]} />
     <Text style={[lb.label, isLiked && lb.labelActive]}>Like</Text>
     <Text style={[lb.text, isLiked && lb.textActive]}>{formatCount(count)}</Text>
   </TouchableOpacity>

@@ -4,7 +4,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, StatusBar, Alert,
-  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CreateCuratorRecipeController from '../controller/CreateCuratorRecipeController';
@@ -31,7 +31,7 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
   const recipe = route?.params?.recipe || null; // null = create mode
   const isEdit = recipe !== null;
   const recipeId = recipe?._id || recipe?.recipeId;
-  console.log('🔥 RECEIVED recipe:', recipe);
+  console.log('RECEIVED recipe:', recipe);
 
   const [title,        setTitle]        = useState(recipe?.title        || '');
   const [description,  setDescription]  = useState(recipe?.description  || '');
@@ -64,13 +64,13 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
 
   // UC #108 create / UC #113 edit
   const handleSave = useCallback(async () => {
-    console.log('🔥 handleSave TRIGGERED');
+    console.log('handleSave TRIGGERED');
     console.log('isEdit:', isEdit);
     console.log('recipeId:', recipeId);
     console.log('userId:', user?.userId);
 
     if (isEdit && !recipeId) {
-      console.log('❌ Missing recipeId for edit');
+      console.log('Missing recipeId for edit');
       return;
     }
 
@@ -81,11 +81,11 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
 
     const fields = buildFields();
 
-    console.log('➡️ Fields:', fields);
+    console.log('Fields:', fields);
 
     try {
       if (isEdit) {
-        console.log('➡️ Calling updateRecipe');
+        console.log('Calling updateRecipe');
 
         result = await editCtrl.updateRecipe(
           recipe,
@@ -95,7 +95,7 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
 
         console.log('⬅️ updateRecipe RESULT:', result);
       } else {
-        console.log('➡️ Calling createRecipe');
+        console.log('Calling createRecipe');
 
         result = await createCtrl.createRecipe(
           user.userId,
@@ -106,7 +106,7 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
       }
 
     } catch (err) {
-      console.log('❌ Unexpected error:', err);
+      console.log('Unexpected error:', err);
       result = {
         success: false,
         message: 'Unexpected error occurred',
@@ -118,7 +118,7 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
     if (result?.success) {
       showBanner(result.message);
 
-      // 🔥 IMPORTANT: force refresh when going back
+      // IMPORTANT: force refresh when going back
       setTimeout(() => {
         navigation.navigate('CuratorDashboardScreen', {
           user,
@@ -130,7 +130,7 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
       setErrors({ [result.field]: result.message });
 
     } else {
-      console.log('⚠️ Failed result:', result);
+      console.log('Failed result:', result);
     }
   }, [
     isEdit,
@@ -158,7 +158,7 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          const r = await deleteCtrl.deleteRecipe(recipeId, user.userId); // ✅ FIX
+          const r = await deleteCtrl.deleteRecipe(recipeId, user.userId); // FIX
           if (r.success) navigation.goBack();
           else Alert.alert('Error', r.message);
         }
@@ -180,7 +180,7 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
         <Text style={s.navTitle}>{isEdit ? 'Edit Recipe' : 'Create Recipe'}</Text>
         {isEdit ? <TouchableOpacity onPress={handleDelete}><Text style={s.delNav}>Delete</Text></TouchableOpacity> : <View style={{ width: 50 }} />}
       </View>
-      {banner ? <View style={s.bannerBar}><Text style={s.bannerTxt}>✅  {banner}</Text></View> : null}
+      {banner ? <View style={s.bannerBar}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={s.bannerTxt}>{banner}</Text></View> : null}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled"

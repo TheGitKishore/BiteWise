@@ -8,8 +8,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, StatusBar, Alert,
-} from 'react-native';
+  StyleSheet, StatusBar, Alert,, Image} from 'react-native';
 import { SafeAreaView }   from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -32,7 +31,7 @@ const StatusBadge = ({ status }) => {
   const isPub = status === 'PUBLISHED';
   return (
     <View style={[sb.badge, isPub ? sb.pubBadge : sb.draftBadge]}>
-      <Text style={[sb.text, isPub ? sb.pubText : sb.draftText]}>{isPub ? '● Published' : '○ Draft'}</Text>
+      <Text style={[sb.text, isPub ? sb.pubText : sb.draftText]}>{isPub ? <><Image source={require('../assets/icon-dot-published.png')} style={{width:10,height:10,resizeMode:'contain'}} /> Published</> : <><Image source={require('../assets/icon-dot-draft.png')} style={{width:10,height:10,resizeMode:'contain'}} /> Draft</>}</Text>
     </View>
   );
 };
@@ -159,7 +158,7 @@ const BlogPostsScreen = ({ navigation, route }) => {
       </View>
 
       {banner ? (
-        <View style={s.bannerBar}><Text style={s.bannerTxt}>✅  {banner}</Text></View>
+        <View style={s.bannerBar}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={s.bannerTxt}>{banner}</Text></View>
       ) : null}
 
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
@@ -175,7 +174,7 @@ const BlogPostsScreen = ({ navigation, route }) => {
           <Text style={s.empty}>Loading...</Text>
         ) : posts.length === 0 ? (
           <View style={s.emptyCard}>
-            <Text style={s.emptyEmoji}>✏️</Text>
+            <Image source={require('../assets/empty-blog-posts.png')} style={[s.emptyEmoji,{width:48,height:48,resizeMode:'contain'}]} />
             <Text style={s.emptyTitle}>No Blog Posts Yet</Text>
             <Text style={s.emptyBody}>Share your health journey, tips and insights with the community.</Text>
           </View>

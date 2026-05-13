@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, Dimensions, Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ViewReviewsController from '../controller/ViewReviewsController';
 
@@ -26,7 +26,7 @@ const C = {
 const TopBar = ({ navigation }) => (
   <View style={top.bar}>
     <View style={top.brand}>
-      <Text style={top.icon}>🍴</Text>
+      <Image source={require('../assets/tile-food-tracking.png')} style={[top.icon,{width:20,height:20,resizeMode:'contain'}]} />
       <Text style={top.brandName}>BiteWise</Text>
     </View>
     <TouchableOpacity
@@ -146,18 +146,15 @@ const ob = StyleSheet.create({
 //  EVERYTHING YOU NEED TO SUCCEED Section
 
 const FEATURES = [
-  {
-    icon:  '🎯',
+  { icon: require('../assets/tile-nutrition-targets.png'),
     title: 'Set Your Goals',
     body:  'Define your daily calorie targets and track your progress towards a healthier you',
   },
-  {
-    icon:  '📷',
+  { icon: require('../assets/tile-camera-capture.png'),
     title: 'Smart Tracking',
     body:  'Log meals manually or use camera recognition for instant calorie calculation',
   },
-  {
-    icon:  '📖',
+  { icon: require('../assets/tile-recipes.png'),
     title: 'Recipe Library',
     body:  'Access thousands of healthy recipes tailored to your dietary needs and preferences',
   },
@@ -172,7 +169,7 @@ const FeaturesSection = () => (
     {FEATURES.map((f, i) => (
       <View key={i} style={fs.item}>
         <View style={fs.iconWrap}>
-          <Text style={fs.iconText}>{f.icon}</Text>
+          <Image source={f.icon} style={[fs.iconText,{width:32,height:32,resizeMode:'contain'}]} />
         </View>
         <Text style={fs.title}>{f.title}</Text>
         <Text style={fs.body}>{f.body}</Text>
@@ -464,7 +461,7 @@ const pp = StyleSheet.create({
 const StarRow = ({ count }) => (
   <View style={rv.stars}>
     {[1, 2, 3, 4, 5].map((s) => (
-      <Text key={s} style={[rv.star, s <= count && rv.starFilled]}>★</Text>
+      <Image key={s} source={require('../assets/icon-star-filled.png')} style={[rv.star, s <= count && rv.starFilled, {width:20,height:20,resizeMode:'contain'}]} />
     ))}
   </View>
 );

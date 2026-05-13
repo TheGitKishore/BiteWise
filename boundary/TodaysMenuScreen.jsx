@@ -131,7 +131,7 @@ const ProgressCard = ({ targets, consumed }) => {
   const bars = ctrl.getMacroProgress(targets, consumed);
   return (
     <View style={pc.card}>
-      <Text style={pc.title}>📊  Today's Progress</Text>
+      <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-progress.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={pc.title}>Today's Progress</Text>
       {bars.map((bar) => <MacroBar key={bar.label} {...bar} />)}
     </View>
   );
@@ -162,7 +162,7 @@ const MenuRecipeCard = ({ recipe, remaining }) => {
   return (
     <View style={mrc.card}>
       <View style={mrc.imgPlaceholder}>
-        <Text style={mrc.imgIcon}>🍽️</Text>
+        <Image source={require('../assets/placeholder-recipe.png')} style={[mrc.imgIcon,{width:44,height:44,resizeMode:'contain'}]} />
         {/* Calorie amount — most prominent element on the card */}
         <View style={mrc.calBadge}>
           <Text style={mrc.calBadgeTxt}>{recipe.calories} kcal</Text>
@@ -176,7 +176,7 @@ const MenuRecipeCard = ({ recipe, remaining }) => {
         <Text style={mrc.title} numberOfLines={2}>{recipe.title}</Text>
 
         <View style={mrc.metaRow}>
-          <Text style={mrc.prepTime}>⏱ {recipe.prepTimeMins} min</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-prep-time.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={mrc.prepTime}>{recipe.prepTimeMins} min</Text>
           <View style={[mrc.fitChip, { backgroundColor: fitLabel.bg, borderColor: fitLabel.border }]}>
             <Text style={[mrc.fitTxt, { color: fitLabel.color }]}>{fitLabel.text}</Text>
           </View>
@@ -238,7 +238,7 @@ const mrc = StyleSheet.create({
 // ── Goal Reached Card ─────────────────────────────────────────────────────────
 const GoalReachedCard = ({ pctConsumed }) => (
   <View style={gr.card}>
-    <Text style={gr.emoji}>🎉</Text>
+    <Image source={require('../assets/empty-goal-reached.png')} style={[gr.emoji,{width:48,height:48,resizeMode:'contain'}]} />
     <Text style={gr.title}>{pctConsumed >= 1 ? 'Daily goal reached!' : 'Almost at your goal!'}</Text>
     <Text style={gr.body}>
       {pctConsumed >= 1
@@ -246,7 +246,7 @@ const GoalReachedCard = ({ pctConsumed }) => (
         : "You're 90%+ toward your daily calorie goal. Only snack if you're genuinely hungry."}
     </Text>
     <View style={gr.tipRow}>
-      <Text style={gr.tipIcon}>💧</Text>
+      <Image source={require('../assets/section-hydration.png')} style={[gr.tipIcon,{width:18,height:18,resizeMode:'contain'}]} />
       <Text style={gr.tipTxt}>Stay hydrated and listen to your body.</Text>
     </View>
   </View>
@@ -264,7 +264,7 @@ const gr = StyleSheet.create({
 // ── No Recipes Card ───────────────────────────────────────────────────────────
 const NoRecipesCard = () => (
   <View style={nr.card}>
-    <Text style={nr.emoji}>🔍</Text>
+    <Image source={require('../assets/empty-search.png')} style={[nr.emoji,{width:48,height:48,resizeMode:'contain'}]} />
     <Text style={nr.title}>No matching recipes</Text>
     <Text style={nr.body}>No recipes fit within your remaining budget. Try a lighter meal or browse the full library.</Text>
   </View>
@@ -325,7 +325,7 @@ const TodaysMenuScreen = ({ navigation, route }) => {
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
         <View style={s.header}>
-          <View style={s.premBadge}><Text style={s.premBadgeTxt}>👑 Premium</Text></View>
+          <View style={s.premBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-crown.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.premBadgeTxt}>Premium</Text></View>
           <Text style={s.pageTitle}>Today's Menu</Text>
           <Text style={s.pageSub}>Recipes matched to your remaining daily nutrition budget</Text>
         </View>
@@ -336,7 +336,7 @@ const TodaysMenuScreen = ({ navigation, route }) => {
           </View>
         ) : error ? (
           <View style={s.errorWrap}>
-            <Text style={s.errorTxt}>⚠️  {error}</Text>
+            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-warning.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={s.errorTxt}>{error}</Text></View>
           </View>
         ) : (
           <>
@@ -348,12 +348,12 @@ const TodaysMenuScreen = ({ navigation, route }) => {
             ) : (
               <>
                 <View style={s.sectionHeader}>
-                  <Text style={s.sectionTitle}>🍽️  Best Matches for You</Text>
+                  <View style={{flexDirection:'row',alignItems:'center',gap:6}}><Image source={require('../assets/tile-todays-menu.png')} style={{width:16,height:16,resizeMode:'contain'}} /><Text style={s.sectionTitle}>Best Matches for You</Text></View>
                   <Text style={s.sectionCount}>{recipes.length} recipe{recipes.length !== 1 ? 's' : ''}</Text>
                 </View>
 
                 <View style={s.infoStrip}>
-                  <Text style={s.infoIcon}>💡</Text>
+                  <Image source={require('../assets/section-tips.png')} style={[s.infoIcon,{width:16,height:16,resizeMode:'contain'}]} />
                   <Text style={s.infoTxt}>
                     Ranked by how well each recipe fits your remaining {Math.round(remaining?.calories || 0)} kcal and macros.
                   </Text>

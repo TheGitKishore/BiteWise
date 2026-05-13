@@ -38,7 +38,7 @@ const nav = StyleSheet.create({
 
 const Banner = ({ msg }) => !msg ? null : (
   <View style={{flexDirection:'row',alignItems:'center',gap:10,paddingHorizontal:16,paddingVertical:12,backgroundColor:C.successBg,borderBottomWidth:1,borderBottomColor:C.successBorder}}>
-    <Text style={{fontSize:16}}>✅</Text>
+    <Image source={require('../assets/icon-success.png')} style={{width:16,height:16,resizeMode:'contain'}} />
     <Text style={{flex:1,fontSize:14,fontWeight:'500',color:C.successText}}>{msg}</Text>
   </View>
 );
@@ -55,7 +55,7 @@ const UpdateModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
       <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.45)',justifyContent:'center',paddingHorizontal:16}}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{backgroundColor:C.white,borderRadius:16,padding:22,paddingTop:36}}>
-          <TouchableOpacity onPress={handleClose} style={{position:'absolute',top:12,right:16}}><Text style={{fontSize:16,color:C.subtle}}>✕</Text></TouchableOpacity>
+          <TouchableOpacity onPress={handleClose} style={{position:'absolute',top:12,right:16}}><Image source={require('../assets/icon-close.png')} style={{width:16,height:16,resizeMode:'contain'}} /></TouchableOpacity>
           <Text style={{fontSize:16,fontWeight:'700',color:C.dark,textAlign:'center',marginBottom:18}}>Update Weight</Text>
           <Text style={{fontSize:13,fontWeight:'600',color:C.dark,marginBottom:4}}>Weight (kg) *</Text>
           <TextInput
@@ -93,7 +93,7 @@ const WeightTrackingScreen = ({ navigation, route }) => {
       <SafeAreaView style={{flex:1,backgroundColor:C.bg}}>
         <NavBar onMenu={() => navigation.goBack()} />
         <View style={{flex:1,alignItems:'center',justifyContent:'center',paddingHorizontal:32}}>
-          <Text style={{fontSize:48,marginBottom:16}}>🔒</Text>
+          <Image source={require('../assets/empty-locked.png')} style={{width:48,height:48,resizeMode:'contain'}} />
           <Text style={{fontSize:20,fontWeight:'800',color:C.dark,marginBottom:8}}>Premium Feature</Text>
           <Text style={{fontSize:14,color:C.subtle,textAlign:'center',marginBottom:20}}>Weight tracking requires a Premium membership.</Text>
           <TouchableOpacity style={{backgroundColor:C.purple,borderRadius:10,paddingVertical:13,paddingHorizontal:24}} onPress={() => navigation.navigate('ViewPricingPlansScreen')}>
@@ -170,7 +170,7 @@ const WeightTrackingScreen = ({ navigation, route }) => {
         >
         <View style={{paddingTop:20,marginBottom:14}}>
           <View style={{alignSelf:'flex-start',backgroundColor:C.purple,borderRadius:20,paddingHorizontal:10,paddingVertical:3,marginBottom:8}}>
-            <Text style={{fontSize:11,fontWeight:'700',color:C.white}}>☆ Premium</Text>
+            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={{fontSize:11,fontWeight:'700',color:C.white}}>Premium</Text>
           </View>
           <Text style={{fontSize:26,fontWeight:'800',color:C.dark,marginBottom:4}}>Weight Tracking</Text>
           <Text style={{fontSize:13,color:C.subtle}}>Monitor your weight changes and track long-term progress</Text>
@@ -184,13 +184,13 @@ const WeightTrackingScreen = ({ navigation, route }) => {
         {latest && (
           <>
             <View style={scard.card}>
-              <Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>⚖️  Current Weight</Text>
+              <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-weight.png')} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>Current Weight</Text></View>
               <Text style={{fontSize:32,fontWeight:'800',color:C.purple}}>{latest.weightKg} kg</Text>
               <Text style={{fontSize:12,color:C.subtle,marginTop:4}}>Last updated {new Date(latest.loggedAt).toLocaleDateString('en-SG')}</Text>
             </View>
             {entries.length >= 2 && (
               <View style={scard.card}>
-                <Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>{totalChange <= 0 ? '↘' : '↗'}  Total Change</Text>
+                <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={{totalChange <= 0 ? require('../assets/stat-decrease.png') : require('../assets/stat-increase.png')}} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>Total Change</Text>
                 <Text style={{fontSize:28,fontWeight:'800',color:totalChange <= 0 ? C.green : C.red}}>{totalChange > 0 ? '+' : ''}{totalChange} kg</Text>
                 <Text style={{fontSize:12,color:C.subtle,marginTop:4}}>Since {new Date(entries[entries.length-1]?.loggedAt).toLocaleDateString('en-SG')}</Text>
               </View>
@@ -201,14 +201,14 @@ const WeightTrackingScreen = ({ navigation, route }) => {
         {/* Weight history */}
         <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:16}}>
           <View style={{flexDirection:'row',alignItems:'center',gap:8,marginBottom:14}}>
-            <Text style={{fontSize:15}}>📅</Text>
+            <Image source={require('../assets/stat-date.png')} style={{width:15,height:15,resizeMode:'contain'}} />
             <Text style={{fontSize:15,fontWeight:'700',color:C.dark}}>Weight History</Text>
           </View>
           {isLoading ? (
             <Text style={{color:C.subtle,textAlign:'center',paddingVertical:20}}>Loading...</Text>
           ) : entries.length === 0 ? (
             <View style={{alignItems:'center',paddingVertical:32}}>
-              <Text style={{fontSize:36,marginBottom:10}}>⚖️</Text>
+              <Image source={require('../assets/stat-weight.png')} style={{width:36,height:36,resizeMode:'contain'}} />
               <Text style={{fontSize:16,fontWeight:'700',color:C.dark,marginBottom:6}}>No Weight Records Yet</Text>
               <Text style={{fontSize:13,color:C.subtle,textAlign:'center',marginBottom:16}}>Start tracking your weight to monitor your progress over time</Text>
               <TouchableOpacity style={{backgroundColor:C.purple,borderRadius:8,paddingVertical:10,paddingHorizontal:20}} onPress={() => setShowModal(true)}>
@@ -239,7 +239,7 @@ const WeightTrackingScreen = ({ navigation, route }) => {
                     )}
                   </View>
                   <TouchableOpacity onPress={() => handleDelete(e.entryId)} style={{padding:8}}>
-                    <Text style={{fontSize:18}}>🗑</Text>
+                    <Image source={require('../assets/icon-delete.png')} style={{width:18,height:18,resizeMode:'contain'}} />
                   </TouchableOpacity>
                 </View>
               );

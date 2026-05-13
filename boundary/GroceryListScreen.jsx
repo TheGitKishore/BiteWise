@@ -3,7 +3,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, StatusBar, Modal,
-  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Image} from 'react-native';
 import { SafeAreaView }   from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -39,7 +39,7 @@ const AddItemModal = ({ visible, onClose, onAdd }) => {
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', paddingHorizontal: 16 }}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{ backgroundColor: C.white, borderRadius: 16, padding: 22, paddingTop: 40 }}>
-          <TouchableOpacity style={{ position: 'absolute', top: 12, right: 16 }} onPress={handleClose}><Text style={{ color: C.subtle, fontSize: 16 }}>✕</Text></TouchableOpacity>
+          <TouchableOpacity style={{ position: 'absolute', top: 12, right: 16 }} onPress={handleClose}><Image source={require('../assets/icon-close.png')} style={{width:16,height:16,resizeMode:'contain'}} /></TouchableOpacity>
           <Text style={{ fontSize: 16, fontWeight: '700', color: C.dark, textAlign: 'center', marginBottom: 16 }}>Add Item</Text>
           {err ? <Text style={{ color: C.errorText, fontSize: 12, marginBottom: 6 }}>{err}</Text> : null}
           <Text style={{ fontSize: 13, fontWeight: '600', color: C.dark, marginBottom: 4 }}>Item Name *</Text>
@@ -115,14 +115,14 @@ const GroceryListScreen = ({ navigation, route }) => {
         <Text style={s.navTitle}>Grocery List</Text>
         <View style={{ width: 50 }} />
       </View>
-      {banner ? <View style={s.bannerBar}><Text style={s.bannerTxt}>✅  {banner}</Text></View> : null}
+      {banner ? <View style={s.bannerBar}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={s.bannerTxt}>{banner}</Text></View> : null}
       <AddItemModal visible={showAdd} onClose={() => setShowAdd(false)} onAdd={handleAdd} />
       <ScrollView contentContainerStyle={s.scroll}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >
         <View style={s.header}>
-          <View style={s.badge}><Text style={s.badgeTxt}>☆ Premium</Text></View>
+          <View style={s.badge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.badgeTxt}>Premium</Text></View>
           <Text style={s.pageTitle}>Grocery List</Text>
           <Text style={s.pageSub}>Auto-generated from your saved recipes</Text>
         </View>
@@ -155,21 +155,21 @@ const GroceryListScreen = ({ navigation, route }) => {
             {list.items.map((item) => (
               <View key={item.itemId} style={s.itemRow}>
                 <TouchableOpacity style={[s.checkbox, item.checked && s.checkboxOn]} onPress={() => handleToggle(item.itemId)}>
-                  {item.checked ? <Text style={s.tick}>✓</Text> : null}
+                  {item.checked ? <Image source={require('../assets/icon-check.png')} style={[s.tick,{width:14,height:14,resizeMode:'contain'}]} /> : null}
                 </TouchableOpacity>
                 <View style={s.itemInfo}>
                   <Text style={[s.itemName, item.checked && s.strikethrough]}>{item.name}</Text>
                   <Text style={s.itemQty}>{item.quantity} {item.unit}</Text>
                 </View>
                 <TouchableOpacity onPress={() => handleDelete(item.itemId)} style={s.itemDel}>
-                  <Text style={s.itemDelTxt}>✕</Text>
+                  <Image source={require('../assets/icon-close.png')} style={[s.itemDelTxt,{width:16,height:16,resizeMode:'contain'}]} />
                 </TouchableOpacity>
               </View>
             ))}
           </View>
         ) : (
           <View style={s.emptyCard}>
-            <Text style={s.emptyEmoji}>🛒</Text>
+            <Image source={require('../assets/empty-grocery.png')} style={[s.emptyEmoji,{width:48,height:48,resizeMode:'contain'}]} />
             <Text style={s.emptyTitle}>No Grocery List Yet</Text>
             <Text style={s.emptyBody}>Select a saved recipe above to auto-generate your shopping list.</Text>
           </View>

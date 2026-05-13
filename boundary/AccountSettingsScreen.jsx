@@ -89,7 +89,7 @@ const Banner = ({ message, type }) => {
   const isSuccess = type === 'success';
   return (
     <View style={[bn.wrap, isSuccess ? bn.success : bn.error]}>
-      <Text style={bn.icon}>{isSuccess ? '✅' : '⚠️'}</Text>
+      {isSuccess  ? <Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /> : <Image source={require('../assets/icon-warning.png')} style={{width:20,height:20,resizeMode:'contain'}} />}
       <Text style={[bn.text, isSuccess ? bn.successText : bn.errorText]}>{message}</Text>
     </View>
   );
@@ -222,7 +222,7 @@ const AccountSettingsScreen = ({ navigation, route }) => {
     setIsUpdating(false);
   
     if (result.success) {
-      // 🔥 IMPORTANT: refresh user from backend OR merge safely
+      // IMPORTANT: refresh user from backend OR merge safely
       const refreshed = await viewDetailsCtrl.fetchAccountDetails(user);
     
       if (refreshed.success) {
@@ -447,7 +447,7 @@ const AccountSettingsScreen = ({ navigation, route }) => {
             <Text style={styles.profileDropdownTxt}>
               {profileOptions.find(p => p.profileType === selectedProfile)?.label || 'Select profile'}
             </Text>
-            <Text style={styles.profileDropdownArrow}>{profileDropdown ? '▲' : '▼'}</Text>
+            {profileDropdown  ? <Image source={require('../assets/icon-chevron-up.png')} style={{width:11,height:11,resizeMode:'contain'}} /> : <Image source={require('../assets/icon-chevron-down.png')} style={{width:11,height:11,resizeMode:'contain'}} />}
           </TouchableOpacity>
           {selectableProfileOptions.length === 0 && (
             <Text style={styles.profileHint}>No other profile options available.</Text>
@@ -466,7 +466,7 @@ const AccountSettingsScreen = ({ navigation, route }) => {
                     <Text style={styles.profileDropdownItemLabel}>{p.label}</Text>
                     <Text style={styles.profileDropdownItemDesc} numberOfLines={1}>{p.description}</Text>
                   </View>
-                  {selectedProfile === p.profileType && <Text style={styles.profileDropdownCheck}>✓</Text>}
+                  {selectedProfile === p.profileType && <Image source={require('../assets/icon-check.png')} style={[styles.profileDropdownCheck,{width:14,height:14,resizeMode:'contain'}]} />}
                 </TouchableOpacity>
               ))}
             </View>
@@ -520,7 +520,7 @@ const AccountSettingsScreen = ({ navigation, route }) => {
             accessibilityRole="button"
             accessibilityLabel="Write a Review"
           >
-            <Text style={styles.reviewBtnIcon}>⭐</Text>
+            <Image source={require('../assets/tile-curator-program.png')} style={[styles.reviewBtnIcon,{width:20,height:20,resizeMode:'contain'}]} />
             <Text style={styles.reviewBtnText}>Write a Review</Text>
             <Text style={styles.reviewBtnArrow}>›</Text>
           </TouchableOpacity>

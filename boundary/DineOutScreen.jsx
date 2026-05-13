@@ -73,7 +73,7 @@ const BudgetPill = ({ consumed, remaining, targets }) => {
   return (
     <View style={bp.wrap}>
       <View style={bp.pill}>
-        <Text style={bp.icon}>🍽️</Text>
+        <Image source={require('../assets/placeholder-recipe.png')} style={[bp.icon,{width:44,height:44,resizeMode:'contain'}]} />
         <View>
           <Text style={bp.label}>Remaining Budget</Text>
           <Text style={bp.value}>
@@ -179,9 +179,9 @@ const RestaurantCard = ({ restaurant }) => {
         <View style={rc.info}>
           <Text style={rc.name}>{restaurant.name}</Text>
           <Text style={rc.meta}>
-            {restaurant.cuisine}  ·  {restaurant.priceRange}  ·  ⭐ {restaurant.rating}
+            {restaurant.cuisine}  ·  {restaurant.priceRange}  ·  <Image source={require('../assets/tile-curator-program.png')} style={{width:14,height:14,resizeMode:'contain'}} /> {restaurant.rating}
           </Text>
-          <Text style={rc.address} numberOfLines={1}>📍 {restaurant.address}</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-location.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={rc.address} numberOfLines={1}>{restaurant.address}</Text>
         </View>
 
         {/* Right: match badge + chevron */}
@@ -189,7 +189,7 @@ const RestaurantCard = ({ restaurant }) => {
           <View style={rc.matchBadge}>
             <Text style={rc.matchTxt}>{matchCount} item{matchCount !== 1 ? 's' : ''} fit</Text>
           </View>
-          <Text style={rc.chevron}>{expanded ? '▲' : '▼'}</Text>
+          {expanded  ? <Image source={require('../assets/icon-chevron-up.png')} style={{width:11,height:11,resizeMode:'contain'}} /> : <Image source={require('../assets/icon-chevron-down.png')} style={{width:11,height:11,resizeMode:'contain'}} />}
         </View>
       </TouchableOpacity>
 
@@ -240,7 +240,7 @@ const rc = StyleSheet.create({
 // ── Empty State ───────────────────────────────────────────────────────────────
 const EmptyState = ({ query }) => (
   <View style={es.card}>
-    <Text style={es.emoji}>{query ? '🔍' : '🎉'}</Text>
+    {query  ? <Image source={require('../assets/empty-search.png')} style={{width:22,height:22,resizeMode:'contain'}} /> : <Image source={require('../assets/empty-goal-reached.png')} style={{width:22,height:22,resizeMode:'contain'}} />}
     <Text style={es.title}>
       {query ? 'No restaurants match your search' : 'Goal almost reached!'}
     </Text>
@@ -323,7 +323,7 @@ const DineOutScreen = ({ navigation, route }) => {
 
         {/* Page header */}
         <View style={s.header}>
-          <View style={s.premBadge}><Text style={s.premBadgeTxt}>👑 Premium</Text></View>
+          <View style={s.premBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-crown.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.premBadgeTxt}>Premium</Text></View>
           <Text style={s.pageTitle}>Dine Out Options</Text>
           <Text style={s.pageSub}>Restaurants with menu items that fit your remaining daily budget</Text>
         </View>
@@ -331,7 +331,7 @@ const DineOutScreen = ({ navigation, route }) => {
         {loading ? (
           <View style={s.loadingWrap}><Text style={s.loadingTxt}>Finding options near you...</Text></View>
         ) : error ? (
-          <View style={s.errorWrap}><Text style={s.errorTxt}>⚠️  {error}</Text></View>
+          <View style={s.errorWrap}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-warning.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={s.errorTxt}>{error}</Text></View></View>
         ) : (
           <>
             {/* Budget pill */}
@@ -341,7 +341,7 @@ const DineOutScreen = ({ navigation, route }) => {
 
             {/* Info strip */}
             <View style={s.infoStrip}>
-              <Text style={s.infoIcon}>💡</Text>
+              <Image source={require('../assets/section-tips.png')} style={[s.infoIcon,{width:16,height:16,resizeMode:'contain'}]} />
               <Text style={s.infoTxt}>
                 Showing restaurants with meals that fit your remaining{' '}
                 <Text style={s.infoHighlight}>{Math.round(remainingCalories)} kcal</Text>.
@@ -351,7 +351,7 @@ const DineOutScreen = ({ navigation, route }) => {
 
             {/* Search bar */}
             <View style={s.searchWrap}>
-              <Text style={s.searchIcon}>🔍</Text>
+              <Image source={require('../assets/empty-search.png')} style={[s.searchIcon,{width:22,height:22,resizeMode:'contain'}]} />
               <TextInput
                 style={s.searchInput}
                 placeholder="Search restaurants or dishes..."
@@ -361,7 +361,7 @@ const DineOutScreen = ({ navigation, route }) => {
               />
               {query.length > 0 && (
                 <TouchableOpacity onPress={() => setQuery('')} style={s.clearBtn}>
-                  <Text style={s.clearTxt}>✕</Text>
+                  <Image source={require('../assets/icon-close.png')} style={[s.clearTxt,{width:16,height:16,resizeMode:'contain'}]} />
                 </TouchableOpacity>
               )}
             </View>

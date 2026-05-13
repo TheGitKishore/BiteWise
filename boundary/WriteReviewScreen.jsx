@@ -44,7 +44,7 @@ const WriteReviewScreen = ({ navigation, route }) => {
     return (
       <SafeAreaView style={{flex:1,backgroundColor:C.bg}}>
         <View style={{flex:1,alignItems:'center',justifyContent:'center',paddingHorizontal:32}}>
-          <Text style={{fontSize:56,marginBottom:16}}>🌟</Text>
+          <Image source={require('../assets/empty-write-review.png')} style={{width:56,height:56,resizeMode:'contain'}} />
           <Text style={{fontSize:22,fontWeight:'800',color:C.dark,marginBottom:8,textAlign:'center'}}>Thank You!</Text>
           <Text style={{fontSize:14,color:C.subtle,textAlign:'center',marginBottom:24,lineHeight:21}}>Your review has been submitted and will appear once approved by our team.</Text>
           <TouchableOpacity style={{backgroundColor:C.purple,borderRadius:10,paddingVertical:13,paddingHorizontal:32}} onPress={() => navigation.goBack()} activeOpacity={0.85}>
@@ -78,7 +78,7 @@ const WriteReviewScreen = ({ navigation, route }) => {
           <View style={{flexDirection:'row',gap:10}}>
             {[1,2,3,4,5].map((star) => (
               <TouchableOpacity key={star} onPress={() => setRating(star)} activeOpacity={0.8}>
-                <Text style={{fontSize:36,color:star<=rating?'#F59E0B':'#D1D5DB'}}>{star<=rating?'★':'☆'}</Text>
+                {star<=rating ? <Image source={require('../assets/icon-star-filled.png')} style={{width:36,height:36,resizeMode:'contain'}} /> : <Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} />}
               </TouchableOpacity>
             ))}
           </View>

@@ -81,7 +81,7 @@ const Banner = ({ message }) => {
   if (!message) return null;
   return (
     <View style={bn.wrap}>
-      <Text style={bn.icon}>✅</Text>
+      <Image source={require('../assets/icon-success.png')} style={[bn.icon,{width:20,height:20,resizeMode:'contain'}]} />
       <Text style={bn.text}>{message}</Text>
     </View>
   );
@@ -215,7 +215,7 @@ const ModalSheet = ({ visible, title, subtitle, onClose, children }) => (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={ms.sheet}>
         <TouchableOpacity style={ms.closeBtn} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close">
-          <Text style={ms.closeIcon}>✕</Text>
+          <Image source={require('../assets/icon-close.png')} style={[ms.closeIcon,{width:16,height:16,resizeMode:'contain'}]} />
         </TouchableOpacity>
         <Text style={ms.title}>{title}</Text>
         {subtitle ? <Text style={ms.subtitle}>{subtitle}</Text> : null}
@@ -423,7 +423,7 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
   return (
     <ModalSheet
       visible={visible}
-      title={step === 'capture' ? 'Camera Food Recognition' : '📷 Confirm Food Recognition'}
+      title={step === 'capture' ? 'Camera Food Recognition' : 'Confirm Food Recognition'}
       subtitle={step === 'capture' ? 'Simulate taking a photo to automatically recognize food' : 'Verify the details and select a meal category'}
       onClose={handleClose}
     >
@@ -478,7 +478,7 @@ const CameraModal = ({ visible, userId, onClose, onSuccess }) => {
           </View>
 
           <View style={cm.modelBadge}>
-            <Text style={cm.modelBadgeIcon}>{detected.source === 'local' ? '◎' : '◇'}</Text>
+            {detected.source === 'local'  ? <Image source={require('../assets/icon-model-local.png')} style={{width:14,height:14,resizeMode:'contain'}} /> : <Image source={require('../assets/icon-model-api.png')} style={{width:14,height:14,resizeMode:'contain'}} />}
             <Text style={cm.modelBadgeText}>
               {detected.source === 'local' ? 'Local AI' : 'Anthropic AI'}
               {typeof detected.confidence === 'number' ? ` · ${Math.round(detected.confidence * 100)}%` : ''}
@@ -663,7 +663,7 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg, onEntryLogged, use
       {/* Badge shown when results come from Open Food Facts */}
       {fromAPI && displayItems.length > 0 && (
         <View style={db.apiBadge}>
-          <Text style={db.apiBadgeText}>🌐 Results from Open Food Facts</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-web.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={db.apiBadgeText}>Results from Open Food Facts</Text>
         </View>
       )}
 
@@ -743,8 +743,8 @@ const db = StyleSheet.create({
 
 const LogFoodTab = ({ user, allItems, dbLoading, dbError, onOpenManual, onOpenCamera, onEntryLogged }) => (
   <View>
-    <ActionTile icon="➕"  title="Manual Entry"   subtitle="Manually log food details"      onPress={onOpenManual} />
-    <ActionTile icon="📷" title="Camera Capture" subtitle="Take a photo to recognize food" onPress={onOpenCamera} />
+    <ActionTile icon={require('../assets/tile-manual-entry.png')}  title="Manual Entry"   subtitle="Manually log food details"      onPress={onOpenManual} />
+    <ActionTile icon={require('../assets/tile-camera-capture.png')} title="Camera Capture" subtitle="Take a photo to recognize food" onPress={onOpenCamera} />
     <FoodDatabaseSection
       allItems={allItems}
       isLoading={dbLoading}
@@ -871,7 +871,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
   }, []);
 
   const loadHistory = useCallback(async () => {
-    if (!currentUser?.userId) return; // ✅ wait for user
+    if (!currentUser?.userId) return; // wait for user
     setHistLoading(true);
     setHistError('');
     const result = await historyController.fetchPastEntries(currentUser.userId);
@@ -894,7 +894,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
     if (!currentUser?.userId) return;
   
     try {
-      const result = await userController.getUser(currentUser.userId); // ✅ FIXED
+      const result = await userController.getUser(currentUser.userId); // FIXED
     
       const userData = result?.data || result?.user;
     
@@ -920,7 +920,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
   useFocusEffect(
     useCallback(() => {
       loadTodayEntries();
-      refreshUserData();   // ✅ ADD THIS
+      refreshUserData();   // ADD THIS
     }, [loadTodayEntries, refreshUserData])
   );
 
@@ -928,14 +928,14 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
     setActiveTab(tab);
 
     if (tab === 'History') loadHistory();
-    if (tab === "Today's Entries") loadTodayEntries(); // ✅ ADD THIS
+    if (tab === "Today's Entries") loadTodayEntries(); // ADD THIS
   }, [loadHistory, loadTodayEntries]);
 
   const handleEntryLogged = useCallback((message, entry) => {
     setShowManual(false);
     setShowCamera(false);
     setBanner(message);
-    // ✅ reload from backend (source of truth)
+    // reload from backend (source of truth)
     loadTodayEntries();
     setActiveTab("Today's Entries");
     setTimeout(() => setBanner(''), 4000);
@@ -1011,7 +1011,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
         <View style={styles.titleRow}>
           <Text style={styles.pageTitle}>Food Tracking</Text>
           <TouchableOpacity style={styles.goalBtn} onPress={() => navigation.navigate('NutritionTargetsScreen', { user: currentUser })} activeOpacity={0.8}>
-            <Text style={styles.goalBtnText}>↗  Set Daily Goal</Text>
+            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-growth.png')} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={styles.goalBtnText}>Set Daily Goal</Text>
           </TouchableOpacity>
         </View>
 

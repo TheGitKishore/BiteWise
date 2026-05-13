@@ -88,7 +88,7 @@ const AlternativeCard = ({ item }) => (
     <View style={ac.divider} />
     <Text style={ac.benefitsLabel}>Benefits:</Text>
     {item.benefits.map((b) => (
-      <Text key={b} style={ac.benefit}>✓ {b}</Text>
+      <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-check.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text key={b} style={ac.benefit}>{b}</Text>
     ))}
   </View>
 );
@@ -112,7 +112,7 @@ const FoodGroup = ({ group }) => (
   <View style={fg.container}>
     <View style={fg.header}>
       <Text style={fg.originalName}>{group.original}</Text>
-      <Text style={fg.chefIcon}>👨‍🍳</Text>
+      <Image source={require('../assets/icon-chef.png')} style={[fg.chefIcon,{width:22,height:22,resizeMode:'contain'}]} />
     </View>
     {group.alternatives.map((alt) => (
       <AlternativeCard key={alt.id} item={alt} />
@@ -189,14 +189,14 @@ const FoodAlternativesScreen = ({ navigation, route }) => {
 
         {/* Page header */}
         <View style={s.header}>
-          <View style={s.premBadge}><Text style={s.premBadgeTxt}>👑 Premium</Text></View>
+          <View style={s.premBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-crown.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.premBadgeTxt}>Premium</Text></View>
           <Text style={s.pageTitle}>Healthier Food Alternatives</Text>
           <Text style={s.pageSub}>Discover healthier substitutes for your favorite foods without compromising taste</Text>
         </View>
 
         {/* Search bar */}
         <View style={s.searchWrap}>
-          <Text style={s.searchIcon}>🔍</Text>
+          <Image source={require('../assets/icon-search.png')} style={[s.searchIcon,{width:14,height:14,resizeMode:'contain'}]} />
           <TextInput
             style={s.searchInput}
             placeholder="Search for food alternatives..."
@@ -208,7 +208,7 @@ const FoodAlternativesScreen = ({ navigation, route }) => {
 
         {/* Smart Substitutions info card */}
         <View style={s.infoCard}>
-          <Text style={s.infoIcon}>↗</Text>
+          <Image source={require('../assets/stat-growth.png')} style={[s.infoIcon,{width:13,height:13,resizeMode:'contain'}]} />
           <View style={s.infoTextWrap}>
             <Text style={s.infoTitle}>Smart Substitutions</Text>
             <Text style={s.infoBody}>

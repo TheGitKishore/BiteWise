@@ -53,7 +53,7 @@ const nav = StyleSheet.create({
 const Banner = ({ message }) => {
   if (!message) return null;
   return (
-    <View style={bn.wrap}><Text style={bn.icon}>✅</Text><Text style={bn.text}>{message}</Text></View>
+    <View style={bn.wrap}><Image source={require('../assets/icon-success.png')} style={[bn.icon,{width:20,height:20,resizeMode:'contain'}]} /><Text style={bn.text}>{message}</Text></View>
   );
 };
 const bn = StyleSheet.create({

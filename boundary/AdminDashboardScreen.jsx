@@ -17,8 +17,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
-  StyleSheet, StatusBar, Alert,
-} from 'react-native';
+  StyleSheet, StatusBar, Alert,, Image} from 'react-native';
 import { SafeAreaView }   from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -77,7 +76,7 @@ const TABS = ['Overview', 'Users', 'Reviews', 'Curators', 'System'];
 const AdminHeader = ({ onLogout }) => (
   <View style={ah.header}>
     <View style={ah.left}>
-      <Text style={ah.shield}>🛡️</Text>
+      <Image source={require('../assets/icon-shield-large.png')} style={[ah.shield,{width:20,height:20,resizeMode:'contain'}]} />
       <Text style={ah.title}>BiteWise Admin Panel</Text>
     </View>
     <TouchableOpacity style={ah.logoutBtn} onPress={onLogout} accessibilityRole="button">
@@ -120,7 +119,7 @@ const Banner = ({ message }) => {
   if (!message) return null;
   return (
     <View style={bn.wrap}>
-      <Text style={bn.icon}>✅</Text>
+      <Image source={require('../assets/icon-success.png')} style={[bn.icon,{width:20,height:20,resizeMode:'contain'}]} />
       <Text style={bn.text}>{message}</Text>
     </View>
   );
@@ -134,7 +133,7 @@ const bn = StyleSheet.create({
 // ── Search Bar ────────────────────────────────────────────────────────────────
 const SearchBar = ({ value, onChangeText, placeholder }) => (
   <View style={sb.wrap}>
-    <Text style={sb.icon}>🔍</Text>
+    <Image source={require('../assets/icon-search.png')} style={[sb.icon,{width:14,height:14,resizeMode:'contain'}]} />
     <TextInput style={sb.input} value={value} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={C.subtle} autoCorrect={false} />
   </View>
 );
@@ -201,12 +200,12 @@ const OverviewTab = () => {
   return (
     <View>
       <Text style={gs.heading}>Dashboard Overview</Text>
-      <StatCard label="Total Users"          value={stats.totalUsers}          icon="👥" iconColor={C.subtle}  />
-      <StatCard label="Active Users"         value={stats.activeUsers}         icon="✅" iconColor={C.green}   />
-      <StatCard label="Premium Users"        value={stats.premiumUsers}        icon="↗" iconColor={C.purple}  />
-      <StatCard label="Banned Users"         value={stats.bannedUsers}         icon="🚫" iconColor={C.red}     />
-      <StatCard label="Total Reviews"        value={stats.totalReviews}        icon="💬" iconColor={C.subtle}  badge={stats.flaggedReviews > 0 ? `${stats.flaggedReviews} flagged` : null} />
-      <StatCard label="Pending Applications" value={stats.pendingApplications} icon="🕐" iconColor={C.amber}   />
+      <StatCard label="Total Users"          value={stats.totalUsers}          icon={require('../assets/stat-users.png')} iconColor={C.subtle}  />
+      <StatCard label="Active Users"         value={stats.activeUsers}         icon={require('../assets/icon-success.png')} iconColor={C.green}   />
+      <StatCard label="Premium Users"        value={stats.premiumUsers}        icon={require('../assets/stat-growth.png')} iconColor={C.purple}  />
+      <StatCard label="Banned Users"         value={stats.bannedUsers}         icon={require('../assets/icon-banned.png')} iconColor={C.red}     />
+      <StatCard label="Total Reviews"        value={stats.totalReviews}        icon={require('../assets/stat-reviews.png')} iconColor={C.subtle}  badge={stats.flaggedReviews > 0 ? `${stats.flaggedReviews} flagged` : null} />
+      <StatCard label="Pending Applications" value={stats.pendingApplications} icon={require('../assets/stat-pending.png')} iconColor={C.amber}   />
       {/* System Status */}
       <View style={[sc.card, { flexDirection: 'column', alignItems: 'flex-start' }]}>
         <Text style={sc.label}>System Status</Text>
@@ -233,7 +232,7 @@ const UsersTab = ({ adminUser, onBanner }) => {
         setLoading(true);
 
         const r = await viewUsersCtrl.fetchAllUsers();
-        // 👆 IMPORTANT: adjust name if your controller uses different method
+        // IMPORTANT: adjust name if your controller uses different method
 
         if (!isActive) return;
 
@@ -373,11 +372,11 @@ const UsersTab = ({ adminUser, onBanner }) => {
                   style={[ut.banBtn, banned && ut.unbanBtn]}
                   onPress={() => handleBanToggle(user)}
                 >
-                  <Text style={[ut.banIcon, banned && ut.unbanIcon]}>{banned ? '✓' : '🚫'}</Text>
+                  {banned  ? <Image source={require('../assets/icon-check.png')} style={{width:14,height:14,resizeMode:'contain'}} /> : <Image source={require('../assets/icon-banned.png')} style={{width:20,height:20,resizeMode:'contain'}} />}
                 </TouchableOpacity>
                 {/* UC #101 — Terminate */}
                 <TouchableOpacity style={ut.deleteBtn} onPress={() => handleTerminate(user)}>
-                  <Text style={ut.deleteIcon}>🗑</Text>
+                  <Image source={require('../assets/icon-delete.png')} style={[ut.deleteIcon,{width:18,height:18,resizeMode:'contain'}]} />
                 </TouchableOpacity>
               </View>
             )}
@@ -452,7 +451,7 @@ const ReviewsTab = ({ onBanner }) => {
     ]);
   }, [onBanner]);
 
-  const stars = (n) => '★'.repeat(n) + '☆'.repeat(5 - n);
+  const stars = (n) => [...Array(5)].map((_, i) => i < n ? <Image key={i} source={require('../assets/icon-star-filled.png')} style={{width:20,height:20,resizeMode:'contain'}} /> : <Image key={i} source={require('../assets/icon-star-empty.png')} style={{width:20,height:20,resizeMode:'contain'}} />);
 
   if (loading) return <Text style={gs.loading}>Loading...</Text>;
 
@@ -476,14 +475,14 @@ const ReviewsTab = ({ onBanner }) => {
 
           {/* UC #104 — Remove button */}
           <TouchableOpacity style={rt.removeBtn} onPress={() => handleRemove(review)}>
-            <Text style={rt.removeBtnTxt}>🗑  Remove</Text>
+            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-delete.png')} style={{width:18,height:18,resizeMode:'contain'}} /><Text style={rt.removeBtnTxt}>Remove</Text>
           </TouchableOpacity>
 
           <Text style={rt.content}>{review.content}</Text>
 
           {review.flagged && (
             <View style={rt.flagWarning}>
-              <Text style={rt.flagWarnTxt}>⚠  This review has been flagged for violating community guidelines</Text>
+              <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-warning.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={rt.flagWarnTxt}>This review has been flagged for violating community guidelines</Text>
             </View>
           )}
         </View>
@@ -614,11 +613,11 @@ const CuratorsTab = ({ adminUser, onBanner }) => {
               <View style={ct.actionRow}>
                 {/* UC #106 — Approve */}
                 <TouchableOpacity style={ct.approveBtn} onPress={() => handleApprove(app)}>
-                  <Text style={ct.approveIcon}>✓</Text>
+                  <Image source={require('../assets/icon-check.png')} style={[ct.approveIcon,{width:14,height:14,resizeMode:'contain'}]} />
                 </TouchableOpacity>
                 {/* UC #107 — Reject */}
                 <TouchableOpacity style={ct.rejectBtn} onPress={() => handleReject(app)}>
-                  <Text style={ct.rejectIcon}>✕</Text>
+                  <Image source={require('../assets/icon-close.png')} style={[ct.rejectIcon,{width:16,height:16,resizeMode:'contain'}]} />
                 </TouchableOpacity>
               </View>
             )}
@@ -696,7 +695,7 @@ const SystemTab = () => {
         <Text style={st.cardHeading}>Pending Updates</Text>
         {info.pendingUpdates.map((u, i) => (
           <View key={i} style={st.updateRow}>
-            <Text style={st.checkIcon}>✅</Text>
+            <Image source={require('../assets/icon-success.png')} style={[st.checkIcon,{width:20,height:20,resizeMode:'contain'}]} />
             <Text style={st.updateTxt}>{u}</Text>
           </View>
         ))}
@@ -709,7 +708,7 @@ const SystemTab = () => {
 
       {/* Important Notes */}
       <View style={st.notesCard}>
-        <Text style={st.notesIcon}>⚠️</Text>
+        <Image source={require('../assets/icon-warning.png')} style={[st.notesIcon,{width:20,height:20,resizeMode:'contain'}]} />
         <View style={st.notesBody}>
           <Text style={st.notesHeading}>Important Notes</Text>
           {info.importantNotes.map((n, i) => (

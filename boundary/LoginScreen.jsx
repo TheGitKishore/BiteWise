@@ -83,7 +83,7 @@ const Banner = ({ message, type }) => {
   const isSuccess = type === 'success';
   return (
     <View style={[bn.wrap, isSuccess ? bn.success : bn.error]}>
-      <Text style={bn.icon}>{isSuccess ? '✅' : '⚠️'}</Text>
+      {isSuccess  ? <Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /> : <Image source={require('../assets/icon-warning.png')} style={{width:20,height:20,resizeMode:'contain'}} />}
       <Text style={[bn.text, isSuccess ? bn.successText : bn.errorText]}>
         {message}
       </Text>

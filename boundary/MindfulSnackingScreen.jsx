@@ -57,13 +57,13 @@ const nav = StyleSheet.create({
 const CorePrinciplesCard = ({ principles }) => (
   <View style={ss.card}>
     <View style={ss.cardHeader}>
-      <Text style={ss.cardHeaderIcon}>🧠</Text>
+      <Image source={require('../assets/section-mindful.png')} style={[ss.cardHeaderIcon,{width:18,height:18,resizeMode:'contain'}]} />
       <Text style={ss.cardHeaderTitle}>Core Principles of Mindful Snacking</Text>
     </View>
     {principles.map((p) => (
       <View key={p.id} style={cp.row}>
         <View style={cp.checkCircle}>
-          <Text style={cp.checkMark}>✓</Text>
+          <Image source={require('../assets/icon-check.png')} style={[cp.checkMark,{width:14,height:14,resizeMode:'contain'}]} />
         </View>
         <View style={cp.textWrap}>
           <Text style={cp.title}>{p.title}</Text>
@@ -86,7 +86,7 @@ const cp = StyleSheet.create({
 const ManagingCravingsCard = ({ cravings }) => (
   <View style={ss.card}>
     <View style={ss.cardHeader}>
-      <Text style={ss.cardHeaderIcon}>🎯</Text>
+      <Image source={require('../assets/section-goals.png')} style={[ss.cardHeaderIcon,{width:18,height:18,resizeMode:'contain'}]} />
       <Text style={ss.cardHeaderTitle}>Managing Cravings</Text>
     </View>
     {cravings.map((c) => (
@@ -107,7 +107,7 @@ const mc = StyleSheet.create({
 const WhenToSnackCard = ({ slots }) => (
   <View style={ss.card}>
     <View style={ss.cardHeader}>
-      <Text style={ss.cardHeaderIcon}>🕐</Text>
+      <Image source={require('../assets/section-timing.png')} style={[ss.cardHeaderIcon,{width:18,height:18,resizeMode:'contain'}]} />
       <Text style={ss.cardHeaderTitle}>When to Snack</Text>
     </View>
     {slots.map((slot) => (
@@ -132,7 +132,7 @@ const SnackIdeasCard = ({ snackIdeas, activeFilter, onFilterChange, onViewRecipe
   return (
     <View style={ss.card}>
       <View style={ss.cardHeader}>
-        <Text style={ss.cardHeaderIcon}>🍎</Text>
+        <Image source={require('../assets/section-snacks.png')} style={[ss.cardHeaderIcon,{width:18,height:18,resizeMode:'contain'}]} />
         <Text style={ss.cardHeaderTitle}>Smart Snack Ideas</Text>
       </View>
 
@@ -172,7 +172,7 @@ const SnackIdeasCard = ({ snackIdeas, activeFilter, onFilterChange, onViewRecipe
 
           {/* Timing badge */}
           <View style={si.timingBadge}>
-            <Text style={si.timingIcon}>🕐 </Text>
+            <Image source={require('../assets/section-timing.png')} style={[si.timingIcon,{width:18,height:18,resizeMode:'contain'}]} />
             <Text style={si.timingTxt}>{snack.timing}</Text>
           </View>
 
@@ -180,13 +180,13 @@ const SnackIdeasCard = ({ snackIdeas, activeFilter, onFilterChange, onViewRecipe
           <View style={si.divider} />
           <Text style={si.benefitsLabel}>Benefits:</Text>
           {snack.benefits.map((b) => (
-            <Text key={b} style={si.benefit}>✓ {b}</Text>
+            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-check.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text key={b} style={si.benefit}>{b}</Text>
           ))}
 
           {/* View Recipe button */}
           <View style={si.divider} />
           <TouchableOpacity style={si.viewRecipeBtn} onPress={() => onViewRecipe(snack)}>
-            <Text style={si.viewRecipeIcon}>👑 </Text>
+            <Image source={require('../assets/icon-premium-crown.png')} style={[si.viewRecipeIcon,{width:12,height:12,resizeMode:'contain'}]} />
             <Text style={si.viewRecipeTxt}>View Recipe</Text>
           </TouchableOpacity>
         </View>
@@ -256,7 +256,7 @@ const pc = StyleSheet.create({
 const WarningCard = ({ warningSign }) => (
   <View style={wc.card}>
     <View style={wc.header}>
-      <Text style={wc.icon}>⚠️</Text>
+      <Image source={require('../assets/icon-warning.png')} style={[wc.icon,{width:20,height:20,resizeMode:'contain'}]} />
       <Text style={wc.title}>{warningSign.title}</Text>
     </View>
     <Text style={wc.intro}>{warningSign.intro}</Text>
@@ -317,7 +317,7 @@ const MindfulSnackingScreen = ({ navigation, route }) => {
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
         {/* Page header */}
         <View style={s.header}>
-          <View style={s.premBadge}><Text style={s.premBadgeTxt}>👑 Premium</Text></View>
+          <View style={s.premBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-crown.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.premBadgeTxt}>Premium</Text></View>
           <Text style={s.pageTitle}>Mindful Snacking Guide</Text>
           <Text style={s.pageSub}>Master your cravings and maintain your dietary goals with smart snacking strategies</Text>
         </View>

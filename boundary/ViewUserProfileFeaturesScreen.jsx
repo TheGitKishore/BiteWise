@@ -77,7 +77,7 @@ const nav = StyleSheet.create({
 // Feature tick row
 const FeatureRow = ({ text }) => (
   <View style={fr.row}>
-    <Text style={fr.tick}>✓</Text>
+    <Image source={require('../assets/icon-check.png')} style={[fr.tick,{width:14,height:14,resizeMode:'contain'}]} />
     <Text style={fr.text}>{text}</Text>
   </View>
 );
@@ -110,8 +110,8 @@ const ProfileCard = ({ profile }) => (
     {/* Image area — replace emoji placeholder with Image component when assets are ready */}
     <View style={pc.imageArea}>
       <Text style={pc.imageEmoji}>
-        {profile.type === 'MEAL_PLANNER'    ? '📖' :
-         profile.type === 'ATHLETE'         ? '🏃' : '🥗'}
+        {profile.type === 'MEAL_PLANNER'    ? require('../assets/profile-book.png') :
+         profile.type === 'ATHLETE'         ? require('../assets/profile-athlete.png') : require('../assets/profile-meal-planner.png')}
       </Text>
     </View>
 
@@ -176,7 +176,7 @@ const pc = StyleSheet.create({
 // Empty / error state
 const EmptyState = ({ message }) => (
   <View style={es.wrap}>
-    <Text style={es.icon}>👤</Text>
+    <Image source={require('../assets/avatar-user.png')} style={[es.icon,{width:20,height:20,resizeMode:'contain'}]} />
     <Text style={es.text}>{message}</Text>
   </View>
 );

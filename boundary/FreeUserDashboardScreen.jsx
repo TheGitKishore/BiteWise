@@ -88,7 +88,7 @@ const Banner = ({ message }) => {
   if (!message) return null;
   return (
     <View style={bn.wrap}>
-      <Text style={bn.icon}>✅</Text>
+      <Image source={require('../assets/icon-success.png')} style={[bn.icon,{width:20,height:20,resizeMode:'contain'}]} />
       <Text style={bn.text}>{message}</Text>
     </View>
   );
@@ -119,7 +119,7 @@ const CalorieProgressCard = ({ consumed, goal }) => {
   return (
     <View style={cp.card}>
       <View style={cp.headerRow}>
-        <Text style={cp.headerIcon}>🎯</Text>
+        <Image source={require('../assets/section-goals.png')} style={[cp.headerIcon,{width:16,height:16,resizeMode:'contain'}]} />
         <Text style={cp.headerTitle}>Today's Calorie Progress</Text>
       </View>
       <View style={cp.row}>
@@ -181,7 +181,7 @@ const cp = StyleSheet.create({
 const UpgradeBanner = ({ onPress }) => (
   <View style={ub.wrap}>
     <View style={ub.iconCircle}>
-      <Text style={ub.icon}>👑</Text>
+      <Image source={require('../assets/icon-premium-crown.png')} style={[ub.icon,{width:12,height:12,resizeMode:'contain'}]} />
     </View>
     <View style={ub.textCol}>
       <Text style={ub.title}>Unlock Personalized Nutrition Targets</Text>
@@ -298,7 +298,7 @@ const GettingStartedSection = ({ isFree, onUpgrade }) => (
           'Daily calorie tracking & goals',
           'Browse recipes for meal ideas',
         ].map((item, i) => (
-          <Text key={i} style={gs.check}>✓  {item}</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-check.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text key={i} style={gs.check}>{item}</Text>
         ))}
         <TouchableOpacity style={gs.upgradeBtn} onPress={onUpgrade} activeOpacity={0.8}>
           <Text style={gs.upgradeBtnText}>Upgrade for More Features</Text>
@@ -345,31 +345,31 @@ const getBrandName = (profileType) => {
 // ─── SPRINT 7: Ordered tile configs by profile (Step 6) ──────────────────────
 const FREE_TILES = {
   HEALTH_ORIENTED: [
-    { icon: '🍴', title: 'Food Tracking',    subtitle: 'Log your meals and track calories',  screen: 'FoodTrackingLandingScreen' },
-    { icon: '🎯', title: 'Nutrition Targets', subtitle: 'View and manage calorie targets',    screen: 'NutritionTargetsScreen' },
-    { icon: '📈', title: 'Reports',           subtitle: 'View your progress over time',       screen: 'ReportsScreen' },
-    { icon: '📖', title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',        screen: 'RecipesScreen' },
-    { icon: '📅', title: 'Meal Plans',        subtitle: 'Create and manage meal plans',       screen: 'MealPlansScreen' },
-    { icon: '👤', title: 'Account',           subtitle: 'Manage your profile and settings',   screen: 'AccountSettingsScreen' },
-    { icon: '👨‍🍳', title: 'My Recipes',       subtitle: 'Create your own recipes',            screen: 'MyRecipesScreen' },
+    { icon: require('../assets/tile-food-tracking.png'), title: 'Food Tracking',    subtitle: 'Log your meals and track calories',  screen: 'FoodTrackingLandingScreen' },
+    { icon: require('../assets/tile-nutrition-targets.png'), title: 'Nutrition Targets', subtitle: 'View and manage calorie targets',    screen: 'NutritionTargetsScreen' },
+    { icon: require('../assets/tile-reports.png'), title: 'Reports',           subtitle: 'View your progress over time',       screen: 'ReportsScreen' },
+    { icon: require('../assets/tile-recipes.png'), title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',        screen: 'RecipesScreen' },
+    { icon: require('../assets/tile-meal-plans.png'), title: 'Meal Plans',        subtitle: 'Create and manage meal plans',       screen: 'MealPlansScreen' },
+    { icon: require('../assets/tile-account.png'), title: 'Account',           subtitle: 'Manage your profile and settings',   screen: 'AccountSettingsScreen' },
+    { icon: require('../assets/tile-my-recipes.png'), title: 'My Recipes',       subtitle: 'Create your own recipes',            screen: 'MyRecipesScreen' },
   ],
   ATHLETE: [
-    { icon: '🍴', title: 'Food Tracking',    subtitle: 'Log your meals and track calories',  screen: 'FoodTrackingLandingScreen' },
-    { icon: '🎯', title: 'Nutrition Targets', subtitle: 'View and manage calorie targets',    screen: 'NutritionTargetsScreen' },
-    { icon: '📈', title: 'Reports',           subtitle: 'View your progress over time',       screen: 'ReportsScreen' },
-    { icon: '📅', title: 'Meal Plans',        subtitle: 'Create and manage meal plans',       screen: 'MealPlansScreen' },
-    { icon: '📖', title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',        screen: 'RecipesScreen' },
-    { icon: '👤', title: 'Account',           subtitle: 'Manage your profile and settings',   screen: 'AccountSettingsScreen' },
-    { icon: '👨‍🍳', title: 'My Recipes',       subtitle: 'Create your own recipes',            screen: 'MyRecipesScreen' },
+    { icon: require('../assets/tile-food-tracking.png'), title: 'Food Tracking',    subtitle: 'Log your meals and track calories',  screen: 'FoodTrackingLandingScreen' },
+    { icon: require('../assets/tile-nutrition-targets.png'), title: 'Nutrition Targets', subtitle: 'View and manage calorie targets',    screen: 'NutritionTargetsScreen' },
+    { icon: require('../assets/tile-reports.png'), title: 'Reports',           subtitle: 'View your progress over time',       screen: 'ReportsScreen' },
+    { icon: require('../assets/tile-meal-plans.png'), title: 'Meal Plans',        subtitle: 'Create and manage meal plans',       screen: 'MealPlansScreen' },
+    { icon: require('../assets/tile-recipes.png'), title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',        screen: 'RecipesScreen' },
+    { icon: require('../assets/tile-account.png'), title: 'Account',           subtitle: 'Manage your profile and settings',   screen: 'AccountSettingsScreen' },
+    { icon: require('../assets/tile-my-recipes.png'), title: 'My Recipes',       subtitle: 'Create your own recipes',            screen: 'MyRecipesScreen' },
   ],
   MEAL_PLANNER: [
-    { icon: '📅', title: 'Meal Plans',        subtitle: 'Create and manage meal plans',       screen: 'MealPlansScreen' },
-    { icon: '📖', title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',        screen: 'RecipesScreen' },
-    { icon: '👨‍🍳', title: 'My Recipes',       subtitle: 'Create your own recipes',            screen: 'MyRecipesScreen' },
-    { icon: '🍴', title: 'Food Tracking',    subtitle: 'Log your meals and track calories',  screen: 'FoodTrackingLandingScreen' },
-    { icon: '🎯', title: 'Nutrition Targets', subtitle: 'View and manage calorie targets',    screen: 'NutritionTargetsScreen' },
-    { icon: '📈', title: 'Reports',           subtitle: 'View your progress over time',       screen: 'ReportsScreen' },
-    { icon: '👤', title: 'Account',           subtitle: 'Manage your profile and settings',   screen: 'AccountSettingsScreen' },
+    { icon: require('../assets/tile-meal-plans.png'), title: 'Meal Plans',        subtitle: 'Create and manage meal plans',       screen: 'MealPlansScreen' },
+    { icon: require('../assets/tile-recipes.png'), title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',        screen: 'RecipesScreen' },
+    { icon: require('../assets/tile-my-recipes.png'), title: 'My Recipes',       subtitle: 'Create your own recipes',            screen: 'MyRecipesScreen' },
+    { icon: require('../assets/tile-food-tracking.png'), title: 'Food Tracking',    subtitle: 'Log your meals and track calories',  screen: 'FoodTrackingLandingScreen' },
+    { icon: require('../assets/tile-nutrition-targets.png'), title: 'Nutrition Targets', subtitle: 'View and manage calorie targets',    screen: 'NutritionTargetsScreen' },
+    { icon: require('../assets/tile-reports.png'), title: 'Reports',           subtitle: 'View your progress over time',       screen: 'ReportsScreen' },
+    { icon: require('../assets/tile-account.png'), title: 'Account',           subtitle: 'Manage your profile and settings',   screen: 'AccountSettingsScreen' },
   ],
 };
 

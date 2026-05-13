@@ -80,7 +80,7 @@ const nav = StyleSheet.create({
 const StarRow = ({ rating }) => (
   <View style={sr.row}>
     {[1, 2, 3, 4, 5].map((s) => (
-      <Text key={s} style={[sr.star, { color: s <= rating ? C.star : C.starEmpty }]}>★</Text>
+      <Image key={s} source={{s <= rating ? require('../assets/icon-star-filled.png') : require('../assets/icon-star-empty.png')}} style={[sr.star,{width:20,height:20,resizeMode:'contain'}]} />
     ))}
   </View>
 );
@@ -197,7 +197,7 @@ const rc = StyleSheet.create({
 // Average rating summary card
 const AverageRatingCard = ({ averageRating, totalCount }) => (
   <View style={avg.card}>
-    <Text style={avg.star}>★</Text>
+    <Image source={require('../assets/icon-star-filled.png')} style={[avg.star,{width:36,height:36,resizeMode:'contain'}]} />
     <Text style={avg.value}>{averageRating}</Text>
     <Text style={avg.label}>Average rating from {totalCount} reviews</Text>
   </View>
@@ -233,7 +233,7 @@ const avg = StyleSheet.create({
 // Empty / error state
 const EmptyState = ({ message }) => (
   <View style={es.wrap}>
-    <Text style={es.icon}>💬</Text>
+    <Image source={require('../assets/empty-reviews.png')} style={[es.icon,{width:48,height:48,resizeMode:'contain'}]} />
     <Text style={es.text}>{message}</Text>
   </View>
 );

@@ -69,7 +69,7 @@ const Banner = ({ message }) => {
   if (!message) return null;
   return (
     <View style={bn.wrap}>
-      <Text style={bn.icon}>✅</Text>
+      <Image source={require('../assets/icon-success.png')} style={[bn.icon,{width:20,height:20,resizeMode:'contain'}]} />
       <Text style={bn.text}>{message}</Text>
     </View>
   );
@@ -218,7 +218,7 @@ const EditMyRecipeScreen = ({ navigation, route }) => {
         {/* General error */}
         {fieldErrors.general ? (
           <View style={styles.generalError}>
-            <Text style={styles.generalErrorText}>⚠️  {fieldErrors.general}</Text>
+            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-warning.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={styles.generalErrorText}>{fieldErrors.general}</Text></View>
           </View>
         ) : null}
 

@@ -5,8 +5,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  Alert, StyleSheet, StatusBar,
-} from 'react-native';
+  Alert, StyleSheet, StatusBar, Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -163,7 +162,7 @@ const CuratorRecipesScreen = ({ navigation, route }) => {
       </View>
 
       {banner ? (
-        <View style={s.bannerBar}><Text style={s.bannerTxt}>✅  {banner}</Text></View>
+        <View style={s.bannerBar}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={s.bannerTxt}>{banner}</Text></View>
       ) : null}
 
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>

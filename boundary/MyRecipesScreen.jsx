@@ -3,8 +3,8 @@
 // All data access goes through controllers → Recipe entity.
 //
 // Sprint 9 additions:
-//   - ✏️ Edit button on each recipe card → navigates to EditMyRecipeScreen
-//   - 🗑️ Delete button on each recipe card → Alert.alert confirm → deletes + removes card
+//   - Edit button on each recipe card → navigates to EditMyRecipeScreen
+//   - Delete button on each recipe card → Alert.alert confirm → deletes + removes card
 
 import React, { useState, useCallback } from 'react';
 import {
@@ -67,7 +67,7 @@ const Banner = ({ message }) => {
   if (!message) return null;
   return (
     <View style={bn.wrap}>
-      <Text style={bn.icon}>✅</Text>
+      <Image source={require('../assets/icon-success.png')} style={[bn.icon,{width:20,height:20,resizeMode:'contain'}]} />
       <Text style={bn.text}>{message}</Text>
     </View>
   );
@@ -84,7 +84,7 @@ const RecipeCard = ({ recipe, onEdit, onDelete }) => (
     {/* Recipe info */}
     <Text style={rc.title}>{recipe.title}</Text>
     <Text style={rc.meta}>
-      ⏱ {recipe.prepTimeMins} min  •  {recipe.calories} kcal  •  {recipe.difficulty}
+      <Image source={require('../assets/stat-prep-time.png')} style={{width:14,height:14,resizeMode:'contain'}} />{recipe.prepTimeMins} min  •  {recipe.calories} kcal  •  {recipe.difficulty}
     </Text>
 
     {recipe.tags?.length > 0 && (
@@ -100,11 +100,11 @@ const RecipeCard = ({ recipe, onEdit, onDelete }) => (
     {/* Edit + Delete action row — separated by top border */}
     <View style={rc.actionRow}>
       <TouchableOpacity style={rc.editBtn} onPress={onEdit} activeOpacity={0.8}>
-        <Text style={rc.editBtnText}>✏️  Edit</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-edit.png')} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={rc.editBtnText}>Edit</Text></View>
       </TouchableOpacity>
       <View style={rc.actionDivider} />
       <TouchableOpacity style={rc.deleteBtn} onPress={onDelete} activeOpacity={0.8}>
-        <Text style={rc.deleteBtnText}>🗑️  Delete</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-delete.png')} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={rc.deleteBtnText}>Delete</Text></View>
       </TouchableOpacity>
     </View>
   </View>
@@ -127,7 +127,7 @@ const rc = StyleSheet.create({
 // ── Empty State ───────────────────────────────────────────────────────────────
 const EmptyState = ({ onCreate }) => (
   <View style={em.wrap}>
-    <Text style={em.emoji}>👨‍🍳</Text>
+    <Image source={require('../assets/empty-my-recipes.png')} style={[em.emoji,{width:48,height:48,resizeMode:'contain'}]} />
     <Text style={em.heading}>No Custom Recipes Yet</Text>
     <Text style={em.body}>Start creating your own recipes to keep your favourites organised</Text>
     <TouchableOpacity style={em.btn} onPress={onCreate} activeOpacity={0.85}>

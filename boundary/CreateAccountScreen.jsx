@@ -144,7 +144,7 @@ const inf = StyleSheet.create({
 // Feature tick row — used inside plan cards
 const FeatureRow = ({ text }) => (
   <View style={fr.row}>
-    <Text style={fr.tick}>✓</Text>
+    <Image source={require('../assets/icon-check.png')} style={[fr.tick,{width:14,height:14,resizeMode:'contain'}]} />
     <Text style={fr.text}>{text}</Text>
   </View>
 );
@@ -197,7 +197,7 @@ const PlanCard = ({ plan, isSelected, onSelect }) => {
       {/* Selected indicator */}
       {isSelected && (
         <View style={pc.selectedBadge}>
-          <Text style={pc.selectedBadgeText}>✓ Selected</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-check.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={pc.selectedBadgeText}>Selected</Text>
         </View>
       )}
     </TouchableOpacity>

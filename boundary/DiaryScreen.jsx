@@ -10,7 +10,7 @@ import {
   Modal,
   Alert,
   Image,
-  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
@@ -288,7 +288,7 @@ const EntryCard = ({ entry, onDelete, onEdit }) => (
       </View>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         <TouchableOpacity style={ec.editBtn} onPress={() => onEdit(entry)}>
-          <Text style={ec.editIcon}>✏️</Text>
+          <Image source={require('../assets/icon-edit.png')} style={[ec.editIcon,{width:16,height:16,resizeMode:'contain'}]} />
         </TouchableOpacity>
         <TouchableOpacity style={ec.del} onPress={() => onDelete(entry.entryId)}>
           <Text style={ec.delIcon}>Delete</Text>

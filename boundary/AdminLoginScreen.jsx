@@ -86,7 +86,7 @@ const AdminLoginScreen = ({ navigation, route }) => {
       {/* UC #99 — logout success banner */}
       {showLogoutBanner && (
         <View style={s.logoutBanner}>
-          <Text style={s.logoutBannerIcon}>✅</Text>
+          <Image source={require('../assets/icon-success.png')} style={[s.logoutBannerIcon,{width:20,height:20,resizeMode:'contain'}]} />
           <Text style={s.logoutBannerText}>Logged out successfully</Text>
         </View>
       )}
@@ -104,7 +104,7 @@ const AdminLoginScreen = ({ navigation, route }) => {
             {/* Shield avatar */}
             <View style={s.shieldWrap}>
               <View style={s.shieldCircle}>
-                <Text style={s.shieldIcon}>🛡️</Text>
+                <Image source={require('../assets/icon-shield-login.png')} style={[s.shieldIcon,{width:32,height:32,resizeMode:'contain'}]} />
               </View>
             </View>
 
@@ -121,7 +121,7 @@ const AdminLoginScreen = ({ navigation, route }) => {
             {/* Username */}
             <Text style={s.label}>Username</Text>
             <View style={s.inputWrap}>
-              <Text style={s.inputIcon}>👤</Text>
+              <Image source={require('../assets/icon-user-input.png')} style={[s.inputIcon,{width:16,height:16,resizeMode:'contain'}]} />
               <TextInput
                 style={s.input}
                 value={username}
@@ -136,7 +136,7 @@ const AdminLoginScreen = ({ navigation, route }) => {
             {/* Password */}
             <Text style={s.label}>Password</Text>
             <View style={s.inputWrap}>
-              <Text style={s.inputIcon}>🔒</Text>
+              <Image source={require('../assets/icon-password.png')} style={[s.inputIcon,{width:16,height:16,resizeMode:'contain'}]} />
               <TextInput
                 style={s.input}
                 value={password}

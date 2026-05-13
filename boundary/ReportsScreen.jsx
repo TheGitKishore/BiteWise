@@ -47,7 +47,7 @@ const NavBar = ({ onMenu }) => (
 
 const Banner = ({ msg }) => !msg ? null : (
   <View style={{flexDirection:'row',alignItems:'center',gap:10,paddingHorizontal:16,paddingVertical:12,backgroundColor:C.successBg,borderBottomWidth:1,borderBottomColor:C.successBorder}}>
-    <Text style={{fontSize:16}}>✅</Text>
+    <Image source={require('../assets/icon-success.png')} style={{width:16,height:16,resizeMode:'contain'}} />
     <Text style={{flex:1,fontSize:14,fontWeight:'500',color:C.successText}}>{msg}</Text>
   </View>
 );
@@ -468,7 +468,7 @@ const WeightModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{backgroundColor:C.white,borderRadius:16,padding:22,paddingTop:40}}>
           <TouchableOpacity onPress={handleClose} style={{position:'absolute',top:12,right:16}}>
-            <Text style={{fontSize:16,color:C.subtle}}>✕</Text>
+            <Image source={require('../assets/icon-close.png')} style={{width:16,height:16,resizeMode:'contain'}} />
           </TouchableOpacity>
           <Text style={{fontSize:16,fontWeight:'700',color:C.dark,textAlign:'center',marginBottom:18}}>Update Weight</Text>
           <Text style={{fontSize:13,fontWeight:'600',color:C.dark,marginBottom:4}}>Weight (kg) *</Text>
@@ -500,7 +500,7 @@ const HeightModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{backgroundColor:C.white,borderRadius:16,padding:22,paddingTop:40}}>
           <TouchableOpacity onPress={handleClose} style={{position:'absolute',top:12,right:16}}>
-            <Text style={{fontSize:16,color:C.subtle}}>✕</Text>
+            <Image source={require('../assets/icon-close.png')} style={{width:16,height:16,resizeMode:'contain'}} />
           </TouchableOpacity>
           <Text style={{fontSize:16,fontWeight:'700',color:C.dark,textAlign:'center',marginBottom:18}}>Update Height</Text>
           <Text style={{fontSize:13,fontWeight:'600',color:C.dark,marginBottom:4}}>Height (cm) *</Text>
@@ -563,7 +563,7 @@ const GoalModal = ({ visible, existingGoal, onClose, onSave, isLoading, errors }
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{backgroundColor:C.white,borderTopLeftRadius:20,borderTopRightRadius:20,padding:20,paddingTop:40,maxHeight:'90%'}}>
           <TouchableOpacity onPress={handleClose} style={{position:'absolute',top:12,right:16}}>
-            <Text style={{fontSize:16,color:C.subtle}}>✕</Text>
+            <Image source={require('../assets/icon-close.png')} style={{width:16,height:16,resizeMode:'contain'}} />
           </TouchableOpacity>
           <Text style={{fontSize:16,fontWeight:'700',color:C.dark,marginBottom:4}}>{existingGoal?'Update Goal':'Set Health Goal'}</Text>
           <Text style={{fontSize:13,color:C.subtle,marginBottom:18}}>Define your goal to get personalised recommendations</Text>
@@ -680,7 +680,7 @@ const DailyProgressTab = ({ userId }) => {
       )}
       {!report && (
         <View style={{alignItems:'center',paddingVertical:48}}>
-          <Text style={{fontSize:40,marginBottom:12}}>📊</Text>
+          <Image source={require('../assets/empty-reports.png')} style={{width:40,height:40,resizeMode:'contain'}} />
           <Text style={{fontSize:16,fontWeight:'700',color:C.dark,marginBottom:6}}>No Data Yet</Text>
           <Text style={{fontSize:13,color:C.subtle,textAlign:'center'}}>Start logging meals to see your daily progress report.</Text>
         </View>
@@ -792,7 +792,7 @@ const BodyMetricsTab = ({ userId, onBanner }) => {
       {/* Health Goal — UC #38, #39, #40, #90 */}
       <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:12}}>
         <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-          <Text style={{fontSize:14,fontWeight:'700',color:C.dark}}>🎯  Health Goal</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-goals.png')} style={{width:16,height:16,resizeMode:'contain'}} /><Text style={{fontSize:14,fontWeight:'700',color:C.dark}}>Health Goal</Text>
           <TouchableOpacity onPress={() => setShowGoalModal(true)} activeOpacity={0.8}
             style={{backgroundColor:C.purpleLight,borderRadius:20,paddingHorizontal:12,paddingVertical:5}}>
             <Text style={{fontSize:12,fontWeight:'600',color:C.purple}}>{goal ? 'Edit Goal' : 'Set Goal'}</Text>
@@ -817,7 +817,7 @@ const BodyMetricsTab = ({ userId, onBanner }) => {
 
       {/* Current Weight — UC #84, #86 */}
       <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:12}}>
-        <Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>⚖️  Current Weight</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-weight.png')} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>Current Weight</Text></View>
         {weightData.loading ? <ActivityIndicator color={C.purple}/> : (
           <>
             <Text style={{fontSize:32,fontWeight:'800',color:C.dark,marginBottom:10}}>
@@ -833,7 +833,7 @@ const BodyMetricsTab = ({ userId, onBanner }) => {
 
       {/* Current Height — UC #36, #87, #89 */}
       <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:12}}>
-        <Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>📏  Current Height</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-height.png')} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>Current Height</Text>
         {heightData.loading ? <ActivityIndicator color={C.purple}/> : (
           <>
             <Text style={{fontSize:32,fontWeight:'800',color:C.dark,marginBottom:10}}>
@@ -849,7 +849,7 @@ const BodyMetricsTab = ({ userId, onBanner }) => {
 
       {/* Current BMI — UC #41, #42, #91, #92 */}
       <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:12}}>
-        <Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>📈  Current BMI</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-trends.png')} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>Current BMI</Text>
         <Text style={{fontSize:36,fontWeight:'800',color:bmiColor,marginBottom:4}}>{bmi ?? '—'}</Text>
         {bmi && <Text style={{fontSize:14,color:bmiColor,fontWeight:'600',marginBottom:10}}>{bmiCat}</Text>}
         <View style={{backgroundColor:C.bg,borderRadius:8,padding:10}}>
@@ -968,7 +968,7 @@ const MonthlySummaryTab = ({ userId }) => {
 
       {!summary && (
         <View style={{alignItems:'center',paddingVertical:32}}>
-          <Text style={{fontSize:40,marginBottom:12}}>📋</Text>
+          <Image source={require('../assets/empty-list.png')} style={{width:40,height:40,resizeMode:'contain'}} />
           <Text style={{fontSize:16,fontWeight:'700',color:C.dark,marginBottom:6}}>No Summary Yet</Text>
           <Text style={{fontSize:13,color:C.subtle,textAlign:'center'}}>Log meals consistently to generate a monthly summary.</Text>
         </View>

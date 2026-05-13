@@ -77,7 +77,7 @@ const Banner = ({ message, type }) => {
   const ok = type === 'success';
   return (
     <View style={[bn.wrap, ok ? bn.success : bn.error]}>
-      <Text style={bn.icon}>{ok ? '✅' : '⚠️'}</Text>
+      {ok  ? <Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /> : <Image source={require('../assets/icon-warning.png')} style={{width:20,height:20,resizeMode:'contain'}} />}
       <Text style={[bn.text, ok ? bn.successText : bn.errorText]}>{message}</Text>
     </View>
   );
@@ -104,7 +104,7 @@ const LikeButton = ({ isLiked, count, onPress }) => (
     onPress={onPress}
     activeOpacity={0.85}
   >
-    <Text style={lk.icon}>👍</Text>
+    <Image source={require('../assets/icon-like.png')} style={[lk.icon,{width:20,height:20,resizeMode:'contain'}]} />
     <Text style={[lk.text, isLiked && lk.textActive]}>{formatCount(count)}</Text>
   </TouchableOpacity>
 );
@@ -137,12 +137,12 @@ const RecipeCard = ({ recipe, onPress, isLiked, likeCount, onToggleLike, canLike
     {recipe.imageUrl ? (
       <Image source={{ uri: recipe.imageUrl }} style={rc.image} resizeMode="cover" />
     ) : (
-      <View style={rc.imagePlaceholder}><Text style={rc.imagePlaceholderIcon}>🍽️</Text></View>
+      <View style={rc.imagePlaceholder}><Image source={require('../assets/placeholder-recipe.png')} style={[rc.imagePlaceholderIcon,{width:44,height:44,resizeMode:'contain'}]} /></View>
     )}
     <View style={rc.diffBadge}><Text style={rc.diffText}>{recipe.difficulty}</Text></View>
     <View style={rc.body}>
       <Text style={rc.title}>{recipe.title}</Text>
-      <Text style={rc.summary}>⏱ {recipe.prepTimeMins} min  ↗ {recipe.calories} kcal</Text>
+      <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-prep-time.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={rc.summary}>{recipe.prepTimeMins} min  {recipe.calories} kcal</Text>
       <View style={rc.macroRow}>
         {[{ l:'Protein', v:`${recipe.protein}g` }, { l:'Carbs', v:`${recipe.carbs}g` }, { l:'Fat', v:`${recipe.fat}g` }].map((m) => (
           <View key={m.l} style={rc.macroItem}>
@@ -227,10 +227,10 @@ const RecipeDetail = ({ recipe, user, onBack, onSave, isSaving, isLiked, likeCou
       {/* Stat tiles */}
       <View style={rd.statsGrid}>
         {[
-          { icon:'⏱', label:'Prep Time', value:`${recipe.prepTimeMins} min` },
-          { icon:'↗', label:'Calories',  value:String(recipe.calories) },
-          { icon:'👨‍🍳', label:'Difficulty', value:recipe.difficulty },
-          { icon:'💪', label:'Protein',   value:`${recipe.protein}g`, purple:true },
+          { icon:require('../assets/stat-prep-time.png'), label:'Prep Time', value:`${recipe.prepTimeMins} min` },
+          { icon:require('../assets/stat-calories.png'), label:'Calories',  value:String(recipe.calories) },
+          { icon: require('../assets/tile-my-recipes.png'), label:'Difficulty', value:recipe.difficulty },
+          { icon:require('../assets/stat-protein.png'), label:'Protein',   value:`${recipe.protein}g`, purple:true },
         ].map((s) => (
           <View key={s.label} style={rd.statTile}>
             <Text style={rd.statIcon}>{s.icon}</Text>
@@ -289,7 +289,7 @@ const RecipeDetail = ({ recipe, user, onBack, onSave, isSaving, isLiked, likeCou
         activeOpacity={0.85}
         disabled={isSaving}
       >
-        <Text style={rd.saveBtnText}>{isSaving ? 'Saving...' : '♡  Save Recipe'}</Text>
+        <Text style={rd.saveBtnText}>{isSaving ? 'Saving...' : 'Save Recipe'}</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -335,7 +335,7 @@ const PremiumGateModal = ({ visible, onClose, onUpgrade }) => (
       <View style={pgm.sheet}>
         <Text style={pgm.title}>Choose Plan</Text>
         <View style={pgm.errorRow}>
-          <Text style={pgm.errorIcon}>⚠️</Text>
+          <Image source={require('../assets/icon-warning.png')} style={[pgm.errorIcon,{width:20,height:20,resizeMode:'contain'}]} />
           <Text style={pgm.errorText}>Saving recipes is a Premium feature</Text>
         </View>
         <View style={pgm.planCard}>
@@ -343,7 +343,7 @@ const PremiumGateModal = ({ visible, onClose, onUpgrade }) => (
           <Text style={pgm.planName}>Premium</Text>
           <Text style={pgm.planPrice}>$19.99<Text style={pgm.planCycle}>/month</Text></Text>
           {['Unlimited recipes', 'AI meal recommendations', 'Camera food recognition', 'Monthly detailed reports', 'Custom meal plans'].map((f, i) => (
-            <View key={i} style={pgm.featureRow}><Text style={pgm.featureTick}>✓</Text><Text style={pgm.featureText}>{f}</Text></View>
+            <View key={i} style={pgm.featureRow}><Image source={require('../assets/icon-check.png')} style={[pgm.featureTick,{width:14,height:14,resizeMode:'contain'}]} /><Text style={pgm.featureText}>{f}</Text></View>
           ))}
           <TouchableOpacity style={pgm.chooseBtn} onPress={onUpgrade} activeOpacity={0.85}>
             <Text style={pgm.chooseBtnText}>Choose Plan</Text>
@@ -397,7 +397,7 @@ const DietaryPrefsModal = ({ visible, prefs, onSave, onClose }) => {
           keyboardDismissMode="on-drag"
         >
           <View style={dp.sheet}>
-            <TouchableOpacity style={dp.closeBtn} onPress={onClose}><Text style={dp.closeIcon}>✕</Text></TouchableOpacity>
+            <TouchableOpacity style={dp.closeBtn} onPress={onClose}><Image source={require('../assets/icon-close.png')} style={[dp.closeIcon,{width:16,height:16,resizeMode:'contain'}]} /></TouchableOpacity>
             <Text style={dp.title}>Dietary Preferences</Text>
             <Text style={dp.subtitle}>Set your dietary restrictions and allergies to filter recipes accordingly.</Text>
 
@@ -752,7 +752,7 @@ const RecipesScreen = ({ navigation, route }) => {
                 activeOpacity={0.8}
               >
                 <Text style={[qt.tabText, isActive && qt.tabTextActive]}>
-                  {f}{isMealPrep && !isPremium ? ' 🔒' : isMealPrep && isPremium ? ' ☆' : ''}
+                  {f}{isMealPrep && !isPremium ? '' : isMealPrep && isPremium ? '' : ''}
                 </Text>
               </TouchableOpacity>
             );
@@ -762,7 +762,7 @@ const RecipesScreen = ({ navigation, route }) => {
         {/* Search + diet tag chips */}
         <View style={styles.filterCard}>
           <View style={styles.searchRow}>
-            <Text style={styles.searchIcon}>🔍</Text>
+            <Image source={require('../assets/icon-search.png')} style={[styles.searchIcon,{width:14,height:14,resizeMode:'contain'}]} />
             <TextInput
               style={styles.searchInput}
               value={search}
@@ -792,7 +792,7 @@ const RecipesScreen = ({ navigation, route }) => {
         {/* Premium: Dietary Preferences floating button — UC #64 */}
         {isPremium && (
           <TouchableOpacity style={styles.dietPrefBtn} onPress={() => setShowDietPrefs(true)} activeOpacity={0.85}>
-            <Text style={styles.dietPrefIcon}>⚙️</Text>
+            <Image source={require('../assets/icon-settings.png')} style={[styles.dietPrefIcon,{width:16,height:16,resizeMode:'contain'}]} />
             <Text style={styles.dietPrefText}>Dietary Preferences</Text>
           </TouchableOpacity>
         )}
@@ -800,7 +800,7 @@ const RecipesScreen = ({ navigation, route }) => {
         {/* Meal Prep locked state for Free users */}
         {quickFilter === 'Meal Prep' && !isPremium && (
           <View style={styles.lockedCard}>
-            <Text style={styles.lockedIcon}>🔒</Text>
+            <Image source={require('../assets/icon-lock-inline.png')} style={[styles.lockedIcon,{width:16,height:16,resizeMode:'contain'}]} />
             <Text style={styles.lockedTitle}>Meal Prep Recipes — Premium Feature</Text>
             <Text style={styles.lockedBody}>Upgrade to access curated meal-prep optimised recipes.</Text>
             <TouchableOpacity style={styles.lockedBtn} onPress={() => navigation.navigate('ViewPricingPlansScreen')} activeOpacity={0.85}>
@@ -814,7 +814,7 @@ const RecipesScreen = ({ navigation, route }) => {
           <ActivityIndicator size="large" color={C.purple} style={{ marginTop:40 }} />
         ) : visibleRecipes.length === 0 && quickFilter !== 'Meal Prep' ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>📋</Text>
+            <Image source={require('../assets/empty-list.png')} style={[styles.emptyIcon,{width:40,height:40,resizeMode:'contain'}]} />
             <Text style={styles.emptyText}>No recipes found.</Text>
           </View>
         ) : (

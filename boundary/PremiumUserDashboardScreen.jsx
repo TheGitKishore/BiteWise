@@ -62,7 +62,7 @@ const Banner = ({ message }) => {
   if (!message) return null;
   return (
     <View style={bn.wrap}>
-      <Text style={bn.icon}>✅</Text>
+      <Image source={require('../assets/icon-success.png')} style={[bn.icon,{width:20,height:20,resizeMode:'contain'}]} />
       <Text style={bn.text}>{message}</Text>
     </View>
   );
@@ -82,7 +82,7 @@ const CalorieProgressCard = ({ consumed, goal }) => {
   return (
     <View style={cp.card}>
       <View style={cp.headerRow}>
-        <Text style={cp.headerIcon}>🎯</Text>
+        <Image source={require('../assets/section-goals.png')} style={[cp.headerIcon,{width:16,height:16,resizeMode:'contain'}]} />
         <Text style={cp.headerTitle}>Today's Calorie Progress</Text>
       </View>
       <View style={cp.row}>
@@ -115,7 +115,7 @@ const cp = StyleSheet.create({
 // PREMIUM BADGE — small pill shown on premium tiles
 const PremiumBadge = () => (
   <View style={pb.wrap}>
-    <Text style={pb.text}>☆ Premium</Text>
+    <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={pb.text}>Premium</Text>
   </View>
 );
 const pb = StyleSheet.create({
@@ -182,66 +182,66 @@ const getPremiumBrandName = (profileType) => {
 const PREMIUM_TILES = {
   // Health Oriented — habit builders, weight management
   HEALTH_ORIENTED: [
-    { icon: '🍴',  title: 'Food Tracking',    subtitle: 'Log your meals and track calories',      screen: 'FoodTrackingLandingScreen' },
-    { icon: '⚖️',  title: 'Weight Tracking',  subtitle: 'Monitor weight progress',                screen: 'WeightTrackingScreen' },
-    { icon: '📈',  title: 'Reports',           subtitle: 'View your progress over time',           screen: 'ReportsScreen' },
-    { icon: '🎯',  title: 'Nutrition Targets', subtitle: 'Personalized macro goals',               screen: 'NutritionTargetsScreen' },
-    { icon: '🍽️', title: "Today's Menu",      subtitle: 'Recipes matched to your budget',         screen: 'TodaysMenuScreen' },
-    { icon: '🛎️', title: 'Dine Out',          subtitle: 'Restaurant meals that fit your budget',  screen: 'DineOutScreen' },
-    { icon: '📔',  title: 'Health Diary',      subtitle: 'Document your journey',                  screen: 'DiaryScreen' },
-    { icon: '🥦',  title: 'Food Alternatives', subtitle: 'Healthier substitutes',                  screen: 'FoodAlternativesScreen' },
-    { icon: '🍎',  title: 'Mindful Snacking',  subtitle: 'Smart snacking guidance',                screen: 'MindfulSnackingScreen' },
-    { icon: '📖',  title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',            screen: 'RecipesScreen' },
-    { icon: '📚',  title: 'Curator Blogs',     subtitle: 'Read tips from BiteWise curators',       screen: 'CuratorBlogsScreen' },
-    { icon: '🔖',  title: 'Saved Recipes',     subtitle: 'Your recipe collection',                 screen: 'SavedRecipesScreen' },
-    { icon: '📅',  title: 'Meal Plans',        subtitle: 'Create and manage meal plans',           screen: 'MealPlansScreen' },
-    { icon: '🛒',  title: 'Grocery List',      subtitle: 'Auto-generate from recipes',             screen: 'GroceryListScreen' },
-    { icon: '👨‍🍳', title: 'My Recipes',        subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
-    { icon: '🏃',  title: 'Activity Tracking', subtitle: 'Log exercise & sync devices',            screen: 'ActivityTrackingScreen' },
-    { icon: '👤',  title: 'Account',           subtitle: 'Manage your profile and settings',       screen: 'AccountSettingsScreen' },
-    { icon: '⭐',  title: 'Curator Program',   subtitle: 'Become a curator',                       screen: 'CuratorProgramScreen', premium: true },
+    { icon: require('../assets/tile-food-tracking.png'),  title: 'Food Tracking',    subtitle: 'Log your meals and track calories',      screen: 'FoodTrackingLandingScreen' },
+    { icon: require('../assets/tile-weight-tracking.png'),  title: 'Weight Tracking',  subtitle: 'Monitor weight progress',                screen: 'WeightTrackingScreen' },
+    { icon: require('../assets/tile-reports.png'),  title: 'Reports',           subtitle: 'View your progress over time',           screen: 'ReportsScreen' },
+    { icon: require('../assets/tile-nutrition-targets.png'),  title: 'Nutrition Targets', subtitle: 'Personalized macro goals',               screen: 'NutritionTargetsScreen' },
+    { icon: require('../assets/tile-todays-menu.png'), title: "Today's Menu",      subtitle: 'Recipes matched to your budget',         screen: 'TodaysMenuScreen' },
+    { icon: require('../assets/tile-dine-out.png'), title: 'Dine Out',          subtitle: 'Restaurant meals that fit your budget',  screen: 'DineOutScreen' },
+    { icon: require('../assets/tile-health-diary.png'),  title: 'Health Diary',      subtitle: 'Document your journey',                  screen: 'DiaryScreen' },
+    { icon: require('../assets/tile-food-alternatives.png'),  title: 'Food Alternatives', subtitle: 'Healthier substitutes',                  screen: 'FoodAlternativesScreen' },
+    { icon: require('../assets/tile-mindful-snacking.png'),  title: 'Mindful Snacking',  subtitle: 'Smart snacking guidance',                screen: 'MindfulSnackingScreen' },
+    { icon: require('../assets/tile-recipes.png'),  title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',            screen: 'RecipesScreen' },
+    { icon: require('../assets/tile-curator-blogs.png'),  title: 'Curator Blogs',     subtitle: 'Read tips from BiteWise curators',       screen: 'CuratorBlogsScreen' },
+    { icon: require('../assets/tile-saved-recipes.png'),  title: 'Saved Recipes',     subtitle: 'Your recipe collection',                 screen: 'SavedRecipesScreen' },
+    { icon: require('../assets/tile-meal-plans.png'),  title: 'Meal Plans',        subtitle: 'Create and manage meal plans',           screen: 'MealPlansScreen' },
+    { icon: require('../assets/tile-grocery-list.png'),  title: 'Grocery List',      subtitle: 'Auto-generate from recipes',             screen: 'GroceryListScreen' },
+    { icon: require('../assets/tile-my-recipes.png'), title: 'My Recipes',        subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
+    { icon: require('../assets/tile-activity-tracking.png'),  title: 'Activity Tracking', subtitle: 'Log exercise & sync devices',            screen: 'ActivityTrackingScreen' },
+    { icon: require('../assets/tile-account.png'),  title: 'Account',           subtitle: 'Manage your profile and settings',       screen: 'AccountSettingsScreen' },
+    { icon: require('../assets/tile-curator-program.png'),  title: 'Curator Program',   subtitle: 'Become a curator',                       screen: 'CuratorProgramScreen', premium: true },
   ],
   // Athlete — performance, macro nutrients
   ATHLETE: [
-    { icon: '🍴',  title: 'Food Tracking',    subtitle: 'Log your meals and track calories',      screen: 'FoodTrackingLandingScreen' },
-    { icon: '🎯',  title: 'Nutrition Targets', subtitle: 'Personalized macro goals',               screen: 'NutritionTargetsScreen' },
-    { icon: '🏃',  title: 'Activity Tracking', subtitle: 'Log exercise & sync devices',            screen: 'ActivityTrackingScreen' },
-    { icon: '📈',  title: 'Reports',           subtitle: 'View your progress over time',           screen: 'ReportsScreen' },
-    { icon: '🍽️', title: "Today's Menu",      subtitle: 'Recipes matched to your budget',         screen: 'TodaysMenuScreen' },
-    { icon: '🛎️', title: 'Dine Out',          subtitle: 'Macro-friendly meals nearby',            screen: 'DineOutScreen' },
-    { icon: '📅',  title: 'Meal Plans',        subtitle: 'Create and manage meal plans',           screen: 'MealPlansScreen' },
-    { icon: '⚖️',  title: 'Weight Tracking',  subtitle: 'Monitor weight progress',                screen: 'WeightTrackingScreen' },
-    { icon: '📖',  title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',            screen: 'RecipesScreen' },
-    { icon: '📚',  title: 'Curator Blogs',     subtitle: 'Read tips from BiteWise curators',       screen: 'CuratorBlogsScreen' },
-    { icon: '🔖',  title: 'Saved Recipes',     subtitle: 'Your recipe collection',                 screen: 'SavedRecipesScreen' },
-    { icon: '🥦',  title: 'Food Alternatives', subtitle: 'Healthier substitutes',                  screen: 'FoodAlternativesScreen' },
-    { icon: '🛒',  title: 'Grocery List',      subtitle: 'Auto-generate from recipes',             screen: 'GroceryListScreen' },
-    { icon: '📔',  title: 'Health Diary',      subtitle: 'Document your journey',                  screen: 'DiaryScreen' },
-    { icon: '🍎',  title: 'Mindful Snacking',  subtitle: 'Smart snacking guidance',                screen: 'MindfulSnackingScreen' },
-    { icon: '👨‍🍳', title: 'My Recipes',        subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
-    { icon: '👤',  title: 'Account',           subtitle: 'Manage your profile and settings',       screen: 'AccountSettingsScreen' },
-    { icon: '⭐',  title: 'Curator Program',   subtitle: 'Become a curator',                       screen: 'CuratorProgramScreen', premium: true },
+    { icon: require('../assets/tile-food-tracking.png'),  title: 'Food Tracking',    subtitle: 'Log your meals and track calories',      screen: 'FoodTrackingLandingScreen' },
+    { icon: require('../assets/tile-nutrition-targets.png'),  title: 'Nutrition Targets', subtitle: 'Personalized macro goals',               screen: 'NutritionTargetsScreen' },
+    { icon: require('../assets/tile-activity-tracking.png'),  title: 'Activity Tracking', subtitle: 'Log exercise & sync devices',            screen: 'ActivityTrackingScreen' },
+    { icon: require('../assets/tile-reports.png'),  title: 'Reports',           subtitle: 'View your progress over time',           screen: 'ReportsScreen' },
+    { icon: require('../assets/tile-todays-menu.png'), title: "Today's Menu",      subtitle: 'Recipes matched to your budget',         screen: 'TodaysMenuScreen' },
+    { icon: require('../assets/tile-dine-out.png'), title: 'Dine Out',          subtitle: 'Macro-friendly meals nearby',            screen: 'DineOutScreen' },
+    { icon: require('../assets/tile-meal-plans.png'),  title: 'Meal Plans',        subtitle: 'Create and manage meal plans',           screen: 'MealPlansScreen' },
+    { icon: require('../assets/tile-weight-tracking.png'),  title: 'Weight Tracking',  subtitle: 'Monitor weight progress',                screen: 'WeightTrackingScreen' },
+    { icon: require('../assets/tile-recipes.png'),  title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',            screen: 'RecipesScreen' },
+    { icon: require('../assets/tile-curator-blogs.png'),  title: 'Curator Blogs',     subtitle: 'Read tips from BiteWise curators',       screen: 'CuratorBlogsScreen' },
+    { icon: require('../assets/tile-saved-recipes.png'),  title: 'Saved Recipes',     subtitle: 'Your recipe collection',                 screen: 'SavedRecipesScreen' },
+    { icon: require('../assets/tile-food-alternatives.png'),  title: 'Food Alternatives', subtitle: 'Healthier substitutes',                  screen: 'FoodAlternativesScreen' },
+    { icon: require('../assets/tile-grocery-list.png'),  title: 'Grocery List',      subtitle: 'Auto-generate from recipes',             screen: 'GroceryListScreen' },
+    { icon: require('../assets/tile-health-diary.png'),  title: 'Health Diary',      subtitle: 'Document your journey',                  screen: 'DiaryScreen' },
+    { icon: require('../assets/tile-mindful-snacking.png'),  title: 'Mindful Snacking',  subtitle: 'Smart snacking guidance',                screen: 'MindfulSnackingScreen' },
+    { icon: require('../assets/tile-my-recipes.png'), title: 'My Recipes',        subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
+    { icon: require('../assets/tile-account.png'),  title: 'Account',           subtitle: 'Manage your profile and settings',       screen: 'AccountSettingsScreen' },
+    { icon: require('../assets/tile-curator-program.png'),  title: 'Curator Program',   subtitle: 'Become a curator',                       screen: 'CuratorProgramScreen', premium: true },
   ],
   // Meal Planner — organisation, prepping
   MEAL_PLANNER: [
-    { icon: '📅',  title: 'Meal Plans',        subtitle: 'Create and manage meal plans',           screen: 'MealPlansScreen' },
-    { icon: '🍽️', title: "Today's Menu",      subtitle: 'Recipes matched to your budget',         screen: 'TodaysMenuScreen' },
-    { icon: '🛎️', title: 'Dine Out',          subtitle: 'Plan restaurant meals around your day',  screen: 'DineOutScreen' },
-    { icon: '📖',  title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',            screen: 'RecipesScreen' },
-    { icon: '📚',  title: 'Curator Blogs',     subtitle: 'Read tips from BiteWise curators',       screen: 'CuratorBlogsScreen' },
-    { icon: '🔖',  title: 'Saved Recipes',     subtitle: 'Your recipe collection',                 screen: 'SavedRecipesScreen' },
-    { icon: '🛒',  title: 'Grocery List',      subtitle: 'Auto-generate from recipes',             screen: 'GroceryListScreen' },
-    { icon: '👨‍🍳', title: 'My Recipes',        subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
-    { icon: '🍴',  title: 'Food Tracking',    subtitle: 'Log your meals and track calories',      screen: 'FoodTrackingLandingScreen' },
-    { icon: '🥦',  title: 'Food Alternatives', subtitle: 'Healthier substitutes',                  screen: 'FoodAlternativesScreen' },
-    { icon: '🍎',  title: 'Mindful Snacking',  subtitle: 'Smart snacking guidance',                screen: 'MindfulSnackingScreen' },
-    { icon: '📈',  title: 'Reports',           subtitle: 'View your progress over time',           screen: 'ReportsScreen' },
-    { icon: '🎯',  title: 'Nutrition Targets', subtitle: 'Personalized macro goals',               screen: 'NutritionTargetsScreen' },
-    { icon: '📔',  title: 'Health Diary',      subtitle: 'Document your journey',                  screen: 'DiaryScreen' },
-    { icon: '⚖️',  title: 'Weight Tracking',  subtitle: 'Monitor weight progress',                screen: 'WeightTrackingScreen' },
-    { icon: '🏃',  title: 'Activity Tracking', subtitle: 'Log exercise & sync devices',            screen: 'ActivityTrackingScreen' },
-    { icon: '👤',  title: 'Account',           subtitle: 'Manage your profile and settings',       screen: 'AccountSettingsScreen' },
-    { icon: '⭐',  title: 'Curator Program',   subtitle: 'Become a curator',                       screen: 'CuratorProgramScreen', premium: true },
+    { icon: require('../assets/tile-meal-plans.png'),  title: 'Meal Plans',        subtitle: 'Create and manage meal plans',           screen: 'MealPlansScreen' },
+    { icon: require('../assets/tile-todays-menu.png'), title: "Today's Menu",      subtitle: 'Recipes matched to your budget',         screen: 'TodaysMenuScreen' },
+    { icon: require('../assets/tile-dine-out.png'), title: 'Dine Out',          subtitle: 'Plan restaurant meals around your day',  screen: 'DineOutScreen' },
+    { icon: require('../assets/tile-recipes.png'),  title: 'Recipes',           subtitle: 'Browse healthy recipe ideas',            screen: 'RecipesScreen' },
+    { icon: require('../assets/tile-curator-blogs.png'),  title: 'Curator Blogs',     subtitle: 'Read tips from BiteWise curators',       screen: 'CuratorBlogsScreen' },
+    { icon: require('../assets/tile-saved-recipes.png'),  title: 'Saved Recipes',     subtitle: 'Your recipe collection',                 screen: 'SavedRecipesScreen' },
+    { icon: require('../assets/tile-grocery-list.png'),  title: 'Grocery List',      subtitle: 'Auto-generate from recipes',             screen: 'GroceryListScreen' },
+    { icon: require('../assets/tile-my-recipes.png'), title: 'My Recipes',        subtitle: 'Create your own recipes',                screen: 'MyRecipesScreen' },
+    { icon: require('../assets/tile-food-tracking.png'),  title: 'Food Tracking',    subtitle: 'Log your meals and track calories',      screen: 'FoodTrackingLandingScreen' },
+    { icon: require('../assets/tile-food-alternatives.png'),  title: 'Food Alternatives', subtitle: 'Healthier substitutes',                  screen: 'FoodAlternativesScreen' },
+    { icon: require('../assets/tile-mindful-snacking.png'),  title: 'Mindful Snacking',  subtitle: 'Smart snacking guidance',                screen: 'MindfulSnackingScreen' },
+    { icon: require('../assets/tile-reports.png'),  title: 'Reports',           subtitle: 'View your progress over time',           screen: 'ReportsScreen' },
+    { icon: require('../assets/tile-nutrition-targets.png'),  title: 'Nutrition Targets', subtitle: 'Personalized macro goals',               screen: 'NutritionTargetsScreen' },
+    { icon: require('../assets/tile-health-diary.png'),  title: 'Health Diary',      subtitle: 'Document your journey',                  screen: 'DiaryScreen' },
+    { icon: require('../assets/tile-weight-tracking.png'),  title: 'Weight Tracking',  subtitle: 'Monitor weight progress',                screen: 'WeightTrackingScreen' },
+    { icon: require('../assets/tile-activity-tracking.png'),  title: 'Activity Tracking', subtitle: 'Log exercise & sync devices',            screen: 'ActivityTrackingScreen' },
+    { icon: require('../assets/tile-account.png'),  title: 'Account',           subtitle: 'Manage your profile and settings',       screen: 'AccountSettingsScreen' },
+    { icon: require('../assets/tile-curator-program.png'),  title: 'Curator Program',   subtitle: 'Become a curator',                       screen: 'CuratorProgramScreen', premium: true },
   ],
 };
 

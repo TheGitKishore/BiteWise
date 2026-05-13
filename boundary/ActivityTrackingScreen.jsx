@@ -68,7 +68,7 @@ const Banner = ({ message }) => {
   if (!message) return null;
   return (
     <View style={bn.wrap}>
-      <Text style={bn.icon}>✅</Text>
+      <Image source={require('../assets/icon-success.png')} style={[bn.icon,{width:20,height:20,resizeMode:'contain'}]} />
       <Text style={bn.text}>{message}</Text>
     </View>
   );
@@ -81,7 +81,7 @@ const bn = StyleSheet.create({
 
 // Premium badge
 const PremiumBadge = () => (
-  <View style={pb.wrap}><Text style={pb.text}>☆ Premium</Text></View>
+  <View style={pb.wrap}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={pb.text}>Premium</Text></View>
 );
 const pb = StyleSheet.create({
   wrap: { alignSelf: 'flex-start', backgroundColor: C.purple, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, marginBottom: 8 },
@@ -143,7 +143,7 @@ const ModalSheet = ({ visible, title, subtitle, onClose, children }) => (
       >
       <View style={ms.sheet}>
         <TouchableOpacity style={ms.closeBtn} onPress={onClose} accessibilityRole="button">
-          <Text style={ms.closeIcon}>✕</Text>
+          <Image source={require('../assets/icon-close.png')} style={[ms.closeIcon,{width:16,height:16,resizeMode:'contain'}]} />
         </TouchableOpacity>
         <ScrollView
           contentContainerStyle={ms.sheetContent}
@@ -326,8 +326,8 @@ const OverviewTab = ({ exerciseEntries }) => {
 
   return (
     <View>
-      <StatCard iconBg="#EDE9FE" icon="🏋️" label="Today's Exercises" value={String(exerciseEntries.length)} />
-      <StatCard iconBg="#FEF3C7" icon="⚡"  label="Calories Burned"   value={String(totalBurned)} />
+      <StatCard iconBg="#EDE9FE" icon={require('../assets/stat-exercise.png')} label="Today's Exercises" value={String(exerciseEntries.length)} />
+      <StatCard iconBg="#FEF3C7" icon={require('../assets/stat-calories-burned.png')}  label="Calories Burned"   value={String(totalBurned)} />
     </View>
   );
 };
@@ -345,7 +345,7 @@ const ExerciseLogTab = ({ exerciseEntries, onOpenLog, onEditExercise, onDeleteEx
   return (
     <View>
       {/* 7-day stat */}
-      <StatCard iconBg={C.greenLight} icon="📈" label="7-Day Total" value={String(total7Day)} />
+      <StatCard iconBg={C.greenLight} icon={require('../assets/stat-7day.png')} label="7-Day Total" value={String(total7Day)} />
 
       {/* All sessions */}
       <View style={el.card}>
@@ -376,8 +376,8 @@ const ExerciseLogTab = ({ exerciseEntries, onOpenLog, onEditExercise, onDeleteEx
                   {new Date(e.loggedAt).toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit' })}
                 </Text>
                 <View style={{ flexDirection:'row', gap:6, marginTop:6 }}>
-                  <TouchableOpacity onPress={() => onEditExercise(e)} style={{ padding:4 }}><Text style={{ fontSize:15 }}>✏️</Text></TouchableOpacity>
-                  <TouchableOpacity onPress={() => onDeleteExercise(e.entryId)} style={{ padding:4 }}><Text style={{ fontSize:15 }}>🗑️</Text></TouchableOpacity>
+                  <TouchableOpacity onPress={() => onEditExercise(e)} style={{ padding:4 }}><Image source={require('../assets/icon-edit.png')} style={{width:15,height:15,resizeMode:'contain'}} /></TouchableOpacity>
+                  <TouchableOpacity onPress={() => onDeleteExercise(e.entryId)} style={{ padding:4 }}><Image source={require('../assets/icon-delete.png')} style={{width:15,height:15,resizeMode:'contain'}} /></TouchableOpacity>
                 </View>
               </View>
             </View>

@@ -106,7 +106,7 @@ const UpdateCuratorProfileScreen = ({ navigation, route }) => {
           {/* Error */}
           {error ? (
             <View style={s.errorBox}>
-              <Text style={s.errorTxt}>⚠️  {error}</Text>
+              <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-warning.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={s.errorTxt}>{error}</Text></View>
             </View>
           ) : null}
 

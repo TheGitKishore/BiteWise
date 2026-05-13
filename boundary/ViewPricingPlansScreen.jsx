@@ -8,7 +8,7 @@
 
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, StatusBar, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, StatusBar, Dimensions, Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ViewPricingPlansController from '../controller/ViewPricingPlansController';
@@ -89,7 +89,7 @@ const hdr = StyleSheet.create({
 const FeatureRow = ({ text }) => (
   <View style={fr.row}>
     <View style={fr.tick}>
-      <Text style={fr.tickMark}>✓</Text>
+      <Image source={require('../assets/icon-check.png')} style={[fr.tickMark,{width:14,height:14,resizeMode:'contain'}]} />
     </View>
     <Text style={fr.text}>{text}</Text>
   </View>
@@ -259,7 +259,7 @@ const pc = StyleSheet.create({
 // Empty / error state
 const EmptyState = ({ message }) => (
   <View style={es.wrap}>
-    <Text style={es.icon}>📋</Text>
+    <Image source={require('../assets/empty-list.png')} style={[es.icon,{width:40,height:40,resizeMode:'contain'}]} />
     <Text style={es.text}>{message}</Text>
   </View>
 );

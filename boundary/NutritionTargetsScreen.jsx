@@ -2,7 +2,7 @@
 // UC #53 Premium User – View Personalised Nutrition Targets
 //        Free User  – View Calorie Target (macros greyed out)
 // UC Edit Targets   — EditTargetsModal (inline, not a separate screen)
-// UC Auto-Calculate — ⚡ button inside EditTargetsModal (Premium only)
+// UC Auto-Calculate — button inside EditTargetsModal (Premium only)
 //
 // Design follows uploaded UI screenshots exactly:
 //   • Personalized Nutrition Targets landing (images 5, 6)
@@ -72,7 +72,7 @@ const nav = StyleSheet.create({
 
 // ─── Premium Badge ─────────────────────────────────────────────────────────────
 const PremiumBadge = () => (
-  <View style={pb.wrap}><Text style={pb.text}>☆ Premium</Text></View>
+  <View style={pb.wrap}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={pb.text}>Premium</Text></View>
 );
 const pb = StyleSheet.create({
   wrap: { alignSelf: 'flex-start', backgroundColor: C.purple, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, marginBottom: 8 },
@@ -84,7 +84,7 @@ const SuccessBanner = ({ message }) => {
   if (!message) return null;
   return (
     <View style={sb.wrap}>
-      <Text style={sb.icon}>✅</Text>
+      <Image source={require('../assets/icon-success.png')} style={[sb.icon,{width:20,height:20,resizeMode:'contain'}]} />
       <Text style={sb.text}>{message}</Text>
     </View>
   );
@@ -134,7 +134,7 @@ const TargetRow = ({ label, description, value, greyed }) => (
       <Text style={tr.desc}>{description}</Text>
     </View>
     {greyed
-      ? <View style={tr.lockWrap}><Text style={tr.lockIcon}>🔒</Text><Text style={tr.lockText}>Premium</Text></View>
+      ? <View style={tr.lockWrap}><Image source={require('../assets/icon-lock-inline.png')} style={[tr.lockIcon,{width:16,height:16,resizeMode:'contain'}]} /><Text style={tr.lockText}>Premium</Text></View>
       : <Text style={tr.value}>{value}</Text>
     }
   </View>
@@ -205,7 +205,7 @@ const Dropdown = ({ label, value, options, onSelect, disabled }) => {
         activeOpacity={disabled ? 1 : 0.8}
       >
         <Text style={[drd.btnText, disabled && drd.btnTextDisabled]} numberOfLines={1}>{value}</Text>
-        {!disabled && <Text style={drd.arrow}>{open ? '▲' : '▼'}</Text>}
+        {!disabled && {open  ? <Image source={require('../assets/icon-chevron-up.png')} style={{width:11,height:11,resizeMode:'contain'}} /> : <Image source={require('../assets/icon-chevron-down.png')} style={{width:11,height:11,resizeMode:'contain'}} />}}
       </TouchableOpacity>
       {open && !disabled && (
         <View style={drd.list}>
@@ -217,7 +217,7 @@ const Dropdown = ({ label, value, options, onSelect, disabled }) => {
               activeOpacity={0.8}
             >
               <Text style={[drd.itemText, opt === value && drd.itemTextActive]}>{opt}</Text>
-              {opt === value && <Text style={drd.check}>✓</Text>}
+              {opt === value && <Image source={require('../assets/icon-check.png')} style={[drd.check,{width:14,height:14,resizeMode:'contain'}]} />}
             </TouchableOpacity>
           ))}
         </View>
@@ -254,7 +254,7 @@ const NumField = ({ label, value, onChangeText, placeholder, disabled, error, fl
       keyboardType="numeric"
       editable={!disabled}
     />
-    {disabled && <Text style={nf.lockHint}>🔒 Premium only</Text>}
+    {disabled && <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-lock-inline.png')} style={{width:16,height:16,resizeMode:'contain'}} /><Text style={nf.lockHint}>Premium only</Text>}
   </View>
 );
 const nf = StyleSheet.create({
@@ -300,7 +300,7 @@ const EditTargetsModal = ({ visible, targets, isPremium, user, onClose, onSaved 
     }
   }, [visible, targets]);
 
-  // ⚡ Auto-Calculate Based on Profile
+  // Auto-Calculate Based on Profile
   const handleAutoCalc = useCallback(() => {
     Keyboard.dismiss();
     const computed = autoCtrl.computeTargets(user, activityLevel, goal);
@@ -361,7 +361,7 @@ const EditTargetsModal = ({ visible, targets, isPremium, user, onClose, onSaved 
               <Text style={em.subtitle}>Customize your daily nutritional goals or use auto-calculation</Text>
             </View>
             <TouchableOpacity onPress={handleClose} style={em.closeBtn} activeOpacity={0.7}>
-              <Text style={em.closeTxt}>✕</Text>
+              <Image source={require('../assets/icon-close.png')} style={[em.closeTxt,{width:16,height:16,resizeMode:'contain'}]} />
             </TouchableOpacity>
           </View>
 
@@ -394,7 +394,7 @@ const EditTargetsModal = ({ visible, targets, isPremium, user, onClose, onSaved 
             {/* Auto-Calculate button — Premium only */}
             {isPremium && (
               <TouchableOpacity style={em.autoBtn} onPress={handleAutoCalc} activeOpacity={0.85}>
-                <Text style={em.autoBtnIcon}>⚡</Text>
+                <Image source={require('../assets/stat-calories-burned.png')} style={[em.autoBtnIcon,{width:20,height:20,resizeMode:'contain'}]} />
                 <Text style={em.autoBtnText}>Auto-Calculate Based on Profile</Text>
               </TouchableOpacity>
             )}
@@ -577,7 +577,7 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
 
         {/* Today's Progress */}
         <Card>
-          <SectionHeading icon="🎯" title="Today's Progress" />
+          <SectionHeading icon={require('../assets/section-goals.png')} title="Today's Progress" />
           <MacroRow label="Calories" consumed={todayConsumed.calories} goal={t.calories || 2000} unit="kcal" greyed={false} />
           <MacroRow label="Protein"  consumed={todayConsumed.protein}  goal={t.protein  || 0}    unit="g"    greyed={!isPremium} decimals={2} />
           <MacroRow label="Carbs"    consumed={todayConsumed.carbs}    goal={t.carbs    || 0}    unit="g"    greyed={!isPremium} />
@@ -586,7 +586,7 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
 
         {/* Your Targets */}
         <Card>
-          <SectionHeading icon="↗️" title="Your Targets" />
+          <SectionHeading icon={require('../assets/stat-growth.png')} title="Your Targets" />
           <TargetRow label="Daily Calories"  description="Based on your activity level" value={`${t.calories || 2000} kcal`} greyed={false} />
           <TargetRow label="Protein"         description="For muscle maintenance"        value={`${formatNumber(t.protein, 2)} g`}      greyed={!isPremium} />
           <TargetRow label="Carbohydrates"   description="Your energy source"            value={`${t.carbs    || 0} g`}      greyed={!isPremium} />
@@ -597,7 +597,7 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
         {/* Your Profile — Premium only */}
         {isPremium && (
           <Card>
-            <SectionHeading icon="📈" title="Your Profile" />
+            <SectionHeading icon={require('../assets/section-trends.png')} title="Your Profile" />
             <Text style={s.profileLabel}>Activity Level</Text>
             <Chip label={t.activityLevel || 'Not set'} />
             <Text style={[s.profileLabel, { marginTop: 12 }]}>Goal</Text>
@@ -634,7 +634,7 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
         {/* Upgrade nudge for Free users */}
         {!isPremium && (
           <Card style={s.upgradeCard}>
-            <Text style={s.upgradeTitle}>🔒 Unlock Full Macro Tracking</Text>
+            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-lock-inline.png')} style={{width:16,height:16,resizeMode:'contain'}} /><Text style={s.upgradeTitle}>Unlock Full Macro Tracking</Text>
             <Text style={s.upgradeSub}>Upgrade to Premium to set personalised targets for protein, carbs, fat and fiber — and use the auto-calculate feature.</Text>
             <TouchableOpacity
               style={s.upgradeBtn}
