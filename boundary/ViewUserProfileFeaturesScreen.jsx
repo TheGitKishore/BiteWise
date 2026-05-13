@@ -109,10 +109,15 @@ const ProfileCard = ({ profile }) => (
   <View style={pc.card}>
     {/* Image area — replace emoji placeholder with Image component when assets are ready */}
     <View style={pc.imageArea}>
-      <Text style={pc.imageEmoji}>
-        {profile.type === 'MEAL_PLANNER'    ? require('../assets/profile-book.png') :
-         profile.type === 'ATHLETE'         ? require('../assets/profile-athlete.png') : require('../assets/profile-meal-planner.png')}
-      </Text>
+      <Image
+        source={
+          profile.profileTypeId === 'ATHLETE'       ? require('../assets/profile-athlete.png') :
+          profile.profileTypeId === 'MEAL_PLANNER'  ? require('../assets/profile-meal-planner.png') :
+                                                       require('../assets/profile-book.png')
+        }
+        style={pc.imageEmoji}
+        resizeMode="contain"
+      />
     </View>
 
     <View style={pc.body}>
@@ -149,7 +154,7 @@ const pc = StyleSheet.create({
     alignItems:      'center',
     justifyContent:  'center',
   },
-  imageEmoji:  { fontSize: 64 },
+  imageEmoji: { width: 120, height: 120 },
   body: {
     padding: 20,
   },

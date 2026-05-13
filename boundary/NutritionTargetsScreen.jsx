@@ -183,7 +183,7 @@ const cd = StyleSheet.create({
 // ─── Section Heading ───────────────────────────────────────────────────────────
 const SectionHeading = ({ icon, title }) => (
   <View style={sch.row}>
-    <Text style={sch.icon}>{icon}</Text>
+    <Image source={icon} style={[sch.icon,{width:16,height:16,resizeMode:'contain'}]} />
     <Text style={sch.title}>{title}</Text>
   </View>
 );

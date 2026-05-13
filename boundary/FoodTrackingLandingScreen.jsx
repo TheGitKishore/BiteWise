@@ -161,7 +161,7 @@ const tb = StyleSheet.create({
 // Action tile
 const ActionTile = ({ icon, title, subtitle, onPress }) => (
   <TouchableOpacity style={at.card} onPress={onPress} activeOpacity={0.8}>
-    <View style={at.iconWrap}><Text style={at.icon}>{icon}</Text></View>
+    <View style={at.iconWrap}><Image source={icon} style={[at.icon,{width:32,height:32,resizeMode:'contain'}]} /></View>
     <Text style={at.title}>{title}</Text>
     <Text style={at.subtitle}>{subtitle}</Text>
   </TouchableOpacity>

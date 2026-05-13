@@ -110,7 +110,7 @@ const tb = StyleSheet.create({
 const StatCard = ({ iconBg, icon, label, value, extra }) => (
   <View style={sc.card}>
     <View style={[sc.iconCircle, { backgroundColor: iconBg }]}>
-      <Text style={sc.icon}>{icon}</Text>
+      <Image source={icon} style={[sc.icon,{width:20,height:20,resizeMode:'contain'}]} />
     </View>
     <View style={sc.body}>
       <Text style={sc.label}>{label}</Text>

@@ -135,7 +135,7 @@ const ManagementSection = ({
   <View style={ms.card}>
     <View style={ms.header}>
       <View style={ms.titleRow}>
-        <Text style={ms.icon}>{icon}</Text>
+        <Image source={icon} style={[ms.icon,{width:20,height:20,resizeMode:'contain'}]} />
         <Text style={ms.title}>{title}</Text>
       </View>
       <TouchableOpacity style={ms.viewAllBtn} onPress={onViewAll}>
@@ -255,7 +255,7 @@ const cp = StyleSheet.create({
 // ── Nav Tile ──────────────────────────────────────────────────────────────────
 const NavTile = ({ icon, label, onPress }) => (
   <TouchableOpacity style={nt.tile} onPress={onPress}>
-    <Text style={nt.icon}>{icon}</Text>
+    <Image source={icon} style={[nt.icon,{width:18,height:18,resizeMode:'contain'}]} />
     <Text style={nt.label}>{label}</Text>
   </TouchableOpacity>
 );

@@ -129,7 +129,7 @@ const pb = StyleSheet.create({
 const FeatureTile = ({ icon, title, subtitle, isPremium, onPress }) => (
   <TouchableOpacity style={ft.card} onPress={onPress} activeOpacity={0.8}>
     <View style={[ft.iconWrap, isPremium && ft.iconWrapPremium]}>
-      <Text style={ft.icon}>{icon}</Text>
+      <Image source={icon} style={[ft.icon,{width:32,height:32,resizeMode:'contain'}]} />
     </View>
     {isPremium && <PremiumBadge />}
     <Text style={ft.title}>{title}</Text>

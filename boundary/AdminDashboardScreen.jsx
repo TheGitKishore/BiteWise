@@ -151,7 +151,7 @@ const StatCard = ({ label, value, icon, iconColor, badge }) => (
       <Text style={[sc.value, { color: iconColor || C.dark }]}>{value}</Text>
       {badge ? <View style={sc.badge}><Text style={sc.badgeTxt}>{badge}</Text></View> : null}
     </View>
-    <Text style={[sc.icon, { color: iconColor || C.subtle, opacity: 0.35 }]}>{icon}</Text>
+    <Image source={icon} style={[sc.icon,{width:30,height:30,resizeMode:'contain',opacity:0.35}]} />
   </View>
 );
 const sc = StyleSheet.create({

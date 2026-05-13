@@ -242,7 +242,7 @@ const ub = StyleSheet.create({
 const FeatureTile = ({ icon, title, subtitle, onPress }) => (
   <TouchableOpacity style={ft.card} onPress={onPress} activeOpacity={0.8}>
     <View style={ft.iconWrap}>
-      <Text style={ft.icon}>{icon}</Text>
+      <Image source={icon} style={[ft.icon,{width:32,height:32,resizeMode:'contain'}]} />
     </View>
     <Text style={ft.title}>{title}</Text>
     <Text style={ft.subtitle}>{subtitle}</Text>
