@@ -175,7 +175,7 @@ const qc = StyleSheet.create({
 const ProfileResultCard = ({ meta, isRecommended }) => (
   <View style={[pr.card, isRecommended && pr.cardHighlight]}>
     {isRecommended && (
-      <View style={pr.recommendBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-recommended.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={pr.recommendBadgeTxt}>Recommended for you</Text></View>
+      <View style={pr.recommendBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-recommended.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={pr.recommendBadgeTxt}>Recommended for you</Text></View></View>
     )}
     <Text style={pr.emoji}>{meta.emoji}</Text>
     <Text style={pr.label}>{meta.label}</Text>

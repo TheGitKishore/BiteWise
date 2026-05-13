@@ -72,7 +72,7 @@ const nav = StyleSheet.create({
 
 // ─── Premium Badge ─────────────────────────────────────────────────────────────
 const PremiumBadge = () => (
-  <View style={pb.wrap}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={pb.text}>Premium</Text></View>
+  <View style={pb.wrap}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={pb.text}>Premium</Text></View></View>
 );
 const pb = StyleSheet.create({
   wrap: { alignSelf: 'flex-start', backgroundColor: C.purple, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, marginBottom: 8 },
@@ -205,7 +205,7 @@ const Dropdown = ({ label, value, options, onSelect, disabled }) => {
         activeOpacity={disabled ? 1 : 0.8}
       >
         <Text style={[drd.btnText, disabled && drd.btnTextDisabled]} numberOfLines={1}>{value}</Text>
-        {!disabled && {open  ? <Image source={require('../assets/icon-chevron-up.png')} style={{width:11,height:11,resizeMode:'contain'}} /> : <Image source={require('../assets/icon-chevron-down.png')} style={{width:11,height:11,resizeMode:'contain'}} />}}
+        {!disabled && (open  ? <Image source={require('../assets/icon-chevron-up.png')} style={{width:11,height:11,resizeMode:'contain'}} /> : <Image source={require('../assets/icon-chevron-down.png')} style={{width:11,height:11,resizeMode:'contain'}} />)}
       </TouchableOpacity>
       {open && !disabled && (
         <View style={drd.list}>
@@ -254,7 +254,7 @@ const NumField = ({ label, value, onChangeText, placeholder, disabled, error, fl
       keyboardType="numeric"
       editable={!disabled}
     />
-    {disabled && <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-lock-inline.png')} style={{width:16,height:16,resizeMode:'contain'}} /><Text style={nf.lockHint}>Premium only</Text>}
+    {disabled && <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-lock-inline.png')} style={{width:16,height:16,resizeMode:'contain'}} /><Text style={nf.lockHint}>Premium only</Text></View>}
   </View>
 );
 const nf = StyleSheet.create({
@@ -634,7 +634,7 @@ const NutritionTargetsScreen = ({ navigation, route }) => {
         {/* Upgrade nudge for Free users */}
         {!isPremium && (
           <Card style={s.upgradeCard}>
-            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-lock-inline.png')} style={{width:16,height:16,resizeMode:'contain'}} /><Text style={s.upgradeTitle}>Unlock Full Macro Tracking</Text>
+            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-lock-inline.png')} style={{width:16,height:16,resizeMode:'contain'}} /><Text style={s.upgradeTitle}>Unlock Full Macro Tracking</Text></View>
             <Text style={s.upgradeSub}>Upgrade to Premium to set personalised targets for protein, carbs, fat and fiber — and use the auto-calculate feature.</Text>
             <TouchableOpacity
               style={s.upgradeBtn}

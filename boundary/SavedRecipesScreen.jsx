@@ -63,8 +63,8 @@ const SavedRecipeCard = ({ recipe, onPress, onRemove }) => (
     <View style={src.body}>
       <Text style={src.title}>{recipe.title}</Text>
       <View style={src.metaRow}>
-        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-prep-time.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={src.meta}>{recipe.prepTimeMins} min</Text>
-        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-users.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={src.meta}>{recipe.servings} servings</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-prep-time.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={src.meta}>{recipe.prepTimeMins} min</Text></View>
+        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-users.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={src.meta}>{recipe.servings} servings</Text></View>
       </View>
       <View style={src.tagRow}>
         {recipe.tags.map((t, i) => <View key={i} style={src.tag}><Text style={src.tagText}>{t}</Text></View>)}
@@ -297,7 +297,7 @@ const SavedRecipesScreen = ({ navigation, route }) => {
 
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.premiumBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={styles.premiumBadgeText}>Premium</Text></View>
+          <View style={styles.premiumBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={styles.premiumBadgeText}>Premium</Text></View></View>
           <Text style={styles.pageTitle}>Saved Recipes</Text>
           <Text style={styles.pageSubtitle}>
             Your personally saved recipe collection ({allSaved.length} recipe{allSaved.length !== 1 ? 's' : ''})

@@ -181,7 +181,7 @@ const RestaurantCard = ({ restaurant }) => {
           <Text style={rc.meta}>
             {restaurant.cuisine}  ·  {restaurant.priceRange}  ·  <Image source={require('../assets/tile-curator-program.png')} style={{width:14,height:14,resizeMode:'contain'}} /> {restaurant.rating}
           </Text>
-          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-location.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={rc.address} numberOfLines={1}>{restaurant.address}</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-location.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={rc.address} numberOfLines={1}>{restaurant.address}</Text></View>
         </View>
 
         {/* Right: match badge + chevron */}
@@ -323,7 +323,7 @@ const DineOutScreen = ({ navigation, route }) => {
 
         {/* Page header */}
         <View style={s.header}>
-          <View style={s.premBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-crown.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.premBadgeTxt}>Premium</Text></View>
+          <View style={s.premBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-crown.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.premBadgeTxt}>Premium</Text></View></View>
           <Text style={s.pageTitle}>Dine Out Options</Text>
           <Text style={s.pageSub}>Restaurants with menu items that fit your remaining daily budget</Text>
         </View>

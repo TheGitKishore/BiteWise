@@ -17,7 +17,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
-  StyleSheet, StatusBar, Alert,, Image} from 'react-native';
+  StyleSheet, StatusBar, Alert, Image} from 'react-native';
 import { SafeAreaView }   from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -475,14 +475,14 @@ const ReviewsTab = ({ onBanner }) => {
 
           {/* UC #104 — Remove button */}
           <TouchableOpacity style={rt.removeBtn} onPress={() => handleRemove(review)}>
-            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-delete.png')} style={{width:18,height:18,resizeMode:'contain'}} /><Text style={rt.removeBtnTxt}>Remove</Text>
+            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-delete.png')} style={{width:18,height:18,resizeMode:'contain'}} /><Text style={rt.removeBtnTxt}>Remove</Text></View>
           </TouchableOpacity>
 
           <Text style={rt.content}>{review.content}</Text>
 
           {review.flagged && (
             <View style={rt.flagWarning}>
-              <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-warning.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={rt.flagWarnTxt}>This review has been flagged for violating community guidelines</Text>
+              <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-warning.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={rt.flagWarnTxt}>This review has been flagged for violating community guidelines</Text></View>
             </View>
           )}
         </View>

@@ -663,7 +663,7 @@ const FoodDatabaseSection = ({ allItems, isLoading, errorMsg, onEntryLogged, use
       {/* Badge shown when results come from Open Food Facts */}
       {fromAPI && displayItems.length > 0 && (
         <View style={db.apiBadge}>
-          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-web.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={db.apiBadgeText}>Results from Open Food Facts</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-web.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={db.apiBadgeText}>Results from Open Food Facts</Text></View>
         </View>
       )}
 
@@ -1011,7 +1011,7 @@ const FoodTrackingLandingScreen = ({ navigation, route }) => {
         <View style={styles.titleRow}>
           <Text style={styles.pageTitle}>Food Tracking</Text>
           <TouchableOpacity style={styles.goalBtn} onPress={() => navigation.navigate('NutritionTargetsScreen', { user: currentUser })} activeOpacity={0.8}>
-            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-growth.png')} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={styles.goalBtnText}>Set Daily Goal</Text>
+            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-growth.png')} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={styles.goalBtnText}>Set Daily Goal</Text></View>
           </TouchableOpacity>
         </View>
 

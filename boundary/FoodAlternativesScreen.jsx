@@ -88,7 +88,7 @@ const AlternativeCard = ({ item }) => (
     <View style={ac.divider} />
     <Text style={ac.benefitsLabel}>Benefits:</Text>
     {item.benefits.map((b) => (
-      <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-check.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text key={b} style={ac.benefit}>{b}</Text>
+      <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-check.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text key={b} style={ac.benefit}>{b}</Text></View>
     ))}
   </View>
 );
@@ -189,7 +189,7 @@ const FoodAlternativesScreen = ({ navigation, route }) => {
 
         {/* Page header */}
         <View style={s.header}>
-          <View style={s.premBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-crown.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.premBadgeTxt}>Premium</Text></View>
+          <View style={s.premBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-crown.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.premBadgeTxt}>Premium</Text></View></View>
           <Text style={s.pageTitle}>Healthier Food Alternatives</Text>
           <Text style={s.pageSub}>Discover healthier substitutes for your favorite foods without compromising taste</Text>
         </View>

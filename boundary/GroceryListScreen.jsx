@@ -115,14 +115,14 @@ const GroceryListScreen = ({ navigation, route }) => {
         <Text style={s.navTitle}>Grocery List</Text>
         <View style={{ width: 50 }} />
       </View>
-      {banner ? <View style={s.bannerBar}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={s.bannerTxt}>{banner}</Text></View> : null}
+      {banner ? <View style={s.bannerBar}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={s.bannerTxt}>{banner}</Text></View></View> : null}
       <AddItemModal visible={showAdd} onClose={() => setShowAdd(false)} onAdd={handleAdd} />
       <ScrollView contentContainerStyle={s.scroll}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >
         <View style={s.header}>
-          <View style={s.badge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.badgeTxt}>Premium</Text></View>
+          <View style={s.badge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.badgeTxt}>Premium</Text></View></View>
           <Text style={s.pageTitle}>Grocery List</Text>
           <Text style={s.pageSub}>Auto-generated from your saved recipes</Text>
         </View>

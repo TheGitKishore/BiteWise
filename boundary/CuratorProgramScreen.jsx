@@ -119,7 +119,7 @@ const CuratorProgramScreen = ({ navigation, route }) => {
         >
         <View style={{paddingTop:20,marginBottom:14}}>
           <View style={{alignSelf:'flex-start',backgroundColor:C.purple,borderRadius:20,paddingHorizontal:10,paddingVertical:3,marginBottom:8}}>
-            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={{fontSize:11,fontWeight:'700',color:C.white}}>Premium</Text>
+            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={{fontSize:11,fontWeight:'700',color:C.white}}>Premium</Text></View>
           </View>
           <Text style={{fontSize:26,fontWeight:'800',color:C.dark,marginBottom:4}}>Curator Program</Text>
           <Text style={{fontSize:13,color:C.subtle}}>Become a BiteWise Curator and inspire others on their health journey</Text>
@@ -127,7 +127,7 @@ const CuratorProgramScreen = ({ navigation, route }) => {
 
         {/* What is a curator */}
         <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:12}}>
-          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={{fontSize:15,fontWeight:'700',color:C.dark,marginBottom:8}}>What is a BiteWise Curator?</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={{fontSize:15,fontWeight:'700',color:C.dark,marginBottom:8}}>What is a BiteWise Curator?</Text></View>
           <Text style={{fontSize:13,color:C.body,lineHeight:20,marginBottom:12}}>Curators are experienced Premium members who inspire and guide the BiteWise community. They share their health journey, create valuable content, and help others achieve their wellness goals.</Text>
           <View style={{backgroundColor:C.purpleLight,borderRadius:10,padding:12}}>
             <Text style={{fontSize:13,fontWeight:'600',color:C.purple,marginBottom:8}}>Curators are influencers within BiteWise who:</Text>
@@ -139,7 +139,7 @@ const CuratorProgramScreen = ({ navigation, route }) => {
 
         {/* Abilities */}
         <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:12}}>
-          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-badge.png')} style={{width:15,height:15,resizeMode:'contain'}} /><Text style={{fontSize:15,fontWeight:'700',color:C.dark,marginBottom:12}}>Curator Abilities & Benefits</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-badge.png')} style={{width:15,height:15,resizeMode:'contain'}} /><Text style={{fontSize:15,fontWeight:'700',color:C.dark,marginBottom:12}}>Curator Abilities & Benefits</Text></View>
           <Text style={{fontSize:13,fontWeight:'700',color:C.purple,marginBottom:8}}>What You Can Do:</Text>
           {[{icon:require('../assets/stat-users.png'),t:'Share Your Journey',d:'Post updates, transformation photos, and progress stories'},{ icon: require('../assets/tile-recipes.png'),t:'Create Content',d:'Publish recipes, meal plans, and wellness tips'},{icon:require('../assets/icon-check.png'),t:'Verified Badge',d:'Receive a special Curator badge on your profile'},{icon:require('../assets/icon-premium-star.png'),t:'Featured Content',d:'Your content may be featured in the app discovery feed'}].map((a,i)=>(
             <View key={i} style={{flexDirection:'row',gap:12,marginBottom:12}}>

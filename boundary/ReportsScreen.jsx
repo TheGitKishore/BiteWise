@@ -792,7 +792,7 @@ const BodyMetricsTab = ({ userId, onBanner }) => {
       {/* Health Goal — UC #38, #39, #40, #90 */}
       <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:12}}>
         <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-goals.png')} style={{width:16,height:16,resizeMode:'contain'}} /><Text style={{fontSize:14,fontWeight:'700',color:C.dark}}>Health Goal</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-goals.png')} style={{width:16,height:16,resizeMode:'contain'}} /><Text style={{fontSize:14,fontWeight:'700',color:C.dark}}>Health Goal</Text></View>
           <TouchableOpacity onPress={() => setShowGoalModal(true)} activeOpacity={0.8}
             style={{backgroundColor:C.purpleLight,borderRadius:20,paddingHorizontal:12,paddingVertical:5}}>
             <Text style={{fontSize:12,fontWeight:'600',color:C.purple}}>{goal ? 'Edit Goal' : 'Set Goal'}</Text>
@@ -833,7 +833,7 @@ const BodyMetricsTab = ({ userId, onBanner }) => {
 
       {/* Current Height — UC #36, #87, #89 */}
       <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:12}}>
-        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-height.png')} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>Current Height</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-height.png')} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>Current Height</Text></View>
         {heightData.loading ? <ActivityIndicator color={C.purple}/> : (
           <>
             <Text style={{fontSize:32,fontWeight:'800',color:C.dark,marginBottom:10}}>
@@ -849,7 +849,7 @@ const BodyMetricsTab = ({ userId, onBanner }) => {
 
       {/* Current BMI — UC #41, #42, #91, #92 */}
       <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:12}}>
-        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-trends.png')} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>Current BMI</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-trends.png')} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>Current BMI</Text></View>
         <Text style={{fontSize:36,fontWeight:'800',color:bmiColor,marginBottom:4}}>{bmi ?? '—'}</Text>
         {bmi && <Text style={{fontSize:14,color:bmiColor,fontWeight:'600',marginBottom:10}}>{bmiCat}</Text>}
         <View style={{backgroundColor:C.bg,borderRadius:8,padding:10}}>

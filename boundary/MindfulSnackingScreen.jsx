@@ -180,7 +180,7 @@ const SnackIdeasCard = ({ snackIdeas, activeFilter, onFilterChange, onViewRecipe
           <View style={si.divider} />
           <Text style={si.benefitsLabel}>Benefits:</Text>
           {snack.benefits.map((b) => (
-            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-check.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text key={b} style={si.benefit}>{b}</Text>
+            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-check.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text key={b} style={si.benefit}>{b}</Text></View>
           ))}
 
           {/* View Recipe button */}
@@ -317,7 +317,7 @@ const MindfulSnackingScreen = ({ navigation, route }) => {
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
         {/* Page header */}
         <View style={s.header}>
-          <View style={s.premBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-crown.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.premBadgeTxt}>Premium</Text></View>
+          <View style={s.premBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-crown.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.premBadgeTxt}>Premium</Text></View></View>
           <Text style={s.pageTitle}>Mindful Snacking Guide</Text>
           <Text style={s.pageSub}>Master your cravings and maintain your dietary goals with smart snacking strategies</Text>
         </View>

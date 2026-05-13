@@ -180,7 +180,7 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
         <Text style={s.navTitle}>{isEdit ? 'Edit Recipe' : 'Create Recipe'}</Text>
         {isEdit ? <TouchableOpacity onPress={handleDelete}><Text style={s.delNav}>Delete</Text></TouchableOpacity> : <View style={{ width: 50 }} />}
       </View>
-      {banner ? <View style={s.bannerBar}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={s.bannerTxt}>{banner}</Text></View> : null}
+      {banner ? <View style={s.bannerBar}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={s.bannerTxt}>{banner}</Text></View></View> : null}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled"

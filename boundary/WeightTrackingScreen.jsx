@@ -170,7 +170,7 @@ const WeightTrackingScreen = ({ navigation, route }) => {
         >
         <View style={{paddingTop:20,marginBottom:14}}>
           <View style={{alignSelf:'flex-start',backgroundColor:C.purple,borderRadius:20,paddingHorizontal:10,paddingVertical:3,marginBottom:8}}>
-            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={{fontSize:11,fontWeight:'700',color:C.white}}>Premium</Text>
+            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={{fontSize:11,fontWeight:'700',color:C.white}}>Premium</Text></View>
           </View>
           <Text style={{fontSize:26,fontWeight:'800',color:C.dark,marginBottom:4}}>Weight Tracking</Text>
           <Text style={{fontSize:13,color:C.subtle}}>Monitor your weight changes and track long-term progress</Text>
@@ -190,7 +190,7 @@ const WeightTrackingScreen = ({ navigation, route }) => {
             </View>
             {entries.length >= 2 && (
               <View style={scard.card}>
-                <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={{totalChange <= 0 ? require('../assets/stat-decrease.png') : require('../assets/stat-increase.png')}} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>Total Change</Text>
+                <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={totalChange <= 0 ? require('../assets/stat-decrease.png') : require('../assets/stat-increase.png')} style={{width:13,height:13,resizeMode:'contain'}} /><Text style={{fontSize:13,color:C.subtle,marginBottom:4}}>Total Change</Text></View>
                 <Text style={{fontSize:28,fontWeight:'800',color:totalChange <= 0 ? C.green : C.red}}>{totalChange > 0 ? '+' : ''}{totalChange} kg</Text>
                 <Text style={{fontSize:12,color:C.subtle,marginTop:4}}>Since {new Date(entries[entries.length-1]?.loggedAt).toLocaleDateString('en-SG')}</Text>
               </View>

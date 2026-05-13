@@ -80,7 +80,7 @@ const nav = StyleSheet.create({
 const StarRow = ({ rating }) => (
   <View style={sr.row}>
     {[1, 2, 3, 4, 5].map((s) => (
-      <Image key={s} source={{s <= rating ? require('../assets/icon-star-filled.png') : require('../assets/icon-star-empty.png')}} style={[sr.star,{width:20,height:20,resizeMode:'contain'}]} />
+      <Image key={s} source={s <= rating ? require('../assets/icon-star-filled.png') : require('../assets/icon-star-empty.png')} style={[sr.star,{width:20,height:20,resizeMode:'contain'}]} />
     ))}
   </View>
 );

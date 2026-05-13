@@ -113,7 +113,7 @@ const EditBlogPostScreen = ({ navigation, route }) => {
       </View>
 
       {banner ? (
-        <View style={s.bannerBar}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={s.bannerTxt}>{banner}</Text></View>
+        <View style={s.bannerBar}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={s.bannerTxt}>{banner}</Text></View></View>
       ) : null}
 
       <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled"

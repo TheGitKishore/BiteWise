@@ -142,7 +142,7 @@ const RecipeCard = ({ recipe, onPress, isLiked, likeCount, onToggleLike, canLike
     <View style={rc.diffBadge}><Text style={rc.diffText}>{recipe.difficulty}</Text></View>
     <View style={rc.body}>
       <Text style={rc.title}>{recipe.title}</Text>
-      <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-prep-time.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={rc.summary}>{recipe.prepTimeMins} min  {recipe.calories} kcal</Text>
+      <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-prep-time.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={rc.summary}>{recipe.prepTimeMins} min  {recipe.calories} kcal</Text></View>
       <View style={rc.macroRow}>
         {[{ l:'Protein', v:`${recipe.protein}g` }, { l:'Carbs', v:`${recipe.carbs}g` }, { l:'Fat', v:`${recipe.fat}g` }].map((m) => (
           <View key={m.l} style={rc.macroItem}>

@@ -197,7 +197,7 @@ const PlanCard = ({ plan, isSelected, onSelect }) => {
       {/* Selected indicator */}
       {isSelected && (
         <View style={pc.selectedBadge}>
-          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-check.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={pc.selectedBadgeText}>Selected</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-check.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={pc.selectedBadgeText}>Selected</Text></View>
         </View>
       )}
     </TouchableOpacity>

@@ -115,7 +115,7 @@ const cp = StyleSheet.create({
 // PREMIUM BADGE — small pill shown on premium tiles
 const PremiumBadge = () => (
   <View style={pb.wrap}>
-    <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={pb.text}>Premium</Text>
+    <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={pb.text}>Premium</Text></View>
   </View>
 );
 const pb = StyleSheet.create({

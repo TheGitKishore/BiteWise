@@ -131,7 +131,7 @@ const ProgressCard = ({ targets, consumed }) => {
   const bars = ctrl.getMacroProgress(targets, consumed);
   return (
     <View style={pc.card}>
-      <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-progress.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={pc.title}>Today's Progress</Text>
+      <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/section-progress.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={pc.title}>Today's Progress</Text></View>
       {bars.map((bar) => <MacroBar key={bar.label} {...bar} />)}
     </View>
   );
@@ -176,7 +176,7 @@ const MenuRecipeCard = ({ recipe, remaining }) => {
         <Text style={mrc.title} numberOfLines={2}>{recipe.title}</Text>
 
         <View style={mrc.metaRow}>
-          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-prep-time.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={mrc.prepTime}>{recipe.prepTimeMins} min</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/stat-prep-time.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text style={mrc.prepTime}>{recipe.prepTimeMins} min</Text></View>
           <View style={[mrc.fitChip, { backgroundColor: fitLabel.bg, borderColor: fitLabel.border }]}>
             <Text style={[mrc.fitTxt, { color: fitLabel.color }]}>{fitLabel.text}</Text>
           </View>
@@ -325,7 +325,7 @@ const TodaysMenuScreen = ({ navigation, route }) => {
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
         <View style={s.header}>
-          <View style={s.premBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-crown.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.premBadgeTxt}>Premium</Text></View>
+          <View style={s.premBadge}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-premium-crown.png')} style={{width:12,height:12,resizeMode:'contain'}} /><Text style={s.premBadgeTxt}>Premium</Text></View></View>
           <Text style={s.pageTitle}>Today's Menu</Text>
           <Text style={s.pageSub}>Recipes matched to your remaining daily nutrition budget</Text>
         </View>

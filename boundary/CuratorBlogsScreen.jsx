@@ -10,7 +10,7 @@ import {
   StatusBar,
   TextInput,
   Image,
-  Keyboard, KeyboardAvoidingView, Platform, Image} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ViewCuratorBlogsController from '../controller/ViewCuratorBlogsController';
