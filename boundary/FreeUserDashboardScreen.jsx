@@ -298,7 +298,16 @@ const GettingStartedSection = ({ isFree, onUpgrade }) => (
           'Daily calorie tracking & goals',
           'Browse recipes for meal ideas',
         ].map((item, i) => (
-          <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-check.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text key={i} style={gs.check}>{item}</Text></View>
+          <View
+            key={i}
+            style={{ flexDirection:'row', alignItems:'center', gap:4 }}
+          >
+            <Image
+              source={require('../assets/icon-check.png')}
+              style={{ width:14, height:14, resizeMode:'contain' }}
+            />
+            <Text style={gs.check}>{item}</Text>
+          </View>
         ))}
         <TouchableOpacity style={gs.upgradeBtn} onPress={onUpgrade} activeOpacity={0.8}>
           <Text style={gs.upgradeBtnText}>Upgrade for More Features</Text>
