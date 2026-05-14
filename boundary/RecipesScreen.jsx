@@ -233,9 +233,14 @@ const RecipeDetail = ({ recipe, user, onBack, onSave, isSaving, isLiked, likeCou
           { icon:require('../assets/stat-protein.png'), label:'Protein',   value:`${recipe.protein}g`, purple:true },
         ].map((s) => (
           <View key={s.label} style={rd.statTile}>
-            <Text style={rd.statIcon}>{s.icon}</Text>
+            <Image
+              source={s.icon}
+              style={{ width: 22, height: 22, resizeMode: 'contain', marginBottom: 4 }}
+            />
             <Text style={rd.statLabel}>{s.label}</Text>
-            <Text style={[rd.statValue, s.purple && rd.statValuePurple]}>{s.value}</Text>
+            <Text style={[rd.statValue, s.purple && rd.statValuePurple]}>
+              {s.value}
+            </Text>
           </View>
         ))}
       </View>

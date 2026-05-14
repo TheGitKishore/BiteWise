@@ -75,10 +75,22 @@ const WriteReviewScreen = ({ navigation, route }) => {
         {/* Star Rating */}
         <View style={{backgroundColor:C.white,borderRadius:14,padding:16,borderWidth:1,borderColor:C.border,marginBottom:12}}>
           <Text style={{fontSize:14,fontWeight:'700',color:C.dark,marginBottom:12}}>Your Rating *</Text>
-          <View style={{flexDirection:'row',gap:10}}>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
             {[1,2,3,4,5].map((star) => (
-              <TouchableOpacity key={star} onPress={() => setRating(star)} activeOpacity={0.8}>
-                {star<=rating ? <Image source={require('../assets/icon-star-filled.png')} style={{width:36,height:36,resizeMode:'contain'}} /> : <Image source={require('../assets/icon-premium-star.png')} style={{width:12,height:12,resizeMode:'contain'}} />}
+              <TouchableOpacity
+                key={star}
+                onPress={() => setRating(star)}
+                activeOpacity={0.8}
+              >
+                <Image
+                  source={require('../assets/icon-star-filled.png')}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    resizeMode: 'contain',
+                    tintColor: star <= rating ? '#FBBF24' : '#D1D5DB',
+                  }}
+                />
               </TouchableOpacity>
             ))}
           </View>
