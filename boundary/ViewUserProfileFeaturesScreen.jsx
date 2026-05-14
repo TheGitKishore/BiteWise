@@ -105,18 +105,24 @@ const fr = StyleSheet.create({
 });
 
 // Profile Card — one per profile, satisfies UC #04 / #05 / #06
+const PROFILE_IMAGES = {
+  ATHLETE:         require('../assets/profile-athlete.png'),
+  MEAL_PLANNER:    require('../assets/profile-meal-planner.png'),
+  HEALTH_ORIENTED: require('../assets/profile-book.png'),
+};
+
+const getProfileImage = (profile) => {
+  const key = (profile.type || profile.profileType || '').toString().trim().toUpperCase();
+  return PROFILE_IMAGES[key] || PROFILE_IMAGES.HEALTH_ORIENTED;
+};
+
 const ProfileCard = ({ profile }) => (
   <View style={pc.card}>
-    {/* Image area — replace emoji placeholder with Image component when assets are ready */}
     <View style={pc.imageArea}>
       <Image
-        source={
-          profile.profileTypeId === 'ATHLETE'       ? require('../assets/profile-athlete.png') :
-          profile.profileTypeId === 'MEAL_PLANNER'  ? require('../assets/profile-meal-planner.png') :
-                                                       require('../assets/profile-book.png')
-        }
+        source={getProfileImage(profile)}
         style={pc.imageEmoji}
-        resizeMode="contain"
+        resizeMode="cover"
       />
     </View>
 
@@ -153,8 +159,11 @@ const pc = StyleSheet.create({
     backgroundColor: C.bg,
     alignItems:      'center',
     justifyContent:  'center',
+    overflow:        'hidden',
+    borderTopLeftRadius:  12,
+    borderTopRightRadius: 12,
   },
-  imageEmoji: { width: 120, height: 120 },
+  imageEmoji: { width: '100%', height: 180 },
   body: {
     padding: 20,
   },

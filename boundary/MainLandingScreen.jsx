@@ -26,7 +26,7 @@ const C = {
 const TopBar = ({ navigation }) => (
   <View style={top.bar}>
     <View style={top.brand}>
-      <Image source={require('../assets/tile-food-tracking.png')} style={[top.icon,{width:20,height:20,resizeMode:'contain'}]} />
+      <Image source={require('../assets/BiteWiseLogo.png')} style={[top.icon,{width:20,height:20,resizeMode:'contain'}]} />
       <Text style={top.brandName}>BiteWise</Text>
     </View>
     <TouchableOpacity
