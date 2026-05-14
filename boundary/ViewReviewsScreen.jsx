@@ -80,7 +80,19 @@ const nav = StyleSheet.create({
 const StarRow = ({ rating }) => (
   <View style={sr.row}>
     {[1, 2, 3, 4, 5].map((s) => (
-      <Image key={s} source={s <= rating ? require('../assets/icon-star-filled.png') : require('../assets/icon-star-empty.png')} style={[sr.star,{width:20,height:20,resizeMode:'contain'}]} />
+      <Image
+        key={s}
+        source={require('../assets/icon-star-filled.png')}
+        style={[
+          sr.star,
+          {
+            tintColor: s <= rating ? C.star : '#D1D5DB',
+            width: 20,
+            height: 20,
+            resizeMode: 'contain',
+          },
+        ]}
+      />
     ))}
   </View>
 );
@@ -88,11 +100,13 @@ const StarRow = ({ rating }) => (
 const sr = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    gap:           2,
-    marginBottom:  4,
+    gap: 2,
+    marginBottom: 4,
   },
+
   star: {
-    fontSize:   20,
+    width: 20,
+    height: 20,
   },
 });
 
@@ -215,7 +229,7 @@ const avg = StyleSheet.create({
   },
   star: {
     fontSize:     32,
-    color:        C.star,
+    tintColor:        C.star,
     marginBottom: 4,
   },
   value: {

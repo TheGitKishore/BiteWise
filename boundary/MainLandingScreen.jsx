@@ -500,9 +500,11 @@ const rv = StyleSheet.create({
   },
   star: {
     fontSize: 26,
-    color:    '#D1D5DB',
+    tintColor:    '#D1D5DB',
   },
-  starFilled: { color: C.star },
+  starFilled: {
+    tintColor: C.star,
+  },
   ratingText: {
     fontSize:   15,
     fontWeight: '600',
