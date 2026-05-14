@@ -143,7 +143,25 @@ const CuratorProgramScreen = ({ navigation, route }) => {
           <Text style={{fontSize:13,fontWeight:'700',color:C.purple,marginBottom:8}}>What You Can Do:</Text>
           {[{icon:require('../assets/stat-users.png'),t:'Share Your Journey',d:'Post updates, transformation photos, and progress stories'},{ icon: require('../assets/tile-recipes.png'),t:'Create Content',d:'Publish recipes, meal plans, and wellness tips'},{icon:require('../assets/icon-check.png'),t:'Verified Badge',d:'Receive a special Curator badge on your profile'},{icon:require('../assets/icon-premium-star.png'),t:'Featured Content',d:'Your content may be featured in the app discovery feed'}].map((a,i)=>(
             <View key={i} style={{flexDirection:'row',gap:12,marginBottom:12}}>
-              <View style={{width:36,height:36,borderRadius:18,backgroundColor:C.purpleLight,alignItems:'center',justifyContent:'center'}}><Text style={{fontSize:16}}>{a.icon}</Text></View>
+              <View
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: C.purpleLight,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Image
+                  source={a.icon}
+                  style={{
+                    width: 18,
+                    height: 18,
+                    resizeMode: 'contain',
+                  }}
+                />
+              </View>
               <View style={{flex:1}}><Text style={{fontSize:14,fontWeight:'600',color:C.dark}}>{a.t}</Text><Text style={{fontSize:13,color:C.subtle}}>{a.d}</Text></View>
             </View>
           ))}
@@ -173,9 +191,42 @@ const CuratorProgramScreen = ({ navigation, route }) => {
             <View style={{width:56,height:56,borderRadius:28,backgroundColor:C.purple,alignItems:'center',justifyContent:'center',marginBottom:12}}><Image source={require('../assets/icon-premium-star.png')} style={{width:24,height:24,resizeMode:'contain'}} /></View>
             <Text style={{fontSize:18,fontWeight:'800',color:C.dark,marginBottom:6,textAlign:'center'}}>Ready to Become a Curator?</Text>
             <Text style={{fontSize:13,color:C.body,textAlign:'center',marginBottom:16,lineHeight:20}}>Join our community of wellness influencers. Applications are reviewed within 5-7 business days.</Text>
-            <TouchableOpacity style={{backgroundColor:C.purple,borderRadius:10,paddingVertical:13,paddingHorizontal:32,flexDirection:'row',alignItems:'center',gap:8}} onPress={() => setShowForm(true)} activeOpacity={0.85}>
-              <Image source={require('../assets/icon-send.png')} style={{width:14,height:14,resizeMode:'contain'}} />
-              <Text style={{fontSize:15,fontWeight:'700',color:C.white}}>Apply Now</Text>
+            <TouchableOpacity
+              style={{
+                backgroundColor: C.purple,
+                borderRadius: 10,
+                paddingVertical: 13,
+                paddingHorizontal: 32,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+              }}
+              onPress={() => setShowForm(true)}
+              activeOpacity={0.85}
+            >
+              <Image
+                source={require('../assets/icon-send.png')}
+                style={{
+                  width: 14,
+                  height: 14,
+                  resizeMode: 'contain',
+                  position: 'absolute',
+                  left: 24,
+                }}
+              />
+
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: '700',
+                  color: C.white,
+                  textAlign: 'center',
+                  marginLeft: 12,
+                }}
+              >
+                Apply Now
+              </Text>
             </TouchableOpacity>
           </View>
         ) : (

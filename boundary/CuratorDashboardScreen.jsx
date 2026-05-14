@@ -114,7 +114,15 @@ const StatCard = ({ label, value, emoji, emojiColor }) => (
       <Text style={sc.label}>{label}</Text>
       <Text style={[sc.value, { color: emojiColor }]}>{value}</Text>
     </View>
-    <Text style={[sc.emoji, { color: emojiColor }]}>{emoji}</Text>
+    <Image
+      source={emoji}
+      style={{
+        width: 28,
+        height: 28,
+        resizeMode: 'contain',
+        opacity: 0.35,
+      }}
+    />
   </View>
 );
 const sc = StyleSheet.create({
@@ -122,7 +130,6 @@ const sc = StyleSheet.create({
   card:  { width: '48%', minHeight: 104, backgroundColor: C.white, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: C.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   label: { fontSize: 13, color: C.subtle, marginBottom: 4 },
   value: { fontSize: 28, fontWeight: '800' },
-  emoji: { fontSize: 28, opacity: 0.35 },
 });
 
 // ── Management Section ────────────────────────────────────────────────────────

@@ -451,7 +451,19 @@ const ReviewsTab = ({ onBanner }) => {
     ]);
   }, [onBanner]);
 
-  const stars = (n) => [...Array(5)].map((_, i) => i < n ? <Image key={i} source={require('../assets/icon-star-filled.png')} style={{width:20,height:20,resizeMode:'contain'}} /> : <Image key={i} source={require('../assets/icon-star-empty.png')} style={{width:20,height:20,resizeMode:'contain'}} />);
+  const stars = (n) =>
+    [...Array(5)].map((_, i) => (
+      <Image
+        key={i}
+        source={require('../assets/icon-star-filled.png')}
+        style={{
+          width: 12,
+          height: 12,
+          resizeMode: 'contain',
+          tintColor: i < n ? '#FBBF24' : '#D1D5DB',
+        }}
+      />
+    ));
 
   if (loading) return <Text style={gs.loading}>Loading...</Text>;
 
