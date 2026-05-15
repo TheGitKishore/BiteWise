@@ -179,8 +179,17 @@ const SnackIdeasCard = ({ snackIdeas, activeFilter, onFilterChange, onViewRecipe
           {/* Benefits */}
           <View style={si.divider} />
           <Text style={si.benefitsLabel}>Benefits:</Text>
-          {snack.benefits.map((b) => (
-            <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-check.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text key={b} style={si.benefit}>{b}</Text></View>
+          {snack.benefits.map((b, index) => (
+            <View
+              key={`${snack.id}-benefit-${index}`}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+            >
+              <Image
+                source={require('../assets/icon-check.png')}
+                style={{ width: 14, height: 14, resizeMode: 'contain' }}
+              />
+              <Text style={si.benefit}>{b}</Text>
+            </View>
           ))}
 
           {/* View Recipe button */}

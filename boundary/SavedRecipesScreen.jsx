@@ -289,6 +289,15 @@ const SavedRecipesScreen = ({ navigation, route }) => {
       >
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <NavBar onMenuPress={() => navigation.goBack()} />
+        {banner ? (
+          <View style={styles.successBanner}>
+            <Image
+              source={require('../assets/icon-success.png')}
+              style={{ width: 16, height: 16, resizeMode: 'contain' }}
+            />
+            <Text style={styles.successBannerText}>{banner}</Text>
+          </View>
+        ) : null}
 
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -410,6 +419,22 @@ const styles = StyleSheet.create({
   emptyIcon:    { fontSize:40, marginBottom:12 },
   emptyText:    { fontSize:15, fontWeight:'600', color:C.dark, marginBottom:4 },
   emptySubtext: { fontSize:13, color:C.subtle, textAlign:'center' },
+  successBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#F0FDF4',
+    borderBottomWidth: 1,
+    borderBottomColor: '#BBF7D0',
+  },
+  successBannerText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#15803D',
+  },
 });
 
 const detail = StyleSheet.create({
