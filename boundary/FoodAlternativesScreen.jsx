@@ -87,8 +87,17 @@ const AlternativeCard = ({ item }) => (
     {/* Divider + benefits */}
     <View style={ac.divider} />
     <Text style={ac.benefitsLabel}>Benefits:</Text>
-    {item.benefits.map((b) => (
-      <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-check.png')} style={{width:14,height:14,resizeMode:'contain'}} /><Text key={b} style={ac.benefit}>{b}</Text></View>
+    {item.benefits.map((b, index) => (
+      <View
+        key={`${item.id}-benefit-${index}`}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+      >
+        <Image
+          source={require('../assets/icon-check.png')}
+          style={{ width: 14, height: 14, resizeMode: 'contain' }}
+        />
+        <Text style={ac.benefit}>{b}</Text>
+      </View>
     ))}
   </View>
 );
