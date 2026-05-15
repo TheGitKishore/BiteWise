@@ -47,9 +47,6 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
   const [tags,         setTags]         = useState((recipe?.tags         || []).join(', '));
   const [errors,       setErrors]       = useState({});
   const [saving,       setSaving]       = useState(false);
-  const [banner,       setBanner]       = useState('');
-
-  const showBanner = (msg) => { setBanner(msg); setTimeout(() => setBanner(''), 3000); };
 
   const buildFields = () => ({
     title, description, difficulty,
@@ -116,18 +113,10 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
     setSaving(false);
 
     if (result?.success) {
-      showBanner(result.message);
-
-      // IMPORTANT: force refresh when going back
-      setTimeout(() => {
-        navigation.goBack();
-      }, 1200);
-
-    } else if (result?.field) {
-      setErrors({ [result.field]: result.message });
-
-    } else {
-      console.log('Failed result:', result);
+      navigation.navigate('CuratorRecipesScreen', {
+        user,
+        successMessage: result.message,
+      });
     }
   }, [
     isEdit,
@@ -156,7 +145,11 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
         style: 'destructive',
         onPress: async () => {
           const r = await deleteCtrl.deleteRecipe(recipeId, user.userId); // FIX
-          if (r.success) navigation.goBack();
+          if (r.success) 
+            navigation.navigate('CuratorRecipesScreen', {
+              user,
+              successMessage: 'Recipe deleted successfully.',
+            });
           else Alert.alert('Error', r.message);
         }
       },
@@ -177,7 +170,6 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
         <Text style={s.navTitle}>{isEdit ? 'Edit Recipe' : 'Create Recipe'}</Text>
         {isEdit ? <TouchableOpacity onPress={handleDelete}><Text style={s.delNav}>Delete</Text></TouchableOpacity> : <View style={{ width: 50 }} />}
       </View>
-      {banner ? <View style={s.bannerBar}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={s.bannerTxt}>{banner}</Text></View></View> : null}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled"

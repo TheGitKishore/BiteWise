@@ -86,7 +86,7 @@ const CuratorRecipesScreen = ({ navigation, route }) => {
 
   const showBanner = useCallback((msg) => {
     setBanner(msg);
-    setTimeout(() => setBanner(''), 3000);
+    setTimeout(() => setBanner(''), 4000);
   }, []);
 
   const loadRecipes = useCallback(() => {
@@ -111,7 +111,14 @@ const CuratorRecipesScreen = ({ navigation, route }) => {
   useFocusEffect(
     useCallback(() => {
       loadRecipes();
-    }, [loadRecipes])
+    
+      const msg = route?.params?.successMessage;
+      if (msg) {
+        showBanner(msg);
+        // Clear the param so re-focusing doesn't re-show it
+        navigation.setParams({ successMessage: undefined });
+      }
+    }, [loadRecipes, showBanner, route?.params?.successMessage])
   );
 
   const handlePublish = useCallback((recipeId) => {
