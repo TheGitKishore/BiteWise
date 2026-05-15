@@ -162,7 +162,7 @@ const BlogPostsScreen = ({ navigation, route }) => {
     <SafeAreaView style={s.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={C.white} />
       <View style={s.nav}>
-        <TouchableOpacity onPress={() => navigation.goBack()}><Text style={s.back}>← Back</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('CuratorDashboardScreen', { user })}><Text style={s.back}>Back</Text></TouchableOpacity>
         <Text style={s.navTitle}>My Blog Posts</Text>
         <View style={{ width: 60 }} />
       </View>
