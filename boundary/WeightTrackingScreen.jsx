@@ -85,19 +85,40 @@ const UpdateModal = ({ visible, onClose, onSubmit, isLoading, error }) => {
 // Premium only — #84, #85, #86
 const WeightTrackingScreen = ({ navigation, route }) => {
   const user = route?.params?.user || null;
-  // Role check uses lowercase to avoid PREMIUM/premium mismatch from different API flows.
-  const isPremium = String(user?.role || '').toLowerCase() === 'premium';
+
+  // Allow Premium + Curator users
+  const PREMIUM_ROLES = ['premium', 'curator'];
+
+  const isPremium = PREMIUM_ROLES.includes(
+    String(user?.role || '').toLowerCase()
+  );
 
   if (!isPremium) {
     return (
       <SafeAreaView style={{flex:1,backgroundColor:C.bg}}>
         <NavBar onMenu={() => navigation.goBack()} />
+
         <View style={{flex:1,alignItems:'center',justifyContent:'center',paddingHorizontal:32}}>
-          <Image source={require('../assets/empty-locked.png')} style={{width:48,height:48,resizeMode:'contain'}} />
-          <Text style={{fontSize:20,fontWeight:'800',color:C.dark,marginBottom:8}}>Premium Feature</Text>
-          <Text style={{fontSize:14,color:C.subtle,textAlign:'center',marginBottom:20}}>Weight tracking requires a Premium membership.</Text>
-          <TouchableOpacity style={{backgroundColor:C.purple,borderRadius:10,paddingVertical:13,paddingHorizontal:24}} onPress={() => navigation.navigate('ViewPricingPlansScreen')}>
-            <Text style={{fontSize:14,fontWeight:'700',color:C.white}}>Upgrade to Premium</Text>
+          <Image
+            source={require('../assets/empty-locked.png')}
+            style={{width:48,height:48,resizeMode:'contain'}}
+          />
+
+          <Text style={{fontSize:20,fontWeight:'800',color:C.dark,marginBottom:8}}>
+            Premium Feature
+          </Text>
+
+          <Text style={{fontSize:14,color:C.subtle,textAlign:'center',marginBottom:20}}>
+            Weight tracking requires a Premium membership.
+          </Text>
+
+          <TouchableOpacity
+            style={{backgroundColor:C.purple,borderRadius:10,paddingVertical:13,paddingHorizontal:24}}
+            onPress={() => navigation.navigate('ViewPricingPlansScreen')}
+          >
+            <Text style={{fontSize:14,fontWeight:'700',color:C.white}}>
+              Upgrade to Premium
+            </Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

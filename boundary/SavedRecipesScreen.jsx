@@ -176,17 +176,34 @@ const SavedRecipesScreen = ({ navigation, route }) => {
   const user = route?.params?.user || null;
   const [banner, setBanner] = useState('');
 
-  // ROLE GATE — redirect Free users immediately
-  if (user?.role !== 'premium') {
+  // Allow Premium + Curator users
+  const hasPremiumAccess =
+    user?.role === 'premium' ||
+    user?.role === 'curator';
+  
+  if (!hasPremiumAccess) {
     return (
       <SafeAreaView style={styles.safe}>
         <NavBar onMenuPress={() => navigation.goBack()} />
-      {banner ? (<View style={{flexDirection:'row',alignItems:'center',gap:10,paddingHorizontal:16,paddingVertical:12,backgroundColor:'#F0FDF4',borderBottomWidth:1,borderBottomColor:'#BBF7D0'}}><Image source={require('../assets/icon-success.png')} style={{width:16,height:16,resizeMode:'contain'}} /><Text style={{flex:1,fontSize:14,fontWeight:'500',color:'#15803D'}}>{banner}</Text></View>) : null}
+        {banner ? (
+          <View style={{flexDirection:'row',alignItems:'center',gap:10,paddingHorizontal:16,paddingVertical:12,backgroundColor:'#F0FDF4',borderBottomWidth:1,borderBottomColor:'#BBF7D0'}}>
+            <Image source={require('../assets/icon-success.png')} style={{width:16,height:16,resizeMode:'contain'}} />
+            <Text style={{flex:1,fontSize:14,fontWeight:'500',color:'#15803D'}}>{banner}</Text>
+          </View>
+        ) : null}
+  
         <View style={styles.gateWrap}>
           <Image source={require('../assets/icon-lock-inline.png')} style={[styles.gateIcon,{width:16,height:16,resizeMode:'contain'}]} />
           <Text style={styles.gateTitle}>Premium Feature</Text>
-          <Text style={styles.gateBody}>Saving and managing your recipe collection requires a Premium membership.</Text>
-          <TouchableOpacity style={styles.gateBtn} onPress={() => navigation.navigate('ViewPricingPlansScreen')} activeOpacity={0.85}>
+          <Text style={styles.gateBody}>
+            Saving and managing your recipe collection requires a Premium membership.
+          </Text>
+      
+          <TouchableOpacity
+            style={styles.gateBtn}
+            onPress={() => navigation.navigate('ViewPricingPlansScreen')}
+            activeOpacity={0.85}
+          >
             <Text style={styles.gateBtnText}>Upgrade to Premium</Text>
           </TouchableOpacity>
         </View>
