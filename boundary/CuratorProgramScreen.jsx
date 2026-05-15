@@ -98,9 +98,18 @@ const CuratorProgramScreen = ({ navigation, route }) => {
     );
 
     setIsLoading(false);
-    setBanner(result.message || 'Application submitted! We will review it within 5–7 business days.');
+    setBanner(
+      result.message ||
+        'Application submitted! We will review it within 5–7 business days.'
+    );
+    
     setSubmitted(true);
     setShowForm(false);
+    
+    // auto-hide banner after 4 seconds
+    setTimeout(() => {
+      setBanner('');
+    }, 4000);
   }, [motivation, journey, expertise, social, user]);
 
   return (
