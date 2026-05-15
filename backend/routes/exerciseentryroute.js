@@ -79,7 +79,7 @@ router.get('/types', async (_req, res) => {
 // ===============================
 router.post('/', async (req, res) => {
   try {
-    const { userId, exerciseType, durationMins, notes } = req.body;
+    const { userId, exerciseType, durationMins, notes, caloriesBurned } = req.body;
 
     if (!userId || !exerciseType || !durationMins) {
       return res.status(400).json({
@@ -96,13 +96,16 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const caloriesBurned = Math.round(rate * durationMins);
+    const finalCalories =
+    caloriesBurned !== undefined && caloriesBurned !== null && caloriesBurned !== ''
+      ? Number(caloriesBurned)
+      : Math.round(rate * durationMins);
 
     const [result] = await db.execute(
       `INSERT INTO exerciseentry 
        (user_id, exercise_type, duration_mins, calories_burned, notes)
        VALUES (?, ?, ?, ?, ?)`,
-      [userId, exerciseType, durationMins, caloriesBurned, notes || '']
+      [ userId, exerciseType, durationMins, finalCalories, notes || '' ]
     );
 
     return res.status(201).json({
@@ -113,7 +116,7 @@ router.post('/', async (req, res) => {
         userId,
         exerciseType,
         durationMins,
-        caloriesBurned,
+        caloriesBurned: finalCalories,
         notes,
         loggedAt: new Date(),
       },
@@ -163,7 +166,7 @@ router.get('/today/:userId', async (req, res) => {
 router.put('/:entryId', async (req, res) => {
   try {
     const entryId = Number(req.params.entryId);
-    const { exerciseType, durationMins, notes } = req.body;
+    const { exerciseType, durationMins, notes, caloriesBurned } = req.body;
 
     if (!entryId) {
       return res.status(400).json({ success: false, message: 'Invalid exercise log.', data: null });
@@ -185,7 +188,10 @@ router.put('/:entryId', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Exercise type not found in MongoDB.', data: null });
     }
 
-    const cleanCalories = Math.round(rate * cleanDuration);
+    const finalCalories =
+      caloriesBurned !== undefined && caloriesBurned !== null && caloriesBurned !== ''
+        ? Number(caloriesBurned)
+        : Math.round(rate * cleanDuration);
 
     const [result] = await db.execute(
       `UPDATE exerciseentry
@@ -194,7 +200,7 @@ router.put('/:entryId', async (req, res) => {
            calories_burned = ?,
            notes = ?
        WHERE entry_id = ?`,
-      [cleanExerciseType, cleanDuration, cleanCalories, notes || '', entryId]
+      [cleanExerciseType, cleanDuration, finalCalories, notes || '', entryId]
     );
 
     if (result.affectedRows === 0) {

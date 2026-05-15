@@ -62,7 +62,7 @@ class ExerciseEntry {
   }
 
   // CREATE ENTRY (CALL BACKEND → MYSQL)
-  static async create(userId, { exerciseType, durationMins, notes }) {
+  static async create(userId, { exerciseType, durationMins, caloriesBurned, notes }) {
     const check = ExerciseEntry.validateEntry({ exerciseType, durationMins });
 
     if (!check.valid) {
@@ -74,6 +74,7 @@ class ExerciseEntry {
         userId,
         exerciseType,
         durationMins: Number(durationMins),
+        caloriesBurned: caloriesBurned ? Number(caloriesBurned) : undefined,
         notes: notes || '',
       });
 
@@ -104,7 +105,7 @@ class ExerciseEntry {
   // @param  {string|number} entryId
   // @param  {{ exerciseType, durationMins, caloriesBurned, notes }} fields
   // @return {Promise<{ success, message, data }>}
-  static async update(entryId, { exerciseType, durationMins, notes }) {
+  static async update(entryId, { exerciseType, durationMins, caloriesBurned, notes }) {
     if (!exerciseType?.trim()) return { success: false, message: 'Exercise type is required.', data: null };
     if (!durationMins || Number(durationMins) <= 0) return { success: false, message: 'Duration must be greater than 0.', data: null };
 
@@ -112,6 +113,10 @@ class ExerciseEntry {
       const res = await axios.put(`${API_URL}/${entryId}`, {
         exerciseType: exerciseType.trim(),
         durationMins: Number(durationMins),
+        caloriesBurned:
+          caloriesBurned !== ''
+            ? Number(caloriesBurned)
+            : undefined,
         notes: notes || '',
       });
       return res.data;
