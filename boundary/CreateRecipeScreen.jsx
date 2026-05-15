@@ -133,13 +133,25 @@ const CreateRecipeScreen = ({ navigation, route }) => {
     setIsLoading(false);
 
     if (result.success) {
-      setBanner(result.message);
-      // Reset form
-      setTitle(''); setDescription(''); setPrepTimeMins(''); setCalories('');
-      setProtein(''); setCarbs(''); setFat(''); setServings('1');
-      setDifficulty('Easy'); setIngredients(['','','']); setInstructions(['','']);
+      // Reset form first (optional, still useful if user comes back)
+      setTitle('');
+      setDescription('');
+      setPrepTimeMins('');
+      setCalories('');
+      setProtein('');
+      setCarbs('');
+      setFat('');
+      setServings('1');
+      setDifficulty('Easy');
+      setIngredients(['', '', '']);
+      setInstructions(['', '']);
       setSelectedTags([]);
-      setTimeout(() => setBanner(''), 4000);
+        
+      // Navigate back to MyRecipesScreen with banner
+      navigation.navigate('MyRecipesScreen', {
+        user,
+        banner: result.message,
+      });
     } else if (result.field) {
       setFieldErrors({ [result.field]: result.message });
     }
