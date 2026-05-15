@@ -8,7 +8,7 @@ import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, StatusBar, Alert,
-  Keyboard, KeyboardAvoidingView, Platform, Image} from 'react-native';
+  Keyboard, KeyboardAvoidingView, Platform} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CreateBlogPostController from '../controller/CreateBlogPostController';
@@ -37,9 +37,6 @@ const EditBlogPostScreen = ({ navigation, route }) => {
   const [bannerImageUrl, setBannerImageUrl] = useState(post?.bannerImageUrl || '');
   const [errors,  setErrors]  = useState({});
   const [saving,  setSaving]  = useState(false);
-  const [banner,  setBanner]  = useState('');
-
-  const showBanner = msg => { setBanner(msg); setTimeout(() => setBanner(''), 2000); };
 
   const buildTags = () =>
     tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
@@ -67,8 +64,10 @@ const EditBlogPostScreen = ({ navigation, route }) => {
     }
     setSaving(false);
     if (result.success) {
-      showBanner(result.message);
-      setTimeout(() => navigation.goBack(), 1200);
+      navigation.navigate('BlogPostsScreen', {
+        user,
+        successMessage: result.message,
+      });
     } else if (result.field) {
       setErrors({ [result.field]: result.message });
     }
@@ -85,8 +84,14 @@ const EditBlogPostScreen = ({ navigation, route }) => {
           text: 'Delete', style: 'destructive',
           onPress: async () => {
             const r = await deleteCtrl.deletePost(post.blogPostId, user.userId);
-            if (r.success) navigation.goBack();
-            else Alert.alert('Error', r.message);
+            if (r.success) {
+              navigation.navigate('BlogPostsScreen', {
+                user,
+                successMessage: r.message || 'Blog post deleted successfully.',
+              });
+            } else {
+              Alert.alert('Error', r.message);
+            }
           },
         },
       ]
@@ -111,10 +116,6 @@ const EditBlogPostScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         ) : <View style={{ width: 60 }} />}
       </View>
-
-      {banner ? (
-        <View style={s.bannerBar}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={s.bannerTxt}>{banner}</Text></View></View>
-      ) : null}
 
       <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag">
@@ -155,7 +156,7 @@ const EditBlogPostScreen = ({ navigation, route }) => {
           autoCapitalize="none"
         />
 
-        {/* Banner image */}        
+        {/* Banner image */}
         <Text style={[s.label, { marginTop: 14 }]}>Banner Image URL</Text>
         <TextInput
           style={s.input}
@@ -191,25 +192,23 @@ const EditBlogPostScreen = ({ navigation, route }) => {
 };
 
 const s = StyleSheet.create({
-  safe:        { flex: 1, backgroundColor: C.bg },
-  nav:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
-  back:        { fontSize: 14, color: C.purple, fontWeight: '600' },
-  navTitle:    { fontSize: 17, fontWeight: '700', color: C.dark },
-  deleteNav:   { fontSize: 14, color: C.errorText, fontWeight: '600' },
-  bannerBar:   { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: C.greenBg, borderBottomWidth: 1, borderBottomColor: C.greenBorder },
-  bannerTxt:   { fontSize: 14, fontWeight: '500', color: C.green },
-  scroll: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 20, paddingBottom: 48 },
-  label:       { fontSize: 13, fontWeight: '600', color: C.dark, marginBottom: 6 },
-  err:         { fontSize: 12, color: C.errorText, marginBottom: 4 },
-  input:       { backgroundColor: C.white, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: C.dark, borderWidth: 1, borderColor: C.border },
-  inputErr:    { borderColor: C.errorBorder },
-  contentInput:{ minHeight: 220 },
-  statusNote:  { backgroundColor: C.bg, borderRadius: 8, borderWidth: 1, borderColor: C.border, padding: 12, marginTop: 14 },
+  safe:          { flex: 1, backgroundColor: C.bg },
+  nav:           { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
+  back:          { fontSize: 14, color: C.purple, fontWeight: '600' },
+  navTitle:      { fontSize: 17, fontWeight: '700', color: C.dark },
+  deleteNav:     { fontSize: 14, color: C.errorText, fontWeight: '600' },
+  scroll:        { flexGrow: 1, paddingHorizontal: 16, paddingTop: 20, paddingBottom: 48 },
+  label:         { fontSize: 13, fontWeight: '600', color: C.dark, marginBottom: 6 },
+  err:           { fontSize: 12, color: C.errorText, marginBottom: 4 },
+  input:         { backgroundColor: C.white, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: C.dark, borderWidth: 1, borderColor: C.border },
+  inputErr:      { borderColor: C.errorBorder },
+  contentInput:  { minHeight: 220 },
+  statusNote:    { backgroundColor: C.bg, borderRadius: 8, borderWidth: 1, borderColor: C.border, padding: 12, marginTop: 14 },
   statusNoteText:{ fontSize: 12, color: C.subtle },
-  saveBtn:     { backgroundColor: C.purple, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 24 },
-  saveBtnTxt:  { fontSize: 16, fontWeight: '700', color: C.white },
-  disabled:    { opacity: 0.6 },
-  errorText: { color: C.errorText },
+  saveBtn:       { backgroundColor: C.purple, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 24 },
+  saveBtnTxt:    { fontSize: 16, fontWeight: '700', color: C.white },
+  disabled:      { opacity: 0.6 },
+  errorText:     { color: C.errorText },
 });
 
 export default EditBlogPostScreen;

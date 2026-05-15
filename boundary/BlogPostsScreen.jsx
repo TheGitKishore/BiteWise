@@ -12,8 +12,8 @@ import {
 import { SafeAreaView }   from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
-import ViewBlogPostsController    from '../controller/ViewBlogPostsController';
-import PublishBlogPostController  from '../controller/PublishBlogPostController';
+import ViewBlogPostsController     from '../controller/ViewBlogPostsController';
+import PublishBlogPostController   from '../controller/PublishBlogPostController';
 import UnpublishBlogPostController from '../controller/UnpublishBlogPostController';
 
 const viewCtrl      = new ViewBlogPostsController();
@@ -91,34 +91,38 @@ const PostCard = ({ post, onPublish, onUnpublish, onEdit, userId }) => {
   );
 };
 const pc = StyleSheet.create({
-  card:       { backgroundColor: C.white, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: C.border, marginBottom: 12 },
-  top:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  date:       { fontSize: 11, color: C.subtle },
-  title:      { fontSize: 16, fontWeight: '700', color: C.dark, marginBottom: 6 },
-  preview:    { fontSize: 13, color: C.mid, lineHeight: 19, marginBottom: 10 },
-  tagRow:     { flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: 12 },
-  tag:        { backgroundColor: C.purpleLight, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2 },
-  tagTxt:     { fontSize: 10, color: C.purple },
-  actions:    { flexDirection: 'row', gap: 8 },
-  actionBtn:  { flex: 1, borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 1 },
-  pubBtn:     { backgroundColor: C.greenBg, borderColor: C.greenBorder },
-  unpubBtn:   { backgroundColor: C.amberBg, borderColor: C.amberBorder },
+  card:        { backgroundColor: C.white, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: C.border, marginBottom: 12 },
+  top:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  date:        { fontSize: 11, color: C.subtle },
+  title:       { fontSize: 16, fontWeight: '700', color: C.dark, marginBottom: 6 },
+  preview:     { fontSize: 13, color: C.mid, lineHeight: 19, marginBottom: 10 },
+  tagRow:      { flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: 12 },
+  tag:         { backgroundColor: C.purpleLight, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2 },
+  tagTxt:      { fontSize: 10, color: C.purple },
+  actions:     { flexDirection: 'row', gap: 8 },
+  actionBtn:   { flex: 1, borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 1 },
+  pubBtn:      { backgroundColor: C.greenBg, borderColor: C.greenBorder },
+  unpubBtn:    { backgroundColor: C.amberBg, borderColor: C.amberBorder },
   actionBtnTxt:{ fontSize: 13, fontWeight: '600' },
-  pubTxt:     { color: C.green },
-  unpubTxt:   { color: C.amber },
-  editBtn:    { flex: 1, borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 1, borderColor: C.border },
-  editBtnTxt: { fontSize: 13, fontWeight: '600', color: C.mid },
+  pubTxt:      { color: C.green },
+  unpubTxt:    { color: C.amber },
+  editBtn:     { flex: 1, borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 1, borderColor: C.border },
+  editBtnTxt:  { fontSize: 13, fontWeight: '600', color: C.mid },
 });
 
 const BlogPostsScreen = ({ navigation, route }) => {
   const user = route?.params?.user || null;
-  const [posts,  setPosts]  = useState([]);
-  const [banner, setBanner] = useState('');
-  const [loading,setLoading]= useState(true);
+  const [posts,   setPosts]   = useState([]);
+  const [banner,  setBanner]  = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const showBanner = msg => { setBanner(msg); setTimeout(() => setBanner(''), 3000); };
+  const showBanner = useCallback((msg) => {
+    setBanner(msg);
+    setTimeout(() => setBanner(''), 4000);
+  }, []);
 
   // UC #117 — load on every focus so edits / creates / deletes reflect immediately
+  // Also consume successMessage passed back from EditBlogPostScreen
   useFocusEffect(
     useCallback(() => {
       if (!user?.userId) { setLoading(false); return; }
@@ -127,7 +131,13 @@ const BlogPostsScreen = ({ navigation, route }) => {
         if (r.success) setPosts(r.data);
         setLoading(false);
       });
-    }, [user?.userId])
+
+      const msg = route?.params?.successMessage;
+      if (msg && typeof msg === 'string') {
+        showBanner(msg);
+        navigation.setParams({ successMessage: null });
+      }
+    }, [user?.userId, route?.params?.successMessage, showBanner])
   );
 
   // UC #119
@@ -137,7 +147,7 @@ const BlogPostsScreen = ({ navigation, route }) => {
       setPosts(prev => prev.map(p => p.blogPostId === postId ? { ...p, status: 'PUBLISHED', publishedAt: new Date().toISOString() } : p));
       showBanner(r.message);
     }
-  }, [user?.userId]);
+  }, [user?.userId, showBanner]);
 
   // UC #120
   const handleUnpublish = useCallback(async postId => {
@@ -146,7 +156,7 @@ const BlogPostsScreen = ({ navigation, route }) => {
       setPosts(prev => prev.map(p => p.blogPostId === postId ? { ...p, status: 'DRAFT', publishedAt: null } : p));
       showBanner(r.message);
     }
-  }, [user?.userId]);
+  }, [user?.userId, showBanner]);
 
   return (
     <SafeAreaView style={s.safe}>
@@ -158,7 +168,12 @@ const BlogPostsScreen = ({ navigation, route }) => {
       </View>
 
       {banner ? (
-        <View style={s.bannerBar}><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Image source={require('../assets/icon-success.png')} style={{width:20,height:20,resizeMode:'contain'}} /><Text style={s.bannerTxt}>{banner}</Text></View></View>
+        <View style={s.bannerBar}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Image source={require('../assets/icon-success.png')} style={{ width: 20, height: 20, resizeMode: 'contain' }} />
+            <Text style={s.bannerTxt}>{banner}</Text>
+          </View>
+        </View>
       ) : null}
 
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
@@ -174,7 +189,7 @@ const BlogPostsScreen = ({ navigation, route }) => {
           <Text style={s.empty}>Loading...</Text>
         ) : posts.length === 0 ? (
           <View style={s.emptyCard}>
-            <Image source={require('../assets/empty-blog-posts.png')} style={[s.emptyEmoji,{width:48,height:48,resizeMode:'contain'}]} />
+            <Image source={require('../assets/empty-blog-posts.png')} style={[s.emptyEmoji, { width: 48, height: 48, resizeMode: 'contain' }]} />
             <Text style={s.emptyTitle}>No Blog Posts Yet</Text>
             <Text style={s.emptyBody}>Share your health journey, tips and insights with the community.</Text>
           </View>
@@ -196,20 +211,20 @@ const BlogPostsScreen = ({ navigation, route }) => {
 };
 
 const s = StyleSheet.create({
-  safe:       { flex: 1, backgroundColor: C.bg },
-  nav:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
-  back:       { fontSize: 14, color: C.purple, fontWeight: '600' },
-  navTitle:   { fontSize: 17, fontWeight: '700', color: C.dark },
-  bannerBar:  { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#F0FDF4', borderBottomWidth: 1, borderBottomColor: '#BBF7D0' },
-  bannerTxt:  { fontSize: 14, fontWeight: '500', color: C.green },
-  scroll:     { paddingHorizontal: 16, paddingBottom: 40 },
-  createBtn:  { backgroundColor: C.purple, borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginVertical: 16 },
+  safe:        { flex: 1, backgroundColor: C.bg },
+  nav:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: C.white, borderBottomWidth: 1, borderBottomColor: C.border },
+  back:        { fontSize: 14, color: C.purple, fontWeight: '600' },
+  navTitle:    { fontSize: 17, fontWeight: '700', color: C.dark },
+  bannerBar:   { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: C.greenBg, borderBottomWidth: 1, borderBottomColor: C.greenBorder },
+  bannerTxt:   { fontSize: 14, fontWeight: '500', color: C.green },
+  scroll:      { paddingHorizontal: 16, paddingBottom: 40 },
+  createBtn:   { backgroundColor: C.purple, borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginVertical: 16 },
   createBtnTxt:{ fontSize: 15, fontWeight: '700', color: C.white },
-  empty:      { textAlign: 'center', color: C.subtle, paddingTop: 40 },
-  emptyCard:  { alignItems: 'center', padding: 40 },
-  emptyEmoji: { fontSize: 48, marginBottom: 12 },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: C.dark, marginBottom: 6 },
-  emptyBody:  { fontSize: 13, color: C.subtle, textAlign: 'center' },
+  empty:       { textAlign: 'center', color: C.subtle, paddingTop: 40 },
+  emptyCard:   { alignItems: 'center', padding: 40 },
+  emptyEmoji:  { fontSize: 48, marginBottom: 12 },
+  emptyTitle:  { fontSize: 18, fontWeight: '700', color: C.dark, marginBottom: 6 },
+  emptyBody:   { fontSize: 13, color: C.subtle, textAlign: 'center' },
 });
 
 export default BlogPostsScreen;
