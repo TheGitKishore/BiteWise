@@ -237,6 +237,11 @@ const AccountSettingsScreen = ({ navigation, route }) => {
       }
   
       setBanner({ message: result.message, type: 'success' });
+
+      setTimeout(() => {
+        setBanner({ message: '', type: '' });
+      }, 4000);
+      
     } else {
       if (result.field) {
         setFieldErrors({ [result.field]: result.message });
