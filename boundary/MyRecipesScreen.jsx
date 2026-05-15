@@ -6,7 +6,7 @@
 //   - Edit button on each recipe card → navigates to EditMyRecipeScreen
 //   - Delete button on each recipe card → Alert.alert confirm → deletes + removes card
 
-import React, { useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, StatusBar, ActivityIndicator, Alert, Image} from 'react-native';
@@ -151,31 +151,37 @@ const MyRecipesScreen = ({ navigation, route }) => {
   const [recipes,   setRecipes]   = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [banner,    setBanner]    = useState(route?.params?.banner || '');
+  const bannerConsumed = useRef(false);
+
+  useEffect(() => {
+    const incomingBanner = route?.params?.banner;
+
+    if (incomingBanner && !bannerConsumed.current) {
+      bannerConsumed.current = true;
+
+      setBanner(incomingBanner);
+
+      navigation.setParams({ banner: null });
+
+      setTimeout(() => {
+        setBanner('');
+        bannerConsumed.current = false;
+      }, 4000);
+    }
+  }, [route?.params?.banner]);
 
   // Re-fetch on every focus so edits/creates show immediately on return
   useFocusEffect(
     useCallback(() => {
-      // Show incoming banner (from EditMyRecipeScreen or CreateRecipeScreen)
-      const incomingBanner = route?.params?.banner || '';
-      if (incomingBanner) {
-        setBanner(incomingBanner);
-        setTimeout(() => setBanner(''), 4000);
-      }
-
-      if (!user?.userId) {
-        setIsLoading(false);
-        return;
-      }
-
       const load = async () => {
         setIsLoading(true);
         const result = await viewCtrl.fetchMyRecipes(user.userId);
         if (result.success) setRecipes(result.data);
         setIsLoading(false);
       };
-
+    
       load();
-    }, [user?.userId, route?.params?.banner])
+    }, [user?.userId])
   );
 
   // ── Edit handler ────────────────────────────────────────────────────────────
