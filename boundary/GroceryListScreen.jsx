@@ -71,7 +71,7 @@ const GroceryListScreen = ({ navigation, route }) => {
   const [showAdd,      setShowAdd]      = useState(false);
   const [banner,       setBanner]       = useState('');
 
-  const showBanner = (msg) => { setBanner(msg); setTimeout(() => setBanner(''), 3000); };
+  const showBanner = (msg) => { setBanner(msg); setTimeout(() => setBanner(''), 4000); };
 
   useFocusEffect(useCallback(() => {
     if (!user?.userId) return;
