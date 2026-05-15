@@ -158,7 +158,7 @@ const CuratorRecipesScreen = ({ navigation, route }) => {
       <View style={s.nav}>
         <TouchableOpacity onPress={() => navigation.goBack()}><Text style={s.back}>Back</Text></TouchableOpacity>
         <Text style={s.navTitle}>My Recipes</Text>
-        <View style={{ width: 60 }} />
+        <View style={{ width: 30 }} />
       </View>
 
       {banner ? (
