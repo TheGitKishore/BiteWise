@@ -235,9 +235,7 @@ const AccountSettingsScreen = ({ navigation, route }) => {
         setUsername(refreshed.data.username);
         setEmail(refreshed.data.email);
       }
-      navigation.navigate('DashboardRouter', {
-        user: refreshed.data,
-      });    
+  
       setBanner({ message: result.message, type: 'success' });
     } else {
       if (result.field) {
