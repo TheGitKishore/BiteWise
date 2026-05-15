@@ -1,37 +1,15 @@
 /**
- * BiteWise — Entity Layer Unit Tests (UPDATED)
+ * BiteWise — Entity Layer Unit Tests (Part 1)
  * =====================================================================
  * Coverage:
- *   Admin, BlogPost, CuratorApplication, CuratorProfile (new),
+ *   Admin, BlogPost, CuratorApplication, CuratorProfile,
  *   DiaryEntry, DineOut, ExerciseEntry, FoodIntakeEntry, FoodItem,
  *   FreeUser, GroceryList, HealthGoal, HealthReport, HeightEntry,
  *   MealPlan, MembershipPlan, MembershipPlanFeature,
- *   NutritionTargets, PremiumUser, Recipe (new), RecipeDraft,
- *   Review, User (new), UserProfileType
+ *   NutritionTargets, PremiumUser, Recipe, RecipeDraft,
+ *   Review, User, UserProfileType
  *
- * CHANGES vs PREVIOUS VERSION:
- * 1. User.js — New entity. Full coverage of validators, createAccount,
- *    login, setProfileType, setDailyCalorieLimit, terminateAccount,
- *    fetchNutritionTargets, getUser.
- * 2. Admin.js — New methods: approveApplication, rejectApplication,
- *    fetchApplications, fetchReviews, removeReview, banUser, unbanUser,
- *    terminateUser, fetchOverviewStats.
- * 3. BlogPost.js — Added viewCount field, recordView(), fetchLikedPostIds().
- * 4. CuratorProfileEdit.js — New entity CuratorProfile with getProfile()
- *    and updateProfile().
- * 5. DiaryEntry.js — New update() method.
- * 6. ExerciseEntry.js — New update() and delete() methods.
- * 7. Recipe.js — New: saveRecipe, fetchSaved, unsaveRecipe,
- *    fetchLikedRecipeIds, recordView, filterByCalorieBudget,
- *    getMacroMatchScore, fetchCustom, create, search.
- * 8. RecipeDraft.js — isCurated=true enforced in create(), fetchByUser(),
- *    update() method with validation.
- * 9. Review.js — getAverageRating uses Math.floor (not Math.round).
- * 10. UserProfileType.js — New: computeProfileFromAnswers, getProfileMeta.
- * 11. HealthGoal.js — normalizeGoal accepts both camelCase/snake_case.
- *     Added update() tests.
- * 12. HeightEntry.js — New update() method.
- * 13. MembershipPlan.js — getActive() added.
+ * Run with: npm test -- entity.test.js
  * =====================================================================
  */
 
@@ -418,7 +396,7 @@ describe('CuratorApplication — approve() / reject()', () => {
 
 
 // =====================================================================
-//  5. CuratorProfile (NEW entity — CuratorProfileEdit.js)
+//  5. CuratorProfile
 // =====================================================================
 import CuratorProfile from '../entity/CuratorProfileEdit';
 
@@ -1619,7 +1597,7 @@ describe('Admin — promoteToCurator()', () => {
 
 
 // =====================================================================
-//  19. Recipe (NEW — Recipe.js)
+//  19. Recipe
 // =====================================================================
 import Recipe from '../entity/Recipe';
 
@@ -2173,7 +2151,7 @@ describe('UserProfileType — API methods', () => {
 
 
 // =====================================================================
-//  23. User (NEW — User.js)
+//  23. User
 // =====================================================================
 import User from '../entity/User';
 

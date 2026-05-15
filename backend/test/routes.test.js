@@ -1,31 +1,14 @@
 /**
- * BiteWise — Backend Route Tests Part 1 — UPDATED FOR CHANGED ROUTES
+ * BiteWise — Backend Route Tests Part 1
  * =====================================================================
- * CHANGES APPLIED vs PREVIOUS VERSION:
+ * Coverage:
+ * admin, blogpost, curator, diaryentry, dineout,
+ * exerciseentry, foodintake, fooditem, food,
+ * grocerylist, healthgoal, healthreport, heightentry
  *
- * 1. adminroute.js — approve/reject routes MOVED from curatorapplication
- *    into adminroute. Now at PUT /api/admin/:applicationId/approve and
- *    PUT /api/admin/:applicationId/reject. Approve makes 4 queries:
- *    SELECT app, UPDATE app status, UPDATE user role, INSERT curator_profile.
- *    Reject makes 1 query (UPDATE only, no SELECT after).
- *
- * 2. curatorapplicationroute.js — now only POST / and GET /. All approve/
- *    reject tests removed from this describe block.
- *
- * 3. healthgoalroute.js — mapGoal() maps snake_case DB rows to camelCase.
- *    Mock rows must use snake_case keys (goal_type, user_id, etc).
- *
- * 4. reviewroute.js — reviewer_initials derived as:
- *    username.split(' ').map(w => w[0]).join('').toUpperCase()
- *    Single-word 'alice' → 'A'. Test uses 'Alice Johnson' → 'AJ'.
- *
- * 5. usersroute.js — register: 4 db.query calls + 1 mongo insertOne.
- *    profile-type PUT: mockQuery returns [{ affectedRows }] for UPDATE
- *    then [[...rows]] for SELECT (two calls, both query not execute).
- *    delete/calorie-limit both use db.query (not db.execute).
- *
- * Place at:  backend/__tests__/routes.test.js
- * Run with:  node --experimental-vm-modules node_modules/.bin/jest
+ * Run with:  
+ * cd backend
+ * npm test -- routes.test.js
  * =====================================================================
  */
 
@@ -505,7 +488,7 @@ describe('GET /api/curator-applications', () => {
 
 
 // =====================================================================
-//  4. DIARY ENTRY ROUTES  /api/diary-entries (unchanged)
+//  4. DIARY ENTRY ROUTES  /api/diary-entries
 // =====================================================================
 
 describe('GET /api/diary-entries/:userId', () => {
@@ -574,7 +557,7 @@ describe('DELETE /api/diary-entries/:entryId', () => {
 
 
 // =====================================================================
-//  5. DINE OUT ROUTES  /api/dine-out (unchanged)
+//  5. DINE OUT ROUTES  /api/dine-out
 // =====================================================================
 
 describe('GET /api/dine-out', () => {
@@ -707,7 +690,7 @@ describe('DELETE /api/exercise-entries/:entryId', () => {
 
 
 // =====================================================================
-//  7. FOOD INTAKE ENTRY ROUTES  /api/food-entries (unchanged)
+//  7. FOOD INTAKE ENTRY ROUTES  /api/food-entries
 // =====================================================================
 
 describe('POST /api/food-entries/manual', () => {
@@ -770,7 +753,7 @@ describe('DELETE /api/food-entries/:entryId', () => {
 
 
 // =====================================================================
-//  8. FOOD ITEM ROUTES  /api/food-items (unchanged)
+//  8. FOOD ITEM ROUTES  /api/food-items
 // =====================================================================
 
 describe('GET /api/food-items', () => {
@@ -800,7 +783,7 @@ describe('POST /api/food-items', () => {
 
 
 // =====================================================================
-//  9. FOOD SEARCH ROUTES  /api/food-api (unchanged)
+//  9. FOOD SEARCH ROUTES  /api/food-api
 // =====================================================================
 
 describe('GET /api/food-api/search', () => {
@@ -840,7 +823,7 @@ describe('GET /api/food-api/barcode/:barcode', () => {
 
 
 // =====================================================================
-//  10. GROCERY LIST ROUTES  /api/grocery-lists (unchanged)
+//  10. GROCERY LIST ROUTES  /api/grocery-lists
 // =====================================================================
 
 describe('GET /api/grocery-lists/:userId', () => {
@@ -1013,7 +996,7 @@ describe('PUT /api/health-goals/:goalId', () => {
 
 
 // =====================================================================
-//  12. HEALTH REPORT ROUTES  /api/health-reports (unchanged)
+//  12. HEALTH REPORT ROUTES  /api/health-reports
 // =====================================================================
 
 describe('GET /api/health-reports/daily', () => {
@@ -1051,7 +1034,7 @@ describe('GET /api/health-reports/monthly', () => {
 
 
 // =====================================================================
-//  13. HEIGHT ENTRY ROUTES  /api/height-entries (unchanged)
+//  13. HEIGHT ENTRY ROUTES  /api/height-entries
 // =====================================================================
 
 describe('POST /api/height-entries', () => {
