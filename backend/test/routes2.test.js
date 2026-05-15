@@ -1,60 +1,14 @@
 /**
- * BiteWise — Backend Route Tests Part 2 — UPDATED FOR CHANGED ROUTES
+ * BiteWise — Backend Route Tests Part 2
  * =====================================================================
- * CHANGES APPLIED vs PREVIOUS VERSION:
- *
- * 1. membershipplanroute.js — mock call ordering fixed. GET /active
- *    was consuming the mock intended for GET /:id because tests ran in
- *    sequence with shared mockQuery state. Each test now queues its own
- *    mockResolvedValueOnce independently.
- *
- * 2. nutritiontargetsroute.js — queueEnsure() helper fixed:
- *    - 404 test: when user not in MySQL, only ONE mockQuery call needed
- *      (ensureUserExists returns null immediately, no Mongo calls made).
- *    - "creates default doc" test: queueEnsure(0, false) correctly
- *      queues insertOne (not updateMany) for the new-doc path.
- *    - validateTargets runs BEFORE ensureTargetsDoc, so 400 tests
- *      need no DB mocks at all.
- *
- * 3. reviewroute.js — reviewer_initials derived as:
- *    username.split(' ').map(w => w[0]).join('').toUpperCase()
- *    Single word 'alice' → 'A'. Multi-word 'Alice Johnson' → 'AJ'.
- *    Tests that check initials use 'Alice Johnson' as username.
- *    GET /reviews and DELETE /reviews 500 tests: route has no explicit
- *    try/catch on DELETE so 500 only fires if query throws — confirmed
- *    mockRejectedValueOnce correctly triggers it.
- *
- * 4. userprofiletyperoute.js — mock now intercepted correctly via
- *    unstable_mockModule. Tests assert on mocked rows only.
- *    Route has a double res.status(500).json() bug in the source but
- *    only the first one fires — tests pass correctly.
- *
- * 5. usersroute.js:
- *    - register: 4 db.query calls + 1 mongo insertOne.
- *      Call order: SELECT username, SELECT email, INSERT user,
- *      INSERT mongo, SELECT created user.
- *    - login: bcrypt.compare uses mockBcryptCompare.mockResolvedValueOnce.
- *      isActive check: route uses `if (!user.isActive)` — tinyint 0
- *      is falsy so deactivated test works with { isActive: 0 }.
- *    - profile-type PUT: 2 calls — UPDATE returns [{ affectedRows }],
- *      SELECT returns [[{...row}]].
- *    - delete: uses db.query (not db.execute). Returns [{ affectedRows }].
- *    - calorie-limit: 2 db.query calls (UPDATE then SELECT).
- *    - update: 4 db.query calls (2 conflict checks, UPDATE, SELECT).
- *
- * 6. weightentryroute.js — all mockExecute return shapes verified:
- *    INSERT → [{ insertId }], SELECT → [[{...rows}]],
- *    UPDATE/DELETE → [{ affectedRows: N }] (explicitly 1 or 0).
- *
- * 7. recipedraftroute.js — GET / now supports ?userId query param filter.
- *    findOneAndUpdate returns { value: updatedDoc } shape.
- *
- * 8. reciperoute.js — POST /save uses db.execute for MySQL saved_recipes.
- *    GET /saved/:userId uses db.execute. DELETE /saved uses db.execute
- *    then mongo deleteMany. PUT /:recipeId/like requires isCurated:true.
- *
- * Place at:  backend/__tests__/routes2.test.js
- * Run with:  node --experimental-vm-modules node_modules/.bin/jest
+ * Coverage:
+ * mealplan, membershipplan, nutritiontargets,
+ * recipedraft, review, smarteatingcontent,
+ * userprofiletype, users, weightentry
+ * 
+ * Run with:  
+ * cd backend
+ * npm test -- routes2.test.js
  * =====================================================================
  */
 
@@ -180,7 +134,7 @@ beforeEach(() => {
 
 
 // =====================================================================
-//  1. MEAL PLAN ROUTES  /api/meal-plans (unchanged)
+//  1. MEAL PLAN ROUTES  /api/meal-plans
 // =====================================================================
 
 describe('GET /api/meal-plans/:userId', () => {

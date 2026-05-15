@@ -1,13 +1,10 @@
 /**
  * BiteWise — Entity Layer Unit Tests (Part 2)
  * =====================================================================
- * Coverage : User, Recipe, RecipeDraft, Review,
+ * Coverage:  User, Recipe, RecipeDraft, Review,
  *            SmartEatingContent, UserProfileType, WeightEntry
  *
- * Run      : npx jest entity2.test.js   (from project root)
- * Requires : jest  (already in Expo / jest-expo preset)
- *
- * All axios calls are mocked — no live server needed.
+ * Run with: npm test -- entity.test.js
  * =====================================================================
  */
 
