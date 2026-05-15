@@ -275,7 +275,7 @@ const AccountSettingsScreen = ({ navigation, route }) => {
               navigation.reset({
                 index: 0,
                 routes: [{
-                  name: 'MainLandingScreen',
+                  name: 'LoginScreen',
                   params: {
                     successMessage: result.message,
                     messageType: 'success',

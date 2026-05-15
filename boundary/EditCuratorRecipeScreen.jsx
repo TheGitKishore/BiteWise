@@ -120,10 +120,7 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
 
       // IMPORTANT: force refresh when going back
       setTimeout(() => {
-        navigation.navigate('CuratorDashboardScreen', {
-          user,
-          refreshKey: Date.now(),
-        });
+        navigation.goBack();
       }, 1200);
 
     } else if (result?.field) {

@@ -318,7 +318,7 @@ const CuratorDashboardScreen = ({ navigation, route }) => {
     if (r.success) {
       navigation.reset({
         index: 0,
-        routes: [{ name: 'MainLandingScreen' }],
+        routes: [{ name: 'LoginScreen' }],
       });
     }
   }, [navigation]);

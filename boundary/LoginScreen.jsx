@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, KeyboardAvoidingView, Platform, ScrollView, Image} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -120,6 +120,16 @@ const LoginScreen = ({ navigation, route }) => {
   const [password,  setPassword]  = useState('');
   const [banner,    setBanner]    = useState({ message: incomingMessage, type: incomingType });
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!banner.message) return;
+    
+    const timer = setTimeout(() => {
+      setBanner({ message: '', type: '' });
+    }, 4000);
+  
+    return () => clearTimeout(timer);
+  }, [banner.message]);
 
   // UC #10, #45 Step 2: user taps Log In
   const handleLogin = useCallback(async () => {
