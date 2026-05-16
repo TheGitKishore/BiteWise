@@ -9,7 +9,7 @@
 // UC #106 System Admin – Approve Curator Application
 // UC #107 System Admin – Reject Curator Application
 // UC #108 System Admin – Update Application (System Page)
-// NEW-A   System Admin – View Dashboard Overview
+// System Admin – View Dashboard Overview
 //
 // Design matches: maindashboard1/2, userManagement1/2,
 //   ReviewModeration1/2, CuratorManagement1/2, SystemPage1/2 screenshots.
@@ -232,7 +232,6 @@ const UsersTab = ({ adminUser, onBanner }) => {
         setLoading(true);
 
         const r = await viewUsersCtrl.fetchAllUsers();
-        // IMPORTANT: adjust name if your controller uses different method
 
         if (!isActive) return;
 
