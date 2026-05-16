@@ -145,7 +145,7 @@ class Admin {
 
       return res.data;
     } catch (err) {
-      console.log("❌ OVERVIEW ERROR:");
+      console.log("OVERVIEW ERROR:");
       console.log(err?.message);
       console.log(err?.response?.data);
       console.log(err?.config?.url);

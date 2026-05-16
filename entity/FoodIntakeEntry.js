@@ -145,7 +145,7 @@ class FoodIntakeEntry {
       const res = await axios.get(`${API_URL}/today/${userId}`);
       return res.data.data.map(e =>
         new FoodIntakeEntry({
-          entryId: e._id,   // 🔥 FIX HERE
+          entryId: e._id,  
           ...e,
         })
       );
@@ -161,7 +161,7 @@ class FoodIntakeEntry {
       console.log("HISTORY RESPONSE:", res.data);
       return res.data.data.map(e =>
         new FoodIntakeEntry({
-          entryId: e._id,   // 🔥 FIX HERE
+          entryId: e._id,  
           ...e,
         })
       );
