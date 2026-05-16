@@ -4,15 +4,12 @@ import { ObjectId } from 'mongodb';
 
 const router = express.Router();
 
-// ===============================
 // COLLECTION NAME
-// ===============================
+
 const COLLECTION = 'foods';
 
-
-// ===============================
 // GET ALL FOOD ITEMS
-// ===============================
+
 router.get('/', async (req, res) => {
   try {
     const db = await getDB();
@@ -43,10 +40,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-
-// ===============================
 // CREATE FOOD ITEM
-// ===============================
+
 router.post('/', async (req, res) => {
   try {
     const {
@@ -101,10 +96,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-
-// ===============================
 // GET FOOD ITEM BY ID
-// ===============================
+
 router.get('/:id', async (req, res) => {
   try {
     const db = await getDB();
@@ -134,10 +127,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-
-// ===============================
 // DELETE FOOD ITEM
-// ===============================
+
 router.delete('/:id', async (req, res) => {
   try {
     const db = await getDB();

@@ -3,9 +3,8 @@ import db from "../db_sql/db.js";
 
 const router = express.Router();
 
-//
-// ✅ GET all membership plans
-//
+// GET all membership plans
+
 router.get("/", async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -18,9 +17,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-//
-// ✅ GET active plans
-//
+// GET active plans
+
 router.get("/active", async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -33,9 +31,8 @@ router.get("/active", async (req, res) => {
   }
 });
 
-//
-// ✅ GET plan by ID
-//
+// GET plan by ID
+
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;

@@ -3,9 +3,9 @@ import db from '../db_sql/db.js';
 
 const router = express.Router();
 
-// ================= UC #98 — SUBMIT =================
+// UC #98 — SUBMIT 
 router.post('/', async (req, res) => {
-  console.log('🔥 HIT CURATOR ROUTE');
+  console.log('HIT CURATOR ROUTE');
   console.log('BODY:', req.body);
 
   try {
@@ -47,15 +47,15 @@ router.post('/', async (req, res) => {
     });
 
   } catch (err) {
-    console.error('❌ DB ERROR:', err); // <-- IMPORTANT
+    console.error('DB ERROR:', err); 
     res.status(500).json({
       success: false,
-      message: err.message // <-- SHOW REAL ERROR
+      message: err.message 
     });
   }
 });
 
-// ================= UC #105 — FETCH ALL =================
+// UC #105 — FETCH ALL 
 router.get('/', async (req, res) => {
   try {
     const [rows] = await db.query(`

@@ -1,11 +1,9 @@
 import express from 'express';
-import db from '../db_sql/db.js'; // mysql2 pool
-
+import db from '../db_sql/db.js'; 
 const router = express.Router();
 
-//
-// ✅ GET all reviews
-//
+// GET all reviews
+
 router.get('/', async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -19,9 +17,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-//
-// ✅ CREATE review
-//
+// CREATE review
+
 router.post('/', async (req, res) => {
   try {
     const {
@@ -33,7 +30,7 @@ router.post('/', async (req, res) => {
       membership_plan_id
     } = req.body;
 
-    // 🔥 STEP 1: fetch username from users table
+    // fetch username from users table
     const [userRows] = await db.query(
       `SELECT username FROM users WHERE user_id = ?`,
       [review_user_id]
@@ -45,22 +42,22 @@ router.post('/', async (req, res) => {
 
     const username = userRows[0].username;
 
-    // optional: initials
+    // initials
     const reviewer_initials = username
       .split(' ')
       .map(w => w[0])
       .join('')
       .toUpperCase();
 
-    // 🔥 STEP 2: insert review
+    // insert review
     const [result] = await db.query(
       `INSERT INTO reviews 
       (review_user_id, reviewer_name, reviewer_initials, profile_type, rating, title, content, membership_plan_id, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         review_user_id,
-        username,              // ✅ derived here
-        reviewer_initials,     // ✅ derived here
+        username,              
+        reviewer_initials,     
         profile_type,
         rating,
         title,
@@ -81,9 +78,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-//
-// ✅ DELETE review
-//
+// DELETE review
+
 router.delete('/:id', async (req, res) => {
   try {
     const review_id = req.params.id;

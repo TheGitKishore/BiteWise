@@ -24,7 +24,7 @@ const buildSevenDayDates = (endDateStr) => {
 };
 
 
-// ✅ DAILY REPORT
+// DAILY REPORT
 router.get('/daily', async (req, res) => {
   try {
     const { userId, date } = req.query;
@@ -140,7 +140,7 @@ router.get('/daily', async (req, res) => {
 });
 
 
-// ✅ WEEKLY REPORT
+// WEEKLY REPORT
 router.get('/weekly', async (req, res) => {
   try {
     const { userId, weekStart } = req.query;
@@ -172,7 +172,7 @@ router.get('/weekly', async (req, res) => {
 });
 
 
-// ✅ MONTHLY REPORT
+// MONTHLY REPORT
 router.get('/monthly', async (req, res) => {
   try {
     const { userId, year, month } = req.query;

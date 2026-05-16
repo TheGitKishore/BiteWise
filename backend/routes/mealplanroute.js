@@ -203,10 +203,6 @@ router.post('/generate', async (req, res) => {
 
     const db = getDB();
 
-    // Future-ready Mongo template lookup (disabled until templates are populated):
-    // const templateCollection = db.collection('meal_templates');
-    // const mongoTemplates = await templateCollection.findOne({ planType: resolvedPlanType });
-
     const generatedDays = buildGeneratedDays(resolvedPlanType, 7);
 
     const doc = {

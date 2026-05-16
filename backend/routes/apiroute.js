@@ -2,10 +2,10 @@ import axios from 'axios';
 import { connectDB, getDB } from '../db_mongodb/db.js';
 import db from '../db_sql/db.js';
 
-// ===================== CONFIGURATION =====================
+//CONFIGURATION
 const OPENFOODFACTS_BASE_URL = 'https://world.openfoodfacts.org';
 
-// ===================== MONGODB OPERATIONS =====================
+// MONGODB OPERATIONS
 
 export const getMongoDocument = async (collectionName, filter = {}) => {
   try {
@@ -33,7 +33,7 @@ export const getMongoDocuments = async (collectionName, filter = {}, options = {
   }
 };
 
-// ===================== FOOD SEARCH IN MONGO =====================
+// FOOD SEARCH IN MONGO
 
 export const searchMongoFoodProducts = async (productName) => {
   try {
@@ -88,7 +88,7 @@ export const deleteMongoDocument = async (collectionName, filter) => {
   }
 };
 
-// ===================== MYSQL OPERATIONS =====================
+// MYSQL OPERATIONS
 
 // Execute raw SQL query
 export const executeMySQLQuery = async (sql, values = []) => {
@@ -184,7 +184,7 @@ export const deleteMySQLRow = async (table, filter) => {
   return await executeMySQLQuery(sql, whereValues);
 };
 
-// ===================== OPENFOODFACTS MAPPER =====================
+//OPENFOODFACTS MAPPER
 
 export const mapProduct = (p) => {
   if (!p) return null;
@@ -207,7 +207,7 @@ export const mapProduct = (p) => {
   };
 };
 
-// ===================== OPENFOODFACTS API =====================
+// OPENFOODFACTS API
 
 // Search for food product by name
 export const searchFoodProduct = async (productName) => {
@@ -331,7 +331,7 @@ export const getNutritionInfo = async (barcode) => {
       }
     };
 
-// ===================== UNIFIED FOOD SEARCH =====================
+// UNIFIED FOOD SEARCH
 
 export const searchFoodUnified = async (productName) => {
   try {
@@ -374,7 +374,7 @@ export const searchFoodUnified = async (productName) => {
   }
 };
 
-// ===================== HELPER FUNCTIONS =====================
+// HELPER FUNCTIONS
 
 // Initialize all database connections
 export const initializeDatabases = async () => {

@@ -3,9 +3,9 @@ import db from '../db_sql/db.js';
 
 const router = express.Router();
 
-// ----------------------------------------------------------
+
 // TABLE NAMES (edit here if your schema names change)
-// ----------------------------------------------------------
+
 const TABLES = {
   WEIGHT_HISTORIES: 'WEIGHT_HISTORIES',
 };

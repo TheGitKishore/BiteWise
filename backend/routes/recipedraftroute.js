@@ -6,11 +6,8 @@ const router = express.Router();
 
 const COLLECTION = 'recipe_drafts';
 
-
-// ─────────────────────────────────────────────
 // GET ALL DRAFTS
-// GET /recipe_drafts
-// ─────────────────────────────────────────────
+
 router.get('/', async (req, res) => {
   try {
     const db = getDB();
@@ -29,11 +26,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-
-// ─────────────────────────────────────────────
 // GET ONE DRAFT
-// GET /recipe_drafts/:id
-// ─────────────────────────────────────────────
+
 router.get('/:id', async (req, res) => {
   try {
     const db = getDB();
@@ -58,11 +52,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-
-// ─────────────────────────────────────────────
 // CREATE DRAFT
-// POST /recipe_drafts
-// ─────────────────────────────────────────────
+
 router.post('/', async (req, res) => {
   try {
     const db = getDB();
@@ -84,11 +75,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-
-// ─────────────────────────────────────────────
 // UPDATE DRAFT
-// PUT /recipe_drafts/:id
-// ─────────────────────────────────────────────
+
 router.put('/:id', async (req, res) => {
   try {
     const db = getDB();
@@ -137,11 +125,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-
-// ─────────────────────────────────────────────
 // DELETE DRAFT
-// DELETE /recipe_drafts/:id
-// ─────────────────────────────────────────────
+
 router.delete('/:id', async (req, res) => {
   try {
     const db = getDB();
@@ -184,9 +169,8 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
-// UC #111 — PUBLISH (MOVE draft → recipe)
-// ─────────────────────────────────────────────
+// UC #111 — PUBLISH DRAFT TO RECIPE
+
 router.post('/:id/publish', async (req, res) => {
   try {
     const db = getDB();

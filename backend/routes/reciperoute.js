@@ -10,7 +10,7 @@ const getCollections = () => {
   const dbMongo = getDB();
   return {
     recipes: dbMongo.collection('recipes'),
-    drafts: dbMongo.collection('recipe_drafts'), // ✅ add this
+    drafts: dbMongo.collection('recipe_drafts'), 
     savedRecipes: dbMongo.collection('saved_recipes'),
     recipeLikes: dbMongo.collection('recipe_likes'),
     recipeViews: dbMongo.collection('recipe_views'),
@@ -162,8 +162,8 @@ const cacheExternalRecipes = async (recipesCollection, mappedDocs) => {
   }
 };
 
-// GET /api/recipes
-// Mongo first, API fallback (TheMealDB) when q is provided and Mongo has no match.
+// GET RECIPES (if MONGO database don't have, then it will search using API)
+
 router.get('/', async (req, res) => {
   try {
     const q = String(req.query?.q || '').trim();
@@ -247,7 +247,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/recipes
+// POST RECIPES
 router.post('/', async (req, res) => {
   try {
     const { customRecipes } = getCollections();
@@ -605,9 +605,7 @@ router.get('/saved/:userId', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
 // SAVED RECIPES
-// ─────────────────────────────────────────────
 // DELETE /api/recipes/saved/:userId/:recipeId
 router.delete('/saved/:userId/:recipeId', async (req, res) => {
   try {
@@ -710,7 +708,7 @@ router.post('/:id/unpublish', async (req, res) => {
       message: 'Recipe unpublished successfully',
       data: {
         ...draft,
-        _id: result.insertedId,   // ✅ ONLY _id now
+        _id: result.insertedId,  
       },
     });
 

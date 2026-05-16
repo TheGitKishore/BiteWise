@@ -10,9 +10,8 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 },
 });
 
-// ===============================
 // CREATE MANUAL ENTRY
-// ===============================
+
 router.post('/manual', async (req, res) => {
   try {
     const { userId, foodName, calories, protein, carbs, fat, meal } = req.body;
@@ -55,10 +54,8 @@ router.post('/manual', async (req, res) => {
   }
 });
 
-
-// ===============================
 // CREATE FROM CAMERA
-// ===============================
+
 router.post('/camera', async (req, res) => {
   try {
     const { userId, foodName, calories, protein, carbs, fat, meal } = req.body;
@@ -95,10 +92,8 @@ router.post('/camera', async (req, res) => {
   }
 });
 
-
-// ===============================
 // FOOD RECOGNITION
-// ===============================
+
 router.post('/food-recognition', upload.single('image'), async (req, res) => {
   try {
     const file = req.file;
@@ -126,7 +121,7 @@ router.post('/food-recognition', upload.single('image'), async (req, res) => {
     return res.status(200).json(result);
 
   } catch (err) {
-    console.error("❌ FOOD RECOGNITION CRASH:");
+    console.error("FOOD RECOGNITION CRASH:");
     console.error(err);
     return res.status(500).json({
       success: false,
@@ -135,9 +130,8 @@ router.post('/food-recognition', upload.single('image'), async (req, res) => {
   }
 });
 
-// ===============================
 // GET TODAY ENTRIES
-// ===============================
+
 router.get('/today/:userId', async (req, res) => {
   try {
     const userId = Number(req.params.userId);
@@ -169,10 +163,8 @@ router.get('/today/:userId', async (req, res) => {
   }
 });
 
-
-// ===============================
 // GET HISTORY
-// ===============================
+
 router.get('/history/:userId', async (req, res) => {
   try {
     const userId = Number(req.params.userId);
@@ -201,9 +193,8 @@ router.get('/history/:userId', async (req, res) => {
   }
 });
 
-// ===============================
 // DELETE ENTRY
-// ===============================
+
 router.delete('/:entryId', async (req, res) => {
   try {
     const { entryId } = req.params;
