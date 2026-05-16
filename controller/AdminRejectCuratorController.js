@@ -1,7 +1,7 @@
 // AdminRejectCuratorController.js — UC #107 System Admin – Reject Curator Application
 //
 // Normal Flow:
-//   1. Admin views Curators tab → taps ✗ reject button on a PENDING application
+//   1. Admin views Curators tab → taps reject button on a PENDING application
 //   2. Boundary shows Alert.alert confirm: "Reject [Name]'s application?"
 //   3. On confirm → boundary calls rejectApplication(applicationId, adminId)
 //   4. Controller tries Admin.reject(); falls back to Admin.rejectApplicationSeeded()

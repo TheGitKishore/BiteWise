@@ -37,7 +37,6 @@ router.get('/search', async (req, res) => {
       .map(mapProduct)
       .filter(Boolean);
 
-    // 🚨 THIS IS CRITICAL
     return res.status(200).json({
       success: true,
       data: products

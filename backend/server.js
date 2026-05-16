@@ -29,7 +29,6 @@ import dineoutRoute from './routes/dineoutroute.js';
 import curatorprofileRoute from './routes/curatorprofileroute.js';
 
 
-// ? ADD THIS
 import { initializeDatabases } from './routes/apiroute.js';
 
 const app = express();
@@ -70,10 +69,10 @@ app.use('/api/nutrition-targets', nutritiontargetsRoute);
 app.use('/api/dine-out', dineoutRoute);
 app.use('/api/curator-profiles', curatorprofileRoute);
 
-// ? Initialize DB before server starts
+// Initialize DB before server starts
 const startServer = async () => {
   try {
-    await initializeDatabases();   // ?? THIS IS WHAT YOU WERE MISSING
+    await initializeDatabases();   
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

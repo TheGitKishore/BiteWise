@@ -4,9 +4,9 @@ import db from '../db_sql/db.js';
 
 const router = express.Router();
 
-/* =========================================================
-   🔐 ADMIN LOGIN
-========================================================= */
+
+// ADMIN LOGIN
+
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -28,7 +28,6 @@ router.post('/login', async (req, res) => {
 
     const admin = rows[0];
 
-    // ⚠️ Plain text comparison (since DB is manually created)
     const match = password === admin.password;
 
     if (!match) {
@@ -58,9 +57,8 @@ router.post('/login', async (req, res) => {
   }
 });
 
-/* =========================================================
-   👤 USERS MANAGEMENT
-========================================================= */
+
+// USERS MANAGEMENT
 
 router.get('/users', async (req, res) => {
   try {
@@ -128,9 +126,8 @@ router.delete('/users/:userId', async (req, res) => {
   }
 });
 
-/* =========================================================
-   📩 CURATOR APPLICATIONS
-========================================================= */
+
+// CURATOR APPLICATIONS
 
 router.get('/applications', async (req, res) => {
   try {
@@ -162,7 +159,7 @@ router.put('/:applicationId/approve', async (req, res) => {
   const { adminId } = req.body;
 
   try {
-    // 1. get userId + expertise from application
+    // get userId + expertise from application
     const [rows] = await db.query(
       `SELECT user_id, expertise, journey, motivation
        FROM curator_applications
@@ -179,7 +176,7 @@ router.put('/:applicationId/approve', async (req, res) => {
 
     const { user_id, expertise } = rows[0];
 
-    // 2. approve application
+    // approve application
     await db.query(
       `UPDATE curator_applications
        SET status = 'APPROVED',
@@ -189,13 +186,13 @@ router.put('/:applicationId/approve', async (req, res) => {
       [adminId, applicationId]
     );
 
-    // 3. promote user role
+    // promote user role
     await db.query(
       `UPDATE users SET role = 'CURATOR' WHERE user_id = ?`,
       [user_id]
     );
 
-    // 4. create curator profile (IMPORTANT FIX)
+    // create curator profile (IMPORTANT FIX)
     await db.query(
       `INSERT INTO curator_profiles (user_id, expertise, bio, created_at, updated_at)
        VALUES (?, ?, '', NOW(), NOW())`,
@@ -265,9 +262,8 @@ router.put('/promote-to-curator', async (req, res) => {
   }
 });
 
-/* =========================================================
-   ⭐ REVIEWS
-========================================================= */
+
+// REVIEWS
 
 router.get('/reviews', async (req, res) => {
   try {
@@ -292,9 +288,8 @@ router.delete('/reviews/:reviewId', async (req, res) => {
   }
 });
 
-/* =========================================================
-   📊 DASHBOARD
-========================================================= */
+
+// DASHBOARD
 
 router.get('/overview', async (req, res) => {
   try {

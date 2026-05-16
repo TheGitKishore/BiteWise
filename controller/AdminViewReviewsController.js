@@ -9,7 +9,7 @@ class AdminViewReviewsController {
     
       return {
         success: true,
-        data: data   // 👈 IMPORTANT FIX
+        data: data
       };
     } catch (e) {
       console.error('[AdminViewReviewsController]', e);

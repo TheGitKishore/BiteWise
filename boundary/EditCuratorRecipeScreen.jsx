@@ -28,7 +28,7 @@ const f = StyleSheet.create({ label: { fontSize: 13, fontWeight: '600', color: C
 
 const EditCuratorRecipeScreen = ({ navigation, route }) => {
   const user   = route?.params?.user   || null;
-  const recipe = route?.params?.recipe || null; // null = create mode
+  const recipe = route?.params?.recipe || null;
   const isEdit = recipe !== null;
   const recipeId = recipe?._id || recipe?.recipeId;
   console.log('RECEIVED recipe:', recipe);
@@ -90,7 +90,7 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
           fields
         );
 
-        console.log('⬅️ updateRecipe RESULT:', result);
+        console.log('updateRecipe RESULT:', result);
       } else {
         console.log('Calling createRecipe');
 
@@ -99,7 +99,7 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
           fields
         );
 
-        console.log('⬅️ createRecipe RESULT:', result);
+        console.log('createRecipe RESULT:', result);
       }
 
     } catch (err) {
@@ -144,7 +144,7 @@ const EditCuratorRecipeScreen = ({ navigation, route }) => {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          const r = await deleteCtrl.deleteRecipe(recipeId, user.userId); // FIX
+          const r = await deleteCtrl.deleteRecipe(recipeId, user.userId);
           if (r.success) 
             navigation.navigate('CuratorRecipesScreen', {
               user,

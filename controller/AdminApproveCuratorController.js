@@ -1,7 +1,7 @@
 // AdminApproveCuratorController.js — UC #106 System Admin – Approve Curator Application
 //
 // Normal Flow:
-//   1. Admin views Curators tab → taps ✓ approve button on a PENDING application
+//   1. Admin views Curators tab → taps approve button on a PENDING application
 //   2. Boundary calls approveApplication(applicationId, adminId)
 //   3. Controller tries Admin.approve(); falls back to Admin.approveApplicationSeeded()
 //   4. Returns { success, message } — boundary updates card status + shows green banner

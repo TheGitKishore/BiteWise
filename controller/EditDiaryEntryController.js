@@ -1,7 +1,7 @@
 // EditDiaryEntryController.js — Sprint 11 New BCE: Edit Diary Entry
 //
 // Normal Flow:
-//   1. User taps ✏️ Edit on a diary entry card in DiaryScreen
+//   1. User taps Edit on a diary entry card in DiaryScreen
 //   2. Edit form pre-fills title/content/mood/weight
 //   3. User saves → boundary calls updateEntry(entryId, fields)
 //   4. Controller delegates to DiaryEntry.update()

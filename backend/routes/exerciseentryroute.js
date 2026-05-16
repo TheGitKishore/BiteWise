@@ -1,5 +1,5 @@
 import express from 'express';
-import db from '../db_sql/db.js'; // mysql2 pool
+import db from '../db_sql/db.js'; 
 import { getDB } from '../db_mongodb/db.js';
 
 const router = express.Router();
@@ -52,9 +52,8 @@ const formatExerciseEntry = (row) => ({
   loggedAt: row.logged_at,
 });
 
-// ===============================
 // GET EXERCISE TYPES FROM MONGO
-// ===============================
+
 router.get('/types', async (_req, res) => {
   try {
     const types = await getExerciseTypes();
@@ -74,9 +73,8 @@ router.get('/types', async (_req, res) => {
   }
 });
 
-// ===============================
 // CREATE EXERCISE ENTRY
-// ===============================
+
 router.post('/', async (req, res) => {
   try {
     const { userId, exerciseType, durationMins, notes, caloriesBurned } = req.body;
@@ -131,10 +129,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-
-// ===============================
 // GET TODAY ENTRIES
-// ===============================
+
 router.get('/today/:userId', async (req, res) => {
   try {
     const userId = Number(req.params.userId);
@@ -160,9 +156,8 @@ router.get('/today/:userId', async (req, res) => {
   }
 });
 
-// ===============================
 // UPDATE EXERCISE ENTRY
-// ===============================
+
 router.put('/:entryId', async (req, res) => {
   try {
     const entryId = Number(req.params.entryId);
@@ -227,9 +222,8 @@ router.put('/:entryId', async (req, res) => {
   }
 });
 
-// ===============================
 // DELETE EXERCISE ENTRY
-// ===============================
+
 router.delete('/:entryId', async (req, res) => {
   try {
     const entryId = Number(req.params.entryId);

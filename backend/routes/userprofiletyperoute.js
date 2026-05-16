@@ -3,9 +3,8 @@ import db from '../db_sql/db.js';
 
 const router = express.Router();
 
-//
-// ✅ GET all profile types
-//
+// GET all profile types
+
 router.get('/', async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -20,9 +19,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-//
-// ✅ GET profile type by TYPE (e.g. ATHLETE)
-//
+// GET profile type by TYPE (e.g. ATHLETE)
+
 router.get('/type/:type', async (req, res) => {
   try {
     const { type } = req.params;
@@ -44,9 +42,8 @@ router.get('/type/:type', async (req, res) => {
   }
 });
 
-//
-// ✅ GET profile type by ID
-//
+// GET profile type by ID
+
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;

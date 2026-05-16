@@ -1,7 +1,7 @@
 // AdminRemoveReviewController.js — UC #104 System Admin – Manage Reviews (Remove)
 //
 // Normal Flow:
-//   1. Admin views Reviews tab → taps 🗑️ "Remove" button on a review card
+//   1. Admin views Reviews tab → taps Remove button on a review card
 //   2. Boundary shows Alert.alert confirm with reviewer name
 //   3. On confirm → boundary calls removeReview(reviewId)
 //   4. Controller delegates to Admin.removeReviewSeeded() (seeded) or Review.remove()

@@ -110,7 +110,6 @@ const getTargetsByUser = async (userId) => {
   return docs[0] || null;
 };
 
-// GET /api/nutrition-targets/:userId
 router.get('/:userId', async (req, res) => {
   const userId = Number(req.params.userId);
 
@@ -139,7 +138,6 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
-// PUT /api/nutrition-targets/:userId
 router.put('/:userId', async (req, res) => {
   const userId = Number(req.params.userId);
   const { calories, protein, carbs, fat, fiber, activityLevel, goal } = req.body || {};
@@ -219,7 +217,6 @@ router.put('/:userId', async (req, res) => {
   }
 });
 
-// PUT /api/nutrition-targets/:userId/calories
 router.put('/:userId/calories', async (req, res) => {
   const userId = Number(req.params.userId);
   const calories = req.body?.calories;

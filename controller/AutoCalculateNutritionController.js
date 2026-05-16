@@ -1,6 +1,6 @@
 // Normal Flow (Auto-Calculate Nutrition Targets — Premium users only)
 //   1. User selects Activity Level and Goal in EditTargetsModal
-//   2. User taps "⚡ Auto-Calculate Based on Profile"
+//   2. User taps "Auto-Calculate Based on Profile"
 //   3. Boundary calls computeTargets(userProfile, activityLevel, goal)
 //   4. Controller delegates to NutritionTargets.computeTargets() (Mifflin-St Jeor BMR)
 //   5. Returns { calories, protein, carbs, fat, fiber } → boundary pre-fills inputs

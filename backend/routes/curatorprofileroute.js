@@ -3,14 +3,9 @@ import db from '../db_sql/db.js';
 
 const router = express.Router();
 
-/* =========================================================
-   CURATOR PROFILE (MINIMAL DESIGN)
-   Table: curator_profiles
-========================================================= */
 
-/**
- * GET profile by user_id
- */
+// CURATOR PROFILE
+
 router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
 
@@ -34,9 +29,9 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
-/**
- * POST create profile (simple insert only)
- */
+
+// POST create profile
+ 
 router.post('/', async (req, res) => {
   const { userId, expertise = '', bio = '' } = req.body;
 
@@ -61,9 +56,9 @@ router.post('/', async (req, res) => {
   }
 });
 
-/**
- * PUT update ONLY expertise + bio + updated_at
- */
+
+// PUT update ONLY expertise + bio + updated_at
+
 router.put('/:userId', async (req, res) => {
   const { userId } = req.params;
   const { expertise = '', bio = '' } = req.body;

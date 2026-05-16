@@ -270,7 +270,7 @@ const LogExerciseModal = ({ visible, userId, onClose, onSuccess, exerciseTypes }
     } else if (result.field) {
       setFieldErrors({ [result.field]: result.message });
     }
-  }, [exerciseType, durationMins, caloriesBurned, notes, userId, onSuccess]);  // FIX 2
+  }, [exerciseType, durationMins, caloriesBurned, notes, userId, onSuccess]); 
 
   return (
     <ModalSheet
@@ -331,11 +331,6 @@ const OverviewTab = ({ exerciseEntries }) => {
     </View>
   );
 };
-// FIX 1: removed the unclosed `const ov = StyleSheet.create({` that was here.
-// It was opened but never closed, causing every subsequent component and StyleSheet
-// to be parsed as part of the broken object literal — a fatal compile error.
-// `ov` was also never referenced anywhere in the file.
-
 
 // ─── EXERCISE LOG TAB ────────────────────────────────────────────────────────
 
@@ -476,8 +471,6 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
     setTimeout(() => setBanner(''), 4000);
   }, []);
 
-  // FIX 3: dependency changed from [user] → [user?.userId] so the fetch only
-  // re-runs when the user ID actually changes, not on every parent re-render.
   useFocusEffect(
     useCallback(() => {
       if (!user?.userId) return;
@@ -502,7 +495,7 @@ const ActivityTrackingScreen = ({ navigation, route }) => {
 
       fetchEntries();
       fetchExerciseTypes();
-    }, [user?.userId])  // FIX 3
+    }, [user?.userId])
   );
 
   return (

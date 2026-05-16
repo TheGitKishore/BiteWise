@@ -2,7 +2,7 @@
 // UC: Premium User – Delete Custom Recipe
 //
 // Normal Flow:
-//   1. MyRecipesScreen user taps 🗑️ Delete → Alert.alert confirm popup shown
+//   1. MyRecipesScreen user taps Delete → Alert.alert confirm popup shown
 //   2. On confirm → boundary calls deleteRecipe(recipeId, userId)
 //   3. Controller delegates to Recipe.deleteCustomRecipe(recipeId, userId)
 //   4. Returns { success, message } to boundary

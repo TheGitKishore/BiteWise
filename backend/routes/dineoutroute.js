@@ -43,7 +43,6 @@ const mapRestaurant = (doc = {}, matchingItems = null) => {
 
 const getCollection = () => getDB().collection('dine_out');
 
-// GET /api/dine-out
 router.get('/', async (req, res) => {
   try {
     const restaurants = await getCollection()
@@ -66,7 +65,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/dine-out/matching?remainingCalories=500
 router.get('/matching', async (req, res) => {
   try {
     const remainingCalories = asNumber(req.query.remainingCalories);

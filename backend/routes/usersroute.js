@@ -7,9 +7,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { getDB } from '../db_mongodb/db.js';
 const router = express.Router();
 
-// ─────────────────────────────────────────────
 // POST /api/users/register   — UC #08 / #09
-// ─────────────────────────────────────────────
+
 router.post('/register', async (req, res) => {
   const { username, email, password, confirmPassword, selectedPlanId } = req.body;
   const planId = Number(selectedPlanId);
@@ -65,7 +64,7 @@ router.post('/register', async (req, res) => {
 
     const newUserId = result.insertId;
 
-    // 🔥 Insert into MongoDB
+    // Insert into MongoDB
     const mongoDB = getDB();
       
     await mongoDB.collection('users').insertOne({
@@ -115,9 +114,8 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
 // POST /api/users/login   — UC #10 / #45
-// ─────────────────────────────────────────────
+
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -188,9 +186,8 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
 // GET /api/users/:userId   — UC #12 / #47
-// ─────────────────────────────────────────────
+
 router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
 
@@ -239,9 +236,8 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
 // PUT /api/users/update   — UC #13 / #48
-// ─────────────────────────────────────────────
+
 router.put('/update', async (req, res) => {
   const { userId, username, email, membershipPlanId, role } = req.body;
   console.log("REQ BODY:", req.body);
@@ -320,9 +316,8 @@ router.put('/update', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────
 // DELETE /api/users/delete/:userId   — UC #14 / #49
-// ─────────────────────────────────────────────
+
 router.put('/profile-type', async (req, res) => {
   const { userId, profileType } = req.body;
   const valid = ['ATHLETE', 'HEALTH_ORIENTED', 'MEAL_PLANNER'];

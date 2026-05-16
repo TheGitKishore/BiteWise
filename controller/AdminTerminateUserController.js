@@ -1,7 +1,7 @@
 // AdminTerminateUserController.js — UC #101 System Admin – Terminate User Account
 //
 // Normal Flow:
-//   1. Admin views Users tab → taps 🗑️ delete button on a user card
+//   1. Admin views Users tab → taps delete button on a user card
 //   2. Boundary shows Alert.alert confirm: "Terminate [Name]'s account?"
 //   3. On confirm → boundary calls terminateUser(userId)
 //   4. Controller delegates to Admin.terminateUser()

@@ -3,10 +3,8 @@ import db from "../db_sql/db.js";
 
 const router = express.Router();
 
+// MAP DB 
 
-// ================================
-// HELPER: map DB → frontend format
-// ================================
 const mapGoal = (row) => ({
   goalId:         row.goal_id,
   userId:         row.user_id,
@@ -21,10 +19,8 @@ const mapGoal = (row) => ({
   updatedAt:      row.updated_at,
 });
 
-
-// ================================
 // GET ACTIVE GOAL
-// ================================
+
 router.get('/active/:userId', async (req, res) => {
   const { userId } = req.params;
 
@@ -88,10 +84,8 @@ router.get('/active/:userId', async (req, res) => {
   }
 });
 
-
-// ================================
 // CREATE GOAL
-// ================================
+
 router.post('/', async (req, res) => {
   const {
     userId,
@@ -148,10 +142,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-
-// ================================
 // UPDATE GOAL
-// ================================
+
 router.put('/:goalId', async (req, res) => {
   const { goalId } = req.params;
 
