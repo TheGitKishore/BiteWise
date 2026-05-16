@@ -78,7 +78,7 @@ class MealPlan {
 
   // DATA ACCESS
 
-  // UC #29, #72 � fetch all meal plans for a user
+  // UC #29, #72 fetch all meal plans for a user
   // @param  {number} userId
   // @return {Promise<{ success, data, message }>}
   static async fetchAll(userId) {
@@ -98,7 +98,7 @@ class MealPlan {
     }
   }
 
-  // UC #26, #69 � create a custom meal plan
+  // UC #26, #69 create a custom meal plan
   // @param  {number} userId
   // @param  {{ name, description, numDays, days }}
   // @return {Promise<{ success, field, message, data }>}
@@ -133,7 +133,7 @@ class MealPlan {
     }
   }
 
-  // UC #28, #71 � auto-generate a 7-day meal plan
+  // UC #28, #71 auto-generate a 7-day meal plan
   // @param  {number} userId
   // @param  {{ planType: string }}
   // @return {Promise<{ success, field, message, data }>}
@@ -178,7 +178,7 @@ class MealPlan {
     }
   }
 
-  // UC #30, #75 � delete a meal plan
+  // UC #30, #75 delete a meal plan
   // @param  {string} planId
   // @return {Promise<{ success, message }>}
   static async delete(planId) {

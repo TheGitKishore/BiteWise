@@ -120,7 +120,6 @@ class User {
 
   // UC #08 / #09 — validates inputs, sets role & plan, creates the account.
   // Uses this.* so subclasses can override validators without breaking this flow.
-  // TODO: replace create block with real API call once backend is ready.
   //
   // @param  {{ username, email, password, confirmPassword, selectedPlanId }}
   // @return {Promise<{ success, field, message, user }>}
@@ -178,7 +177,6 @@ class User {
 
   // UC #10, #45 — verifies credentials and returns the user session.
   // Uses this.* for subclass compatibility.
-  // TODO: replace with real API call once backend is ready.
   //
   // @param  {{ username: string, password: string }}
   // @return {Promise<{ success, message, user }>}
@@ -212,7 +210,6 @@ class User {
 
   // UC #11, #46 — ends the user session.
   // Shared by Free and Premium — same action, same entity function.
-  // TODO: call API to invalidate token when backend is ready.
   //
   // @return {Promise<{ success, message }>}
   static async logout() {
@@ -220,7 +217,6 @@ class User {
   }
 
   // UC #12, #47 — returns the current user's account details.
-  // TODO: replace with real API call.
   //
   // @param  {User} user
   // @return {Promise<{ success, data, message }>}
@@ -249,7 +245,6 @@ class User {
   }
 
   // UC #13, #48 — validates and updates account details.
-  // TODO: replace with real API call.
   //
   // @param  {User}   user
   // @param  {{ username: string, email: string }}
@@ -319,7 +314,6 @@ class User {
   }
 
   // UC #14, #49 — permanently removes the user account.
-  // TODO: replace with real API call.
   //
   // @param  {User} user
   // @return {Promise<{ success, message }>}
@@ -361,7 +355,6 @@ class User {
   }
 
   // UC #18, #54 — validate and save the daily calorie limit.
-  // Replace w API calls
   /*
     static async setDailyCalorieLimit(userId, limit) {
       const res = await axios.put(`${API_URL}/calorie-limit`, { userId, limit });
@@ -423,7 +416,6 @@ class User {
   }
 
   // UC #53 — returns the personalised nutrition targets for a premium user.
-  // Replace w API calls
   /*
     static async fetchNutritionTargets(userId) {
       const res = await axios.get(`${API_URL}/nutrition-targets/${userId}`);

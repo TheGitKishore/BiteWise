@@ -1,5 +1,3 @@
-// 
-
 import User from './User';
 
 class PremiumUser extends User {
