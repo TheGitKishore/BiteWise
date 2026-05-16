@@ -1,0 +1,460 @@
+// entity/Users.js (backend route file)
+
+import express from 'express';
+import bcrypt from 'bcrypt';
+import db from '../db_sql/db.js'; // <-- ES module import, .js extension
+import { v4 as uuidv4 } from 'uuid';
+import { getDB } from '../db_mongodb/db.js';
+const router = express.Router();
+
+// POST /api/users/register   — UC #08 / #09
+
+router.post('/register', async (req, res) => {
+  const { username, email, password, confirmPassword, selectedPlanId } = req.body;
+  const planId = Number(selectedPlanId);
+  
+  const PLAN_ROLE_MAP = {
+    1: 'free',
+    2: 'premium'
+  };
+  
+  const role = PLAN_ROLE_MAP[planId] || 'free';
+  console.log('selectedPlanId:', selectedPlanId, typeof selectedPlanId);
+  console.log('planId:', planId);
+  console.log('role:', role);
+  try {
+    // Check if username already exists
+    const [existingUsername] = await db.query(
+      'SELECT user_id FROM users WHERE username = ?',
+      [username.trim()]
+    );
+    if (existingUsername.length > 0) {
+      return res.status(409).json({
+        success: false,
+        field: 'username',
+        message: 'Username already exists.',
+        user: null
+      });
+    }
+
+    // Check if email already exists
+    const [existingEmail] = await db.query(
+      'SELECT user_id FROM users WHERE email = ?',
+      [email.trim()]
+    );
+    if (existingEmail.length > 0) {
+      return res.status(409).json({
+        success: false,
+        field: 'email',
+        message: 'Email already in use.',
+        user: null
+      });
+    }
+    const uuid = uuidv4();
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Insert new user
+    const [result] = await db.query(
+      `INSERT INTO users 
+        (uuid, username, email, password_hash, role, membership_plan_id, is_active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, true, NOW(), NOW())`,
+      [uuid, username.trim(), email.trim(), passwordHash, role, planId]
+    );
+
+    const newUserId = result.insertId;
+
+    // Insert into MongoDB
+    const mongoDB = getDB();
+      
+    await mongoDB.collection('users').insertOne({
+      uuid,
+      username: username.trim(),
+      email: email.trim(),
+      role,
+      membershipPlanId: planId || null,
+      createdAt: new Date()
+    });
+
+    // Fetch the created user
+    const [rows] = await db.query(
+      `SELECT 
+        user_id        AS userId,
+        username,
+        email,
+        first_name     AS firstName,
+        last_name      AS lastName,
+        date_of_birth  AS dateOfBirth,
+        gender,
+        UPPER(profile_type) AS profileType,
+        role,
+        membership_plan_id AS membershipPlanId,
+        is_active      AS isActive,
+        created_at     AS createdAt,
+        updated_at     AS updatedAt
+       FROM users WHERE user_id = ?`,
+      [newUserId]
+    );
+
+    return res.status(201).json({
+      success: true,
+      field: null,
+      message: 'Account created successfully.',
+      user: rows[0]
+    });
+
+  } catch (err) {
+    console.error('[POST /register]', err);
+    return res.status(500).json({
+      success: false,
+      field: null,
+      message: 'Something went wrong. Please try again.',
+      user: null
+    });
+  }
+});
+
+// POST /api/users/login   — UC #10 / #45
+
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    // Find user by username
+    const [rows] = await db.query(
+      `SELECT 
+        user_id        AS userId,
+        username,
+        email,
+        password_hash  AS passwordHash,
+        first_name     AS firstName,
+        last_name      AS lastName,
+        date_of_birth  AS dateOfBirth,
+        gender,
+        UPPER(profile_type) AS profileType,
+        role,
+        membership_plan_id AS membershipPlanId,
+        is_active      AS isActive,
+        created_at     AS createdAt,
+        updated_at     AS updatedAt
+       FROM users WHERE username = ?`,
+      [username.trim()]
+    );
+
+    if (rows.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: 'Incorrect credentials. Please try again.',
+        user: null
+      });
+    }
+
+    const user = rows[0];
+
+    // Check if account is active
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: 'This account has been deactivated.',
+        user: null
+      });
+    }
+
+    // Compare password
+    const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!passwordMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Incorrect credentials. Please try again.',
+        user: null
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Login successful.',
+      user
+    });
+
+  } catch (err) {
+    console.error('[POST /login]', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+      user: null
+    });
+  }
+});
+
+// GET /api/users/:userId   — UC #12 / #47
+
+router.get('/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const [rows] = await db.query(
+      `SELECT 
+        user_id        AS userId,
+        username,
+        email,
+        first_name     AS firstName,
+        last_name      AS lastName,
+        date_of_birth  AS dateOfBirth,
+        gender,
+        UPPER(profile_type) AS profileType,
+        role,
+        membership_plan_id AS membershipPlanId,
+        daily_calorie_limit AS dailyCalorieLimit,
+        is_active      AS isActive,
+        created_at     AS createdAt,
+        updated_at     AS updatedAt
+       FROM users WHERE user_id = ?`,
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'User not found.'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: rows[0],
+      message: 'Account details fetched successfully.'
+    });
+
+  } catch (err) {
+    console.error('[GET /:userId]', err);
+    return res.status(500).json({
+      success: false,
+      data: null,
+      message: 'Failed to fetch account details.'
+    });
+  }
+});
+
+// PUT /api/users/update   — UC #13 / #48
+
+router.put('/update', async (req, res) => {
+  const { userId, username, email, membershipPlanId, role } = req.body;
+  console.log("REQ BODY:", req.body);
+  try {
+    // Check if username is taken by another user
+    const [existingUsername] = await db.query(
+      'SELECT user_id FROM users WHERE username = ? AND user_id != ?',
+      [username.trim(), userId]
+    );
+    if (existingUsername.length > 0) {
+      return res.status(409).json({
+        success: false,
+        field: 'username',
+        message: 'Username already exists.',
+        user: null
+      });
+    }
+
+    // Check if email is taken by another user
+    const [existingEmail] = await db.query(
+      'SELECT user_id FROM users WHERE email = ? AND user_id != ?',
+      [email.trim(), userId]
+    );
+    if (existingEmail.length > 0) {
+      return res.status(409).json({
+        success: false,
+        field: 'email',
+        message: 'Email already in use.',
+        user: null
+      });
+    }
+
+    // Update user
+    await db.query(
+      `UPDATE users 
+       SET username = ?, email = ?, membership_plan_id = ?, role = ?, updated_at = NOW()
+       WHERE user_id = ?`,
+      [username.trim(), email.trim(), membershipPlanId, role, userId]
+    );
+
+    // Fetch updated user
+    const [rows] = await db.query(
+      `SELECT 
+        user_id        AS userId,
+        username,
+        email,
+        first_name     AS firstName,
+        last_name      AS lastName,
+        date_of_birth  AS dateOfBirth,
+        gender,
+        UPPER(profile_type) AS profileType,
+        role,
+        membership_plan_id AS membershipPlanId,
+        is_active      AS isActive,
+        created_at     AS createdAt,
+        updated_at     AS updatedAt
+       FROM users WHERE user_id = ?`,
+      [userId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      field: null,
+      message: 'Account details updated successfully.',
+      user: rows[0]
+    });
+
+  } catch (err) {
+    console.error('[PUT /update]', err);
+    return res.status(500).json({
+      success: false,
+      field: null,
+      message: 'Account details update failed.',
+      user: null
+    });
+  }
+});
+
+// DELETE /api/users/delete/:userId   — UC #14 / #49
+
+router.put('/profile-type', async (req, res) => {
+  const { userId, profileType } = req.body;
+  const valid = ['ATHLETE', 'HEALTH_ORIENTED', 'MEAL_PLANNER'];
+
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: 'User ID is required.',
+      data: null
+    });
+  }
+
+  if (!valid.includes(profileType)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid profile type.',
+      data: null
+    });
+  }
+
+  try {
+    const [updateResult] = await db.query(
+      `UPDATE users
+       SET profile_type = ?, updated_at = NOW()
+       WHERE user_id = ?`,
+      [profileType, userId]
+    );
+
+    if (updateResult.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found.',
+        data: null
+      });
+    }
+
+    const [rows] = await db.query(
+      `SELECT
+        user_id        AS userId,
+        username,
+        email,
+        first_name     AS firstName,
+        last_name      AS lastName,
+        date_of_birth  AS dateOfBirth,
+        gender,
+        UPPER(profile_type) AS profileType,
+        role,
+        membership_plan_id AS membershipPlanId,
+        daily_calorie_limit AS dailyCalorieLimit,
+        is_active      AS isActive,
+        created_at     AS createdAt,
+        updated_at     AS updatedAt
+       FROM users WHERE user_id = ?`,
+      [userId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Profile type updated successfully.',
+      data: rows[0]
+    });
+  } catch (err) {
+    console.error('[PUT /profile-type]', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update profile type.',
+      data: null
+    });
+  }
+});
+
+router.delete('/delete/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const [result] = await db.query(
+      'DELETE FROM users WHERE user_id = ?',
+      [userId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found.'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Account deleted successfully.'
+    });
+
+  } catch (err) {
+    console.error('[DELETE /delete/:userId]', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Account deletion failed.'
+    });
+  }
+});
+
+router.put('/calorie-limit', async (req, res) => {
+  const { userId, dailyCalorieLimit } = req.body;
+
+  try {
+    await db.query(
+      `UPDATE users 
+       SET daily_calorie_limit = ?, updated_at = NOW()
+       WHERE user_id = ?`,
+      [dailyCalorieLimit, userId]
+    );
+
+    const [rows] = await db.query(
+      `SELECT 
+        user_id AS userId,
+        username,
+        email,
+        daily_calorie_limit AS dailyCalorieLimit
+       FROM users
+       WHERE user_id = ?`,
+      [userId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Calorie limit updated successfully.',
+      user: rows[0]
+    });
+
+  } catch (err) {
+    console.error('[PUT /calorie-limit]', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update calorie limit.',
+      user: null
+    });
+  }
+});
+
+export default router;

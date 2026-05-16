@@ -1,0 +1,483 @@
+import axios from 'axios'; 
+import API_CONFIG from './api_config.js';
+const API_URL = `${API_CONFIG}/users`;
+
+class User {
+  constructor({
+    userId           = null,
+    username         = '',
+    email            = '',
+    passwordHash     = '',
+    firstName        = '',
+    lastName         = '',
+    dateOfBirth      = null,
+    gender           = '',      // 'male' | 'female' | 'other'
+    profileType      = null,    // 'MEAL_PLANNER' | 'ATHLETE' | 'HEALTH_ORIENTED'
+    role             = 'free',  // 'FREE' | 'PREMIUM' | 'CURATOR'
+    membershipPlanId = null,
+    isActive         = true,
+    createdAt        = null,
+    updatedAt          = null,
+    dailyCalorieLimit  = 2000,   // UC #18, #54
+    nutritionTargets   = null,   // UC #53 — { calories, protein, carbs, fat, fiber, activityLevel, goal }
+  } = {}) {
+    this.userId           = userId;
+    this.username         = username;
+    this.email            = email;
+    this.passwordHash     = passwordHash;
+    this.firstName        = firstName;
+    this.lastName         = lastName;
+    this.dateOfBirth      = dateOfBirth;
+    this.gender           = gender;
+    this.profileType      = profileType;
+    this.role             = role;
+    this.membershipPlanId = membershipPlanId;
+    this.isActive         = isActive;
+    this.createdAt        = createdAt;
+    this.updatedAt          = updatedAt;
+    this.dailyCalorieLimit  = dailyCalorieLimit;
+    this.nutritionTargets   = nutritionTargets;
+  }
+
+  static normalizeProfileType(profileType) {
+    if (profileType === null || profileType === undefined) return null;
+    const normalized = String(profileType).trim().toUpperCase();
+    return normalized.length > 0 ? normalized : null;
+  }
+
+  static normalizeUserProfile(data) {
+    if (!data || typeof data !== 'object') return data;
+    return {
+      ...data,
+      profileType: User.normalizeProfileType(data.profileType),
+    };
+  }
+
+
+  // STATIC VALIDATION METHODS
+  // Each returns { valid: boolean, message: string }
+
+  // @param  {string} username
+  // @return {{ valid: boolean, message: string }}
+  static validateUsername(username) {
+    if (!username || username.trim().length === 0) {
+      return { valid: false, message: 'Username is required.' };
+    }
+    if (username.trim().length < 3) {
+      return { valid: false, message: 'Username must be at least 3 characters.' };
+    }
+    if (username.trim().length > 20) {
+      return { valid: false, message: 'Username must be 20 characters or fewer.' };
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+      return { valid: false, message: 'Username can only contain letters, numbers and underscores.' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  // @param  {string} email
+  // @return {{ valid: boolean, message: string }}
+  static validateEmail(email) {
+    if (!email || email.trim().length === 0) {
+      return { valid: false, message: 'Email is required.' };
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return { valid: false, message: 'Please enter a valid email address.' };
+    }
+    return { valid: true, message: '' };
+  }
+
+  // @param  {string} password
+  // @return {{ valid: boolean, message: string }}
+  static validatePassword(password) {
+    if (!password || password.length === 0) {
+      return { valid: false, message: 'Password is required.' };
+    }
+    if (password.length < 6) {
+      return { valid: false, message: 'Password must be at least 6 characters.' };
+    }
+    return { valid: true, message: '' };
+  }
+
+
+  // STATIC DATA ACCESS METHODS
+
+  // UC #08 Alt Flow 1a
+  // TODO: replace with real API call
+  // @param  {string} username
+  // @return {Promise<boolean>}
+  static async isUsernameAvailable(username) {
+    try {
+      const res = await axios.get(`${API_URL}/check-username`, {
+        params: { username }
+      });
+    
+      return res.data.available;
+    } catch (err) {
+      return false; // safest fallback
+    }
+  }
+
+  // UC #08 / #09 — validates inputs, sets role & plan, creates the account.
+  // Uses this.* so subclasses can override validators without breaking this flow.
+  //
+  // @param  {{ username, email, password, confirmPassword, selectedPlanId }}
+  // @return {Promise<{ success, field, message, user }>}
+  static async createAccount({ username, email, password, confirmPassword, selectedPlanId }) {
+
+    const usernameCheck = this.validateUsername(username);
+    if (!usernameCheck.valid) {
+      return { success: false, field: 'username', message: usernameCheck.message, user: null };
+    }
+
+    const emailCheck = this.validateEmail(email);
+    if (!emailCheck.valid) {
+      return { success: false, field: 'email', message: emailCheck.message, user: null };
+    }
+
+    const passwordCheck = this.validatePassword(password);
+    if (!passwordCheck.valid) {
+      return { success: false, field: 'password', message: passwordCheck.message, user: null };
+    }
+
+    if (password !== confirmPassword) {
+      return { success: false, field: 'confirm', message: 'Passwords do not match.', user: null };
+    }
+
+    try {
+      console.log('Sending request to:', `${API_URL}/register`);
+      const res = await axios.post(`${API_URL}/register`, {
+        username,
+        email,
+        password,
+        confirmPassword,
+        selectedPlanId
+      });
+
+      console.log('Response received:', res.data);
+
+      return res.data;
+    
+    } catch (err) {
+      
+      console.log('ERROR:', err?.response?.data || err.message);
+
+      if (err.response?.data) {
+        return err.response.data;
+      }
+    
+      return {
+        success: false,
+        field: null,
+        message: 'Something went wrong. Please try again.',
+        user: null
+      };
+    }
+  }
+
+  // UC #10, #45 — verifies credentials and returns the user session.
+  // Uses this.* for subclass compatibility.
+  //
+  // @param  {{ username: string, password: string }}
+  // @return {Promise<{ success, message, user }>}
+  static async login({ username, password }) {
+
+    if (!username || username.trim().length === 0) {
+      return { success: false, message: 'Username is required.', user: null };
+    }
+    if (!password || password.length === 0) {
+      return { success: false, message: 'Password is required.', user: null };
+    }
+
+    try {
+      const res = await axios.post(`${API_URL}/login`, {
+        username,
+        password
+      });
+
+      return res.data;
+
+    } catch (err) {
+      if (err.response?.data) return err.response.data;
+
+      return {
+        success: false,
+        message: 'Incorrect credentials. Please try again.',
+        user: null
+      };
+    }
+  }
+
+  // UC #11, #46 — ends the user session.
+  // Shared by Free and Premium — same action, same entity function.
+  //
+  // @return {Promise<{ success, message }>}
+  static async logout() {
+    return { success: true, message: 'Logged out successfully' };
+  }
+
+  // UC #12, #47 — returns the current user's account details.
+  //
+  // @param  {User} user
+  // @return {Promise<{ success, data, message }>}
+  static async getAccountDetails(user) {
+  
+    if (!user) {
+      return { success: false, data: null, message: 'No user session found.' };
+    }
+  
+    try {
+      const res = await axios.get(`${API_URL}/${user.userId}`);
+      return {
+        ...res.data,
+        data: User.normalizeUserProfile(res.data?.data),
+      };
+    
+    } catch (err) {
+      if (err.response?.data) return err.response.data;
+    
+      return {
+        success: false,
+        data: null,
+        message: 'Failed to fetch account details.'
+      };
+    }
+  }
+
+  // UC #13, #48 — validates and updates account details.
+  //
+  // @param  {User}   user
+  // @param  {{ username: string, email: string }}
+  // @return {Promise<{ success, field, message, user }>}
+  static async updateAccountDetails(user, { username, email, role, membershipPlanId }) {
+
+    const usernameCheck = this.validateUsername(username);
+    if (!usernameCheck.valid) {
+      return { success: false, field: 'username', message: usernameCheck.message, user: null };
+    }
+
+    const emailCheck = this.validateEmail(email);
+    if (!emailCheck.valid) {
+      return { success: false, field: 'email', message: emailCheck.message, user: null };
+    }
+
+    try {
+        const res = await axios.put(`${API_URL}/update`, {
+          userId: user.userId,
+          username,
+          email,
+          role: role ?? user.role,
+          membershipPlanId: membershipPlanId ?? user.membershipPlanId
+        });
+      
+        return res.data;
+      
+      } catch (err) {
+        if (err.response?.data) return err.response.data;
+      
+        return {
+          success: false,
+          field: null,
+          message: 'Account details updated failed.',
+          user: null
+        };
+      }
+    }
+
+  static async upgradeMembership(user, planId) {
+    const res = await axios.put(`${API_URL}/upgrade-plan`, {
+      userId: user.userId,
+      membershipPlanId: planId,
+      role: 'premium'
+    });
+  
+    return res.data;
+  }
+
+  // UC #83 — submit a Curator Program application
+  // @param  {number} userId
+  // @param  {{ motivation, journey, expertise, social }}
+  // @return {Promise<{ success, message }>}
+  static async applyForCurator(userId, { motivation, journey, expertise, social }) {
+    try {
+      const res = await axios.post(`${API_URL}/curator-applications`, {
+        userId, motivation, journey, expertise, social,
+      });
+      return res.data;
+    } catch (err) {
+      if (err.response?.data) return err.response.data;
+      return {
+        success: true,
+        message: 'Application submitted! We will review it within 5–7 business days.',
+      };
+    }
+  }
+
+  // UC #14, #49 — permanently removes the user account.
+  //
+  // @param  {User} user
+  // @return {Promise<{ success, message }>}
+  static async terminateAccount(user) {
+
+    if (!user) {
+      return { success: false, message: 'No user session found.' };
+    }
+
+    try {
+      const res = await axios.delete(`${API_URL}/delete/${user.userId}`);
+      return res.data;
+
+    } catch (err) {
+      if (err.response?.data) return err.response.data;
+
+      return {
+        success: false,
+        message: 'Account deletion failed.'
+      };
+    }
+  }
+
+
+  // UC #18, #54 — validate calorie limit input
+  // @param  {number} limit
+  // @return {{ valid: boolean, field: string|null, message: string }}
+  static validateCalorieLimit(limit) {
+    if (limit === null || limit === undefined || isNaN(limit) || Number(limit) <= 0) {
+      return { valid: false, field: 'limit', message: 'Please enter a valid calorie goal.' };
+    }
+    if (Number(limit) < 500) {
+      return { valid: false, field: 'limit', message: 'Calorie goal must be at least 500 kcal.' };
+    }
+    if (Number(limit) > 10000) {
+      return { valid: false, field: 'limit', message: 'Calorie goal must be 10,000 kcal or less.' };
+    }
+    return { valid: true, field: null, message: '' };
+  }
+
+  // UC #18, #54 — validate and save the daily calorie limit.
+  /*
+    static async setDailyCalorieLimit(userId, limit) {
+      const res = await axios.put(`${API_URL}/calorie-limit`, { userId, limit });
+      return res.data;
+    }
+  */
+
+  // @param  {User}   user
+  // @param  {number} limit
+  // @return {Promise<{ success, field, message, user }>}
+  static async setDailyCalorieLimit(user, limit) {
+    const check = this.validateCalorieLimit(limit);
+    if (!check.valid) {
+      return { success: false, field: check.field, message: check.message, user: null };
+    }
+
+    try {
+      const res = await axios.put(`${API_URL}/calorie-limit`, {
+        userId: user.userId,
+        dailyCalorieLimit: Number(limit)
+      });
+
+      return res.data;
+
+    } catch (err) {
+      if (err.response?.data) return err.response.data;
+
+      return {
+        success: false,
+        field: null,
+        message: 'Failed to update calorie limit.',
+        user: null
+      };
+    }
+  }
+
+
+  // UC #12, #47 — fetch single user from MySQL
+  static async getUser(userId) {
+    if (!userId) {
+      return { success: false, data: null, message: 'User ID is required.' };
+    }
+  
+    try {
+      const res = await axios.get(`${API_URL}/${userId}`);
+      const raw = res.data.user || res.data.data || res.data;
+    
+      return {
+        success: true,
+        data: User.normalizeUserProfile(raw),
+      };
+    } catch (err) {
+      return {
+        success: false,
+        data: null,
+        message: err.response?.data?.message || 'Failed to fetch user.'
+      };
+    }
+  }
+
+  // UC #53 — returns the personalised nutrition targets for a premium user.
+  /*
+    static async fetchNutritionTargets(userId) {
+      const res = await axios.get(`${API_URL}/nutrition-targets/${userId}`);
+      return res.data;
+    }
+  */
+
+  // @param  {User} user
+  // @return {Promise<{ success, data, message }>}
+  static async fetchNutritionTargets(user) {
+    if (!user) {
+      return { success: false, data: null, message: 'No user session found.' };
+    }
+
+    const targets = {
+      calories:      user.nutritionTargets?.calories      ?? 2546,
+      protein:       user.nutritionTargets?.protein       ?? 191,
+      carbs:         user.nutritionTargets?.carbs         ?? 255,
+      fat:           user.nutritionTargets?.fat           ?? 85,
+      fiber:         user.nutritionTargets?.fiber         ?? 30,
+      activityLevel: user.nutritionTargets?.activityLevel ?? 'Moderate',
+      goal:          user.nutritionTargets?.goal          ?? 'Maintain Weight',
+    };
+
+    return { success: true, data: targets, message: '' };
+  }
+
+  // ─── SPRINT 7 ADDITIONS ────────────────────────────────────────────────────
+
+  // Step 3 (Onboarding) + Step 4 (Account Settings) — set a user's profile type
+  // @param  {number} userId
+  // @param  {string} profileType — 'ATHLETE' | 'HEALTH_ORIENTED' | 'MEAL_PLANNER'
+  // @return {Promise<{ success, message, data }>}
+  static async setProfileType(userId, profileType) {
+    const valid = ['ATHLETE', 'HEALTH_ORIENTED', 'MEAL_PLANNER'];
+    const normalizedProfileType = User.normalizeProfileType(profileType);
+
+    if (!valid.includes(normalizedProfileType)) {
+      return { success: false, message: 'Invalid profile type.', data: null };
+    }
+
+    try {
+      const res = await axios.put(`${API_URL}/profile-type`, {
+        userId,
+        profileType: normalizedProfileType,
+      });
+
+      return {
+        ...res.data,
+        data: User.normalizeUserProfile(res.data?.data),
+      };
+    } catch (err) {
+      if (err.response?.data) return err.response.data;
+
+      return {
+        success: false,
+        message: 'Failed to update profile type.',
+        data: null,
+      };
+    }
+  }
+
+}
+
+export default User;
