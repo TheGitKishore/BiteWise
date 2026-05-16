@@ -1,7 +1,7 @@
 // AdminBanUserController.js — UC #102 System Admin – Temporarily Ban User Account
 //
 // Normal Flow:
-//   1. Admin views Users tab → taps 🚫 ban button on an active user card
+//   1. Admin views Users tab → taps ban button on an active user card
 //   2. Boundary shows Alert.alert confirm: "Ban [Name]?"
 //   3. On confirm → boundary calls banUser(userId)
 //   4. Controller delegates to Admin.banUser()

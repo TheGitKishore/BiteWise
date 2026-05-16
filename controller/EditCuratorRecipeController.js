@@ -28,7 +28,7 @@ class EditCuratorRecipeController {
   async updateRecipe(recipe, curatorUserId, fields) {
     return this._safeCall(async () => {
 
-      // ❌ BLOCK EDIT IF PUBLISHED
+      // BLOCK EDIT IF PUBLISHED
       if (recipe.status === 'PUBLISHED' || recipe.isPublished) {
         return {
           success: false,
@@ -46,7 +46,7 @@ class EditCuratorRecipeController {
           : recipe.recipeId || recipe._id;
 
       if (!id) {
-        console.error('❌ Missing recipe ID:', recipe);
+        console.error('Missing recipe ID:', recipe);
         return {
           success: false,
           message: 'Recipe ID is missing',

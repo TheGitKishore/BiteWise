@@ -1,5 +1,5 @@
 // Normal Flow (UC #96)
-//   1. User taps ✕ on a grocery list item
+//   1. User taps cross icon on a grocery list item
 //   2. Boundary calls deleteItem(userId, itemId)
 //   3. Controller delegates to GroceryList.deleteItem()
 //   4. Returns updated list to boundary

@@ -1,7 +1,7 @@
 // EditExerciseLogController.js — Sprint 11 New BCE: Edit Exercise Log
 //
 // Normal Flow:
-//   1. User taps ✏️ Edit on an exercise log row in ActivityTrackingScreen
+//   1. User taps Edit on an exercise log row in ActivityTrackingScreen
 //   2. Edit modal pre-fills all fields
 //   3. User saves → boundary calls updateExercise(entryId, fields)
 //   4. Controller delegates to ExerciseEntry.update()
